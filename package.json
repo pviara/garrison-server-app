@@ -22,7 +22,6 @@
     "express": "^4.17.1"
   },
   "devDependencies": {
-    "@microsoft/tsdoc": "^0.12.21",
     "@types/express": "^4.17.8",
     "@types/node": "^14.11.8",
     "nodemon": "^2.0.5",

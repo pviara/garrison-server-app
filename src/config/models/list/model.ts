@@ -36,3 +36,14 @@ export interface IListDataEntity {
     image?: string;
   }
 }
+
+/**
+ * The cost of instantiating the involved instantiable entity.
+ */
+export interface IListDataEntityCost {
+  /** Cost in gold. */
+  gold: number;
+
+  /** Cost in wood. */
+  wood: number;
+}

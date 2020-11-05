@@ -64,7 +64,7 @@ export const buildingList: IBuildingList = {
       duration: 120
     },
     extension: {
-      requiredBuildings: [{
+      required: [{
         level: 2,
         buildings: {
           code: 'town-hall',
@@ -99,7 +99,7 @@ export const buildingList: IBuildingList = {
       duration: 120
     },
     extension: {
-      requiredBuildings: [{
+      required: [{
         level: 2,
         buildings: {
           code: 'town-hall',
@@ -134,7 +134,7 @@ export const buildingList: IBuildingList = {
       minWorkforce: 1
     },
     extension: {
-      requiredBuildings: [{
+      required: [{
         level: 2,
         buildings: {
           code: 'town-hall',
@@ -178,7 +178,7 @@ export const buildingList: IBuildingList = {
     {
       level: 2,
       word: 'cannon tower',
-      requiredBuildings: {
+      required: {
         buildings: [{
           code: 'town-hall',
           upgradeLevel: 1
@@ -222,7 +222,7 @@ export const buildingList: IBuildingList = {
       },
       duration: 140,
       minWorkforce: 1,
-      requiredBuildings: {
+      required: {
         buildings: [{
           code: 'town-hall'
         },
@@ -251,7 +251,7 @@ export const buildingList: IBuildingList = {
       },
       duration: 140,
       minWorkforce: 1,
-      requiredBuildings: {
+      required: {
         buildings: [{
           code: 'town-hall',
           upgradeLevel: 1

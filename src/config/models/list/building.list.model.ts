@@ -11,46 +11,8 @@ export interface IBuildingList extends IList {
   dataset: IBuildingListDataEntity[];
 }
 
-/**
- * The representation of a building inside the building list dataset.
- */
-interface IBuildingListDataEntity extends IListDataEntity {
-  /** Building type(s) : production, harvest, military, research. */
-  types: string | string[];
-
-  /** Instantiation requirements and characteristics. */
-  instantation: {
-    cost: IBuildingCost;
-    minWorkforce: number;
-    duration: number;
-    requiredBuildings?: IRequiredBuilding | IRequiredBuilding[];
-  };
-
-  /** Upgrades list. */
-  upgrades?: {
-    level: number;
-    word: string | {
-      side: string;
-      jargon: string;
-    }[];
-    requiredBuildings?: IRequiredBuilding | IRequiredBuilding[];
-  }[];
-
-  /** Extension characteristics. */
-  extension?: {
-    /** Requirements. */
-    requiredBuildings?: IRequiredBuildingForExtensionLevel | IRequiredBuildingForExtensionLevel[];
-
-    /** Maximum extension level. */
-    maxLevel?: number;
-  };
-
-  /** Harvest building characteristics. */
-  harvest?: IBuildingHarvest | IBuildingDependantHarvest | IBuildingSelfSufficientHarvest;
-}
-
-/** A building that can be required to build, extend or upgrade another building. */
-interface IRequiredBuilding {
+/** A building that can be required to build, extend or upgrade another building, or train a unit. */
+export interface IRequiredBuilding {
   /** The one or more required buildings. */
   buildings: {
     /** The unique identifier of the required building. */
@@ -65,6 +27,44 @@ interface IRequiredBuilding {
     /** The required upgrade level of the required building. */
     upgradeLevel?: number;
   }[];
+}
+
+/**
+ * The representation of a building inside the building list dataset.
+ */
+interface IBuildingListDataEntity extends IListDataEntity {
+  /** Building type(s) : production, harvest, military, research. */
+  types: string | string[];
+
+  /** Instantiation requirements and characteristics. */
+  instantation: {
+    cost: IBuildingCost;
+    minWorkforce: number;
+    duration: number;
+    required?: IRequiredBuilding | IRequiredBuilding[];
+  };
+
+  /** Upgrades list. */
+  upgrades?: {
+    level: number;
+    word: string | {
+      side: string;
+      jargon: string;
+    }[];
+    required?: IRequiredBuilding | IRequiredBuilding[];
+  }[];
+
+  /** Extension characteristics. */
+  extension?: {
+    /** Requirements. */
+    required?: IRequiredBuildingForExtensionLevel | IRequiredBuildingForExtensionLevel[];
+
+    /** Maximum extension level. */
+    maxLevel?: number;
+  };
+
+  /** Harvest building characteristics. */
+  harvest?: IBuildingHarvest | IBuildingDependantHarvest | IBuildingSelfSufficientHarvest;
 }
 
 /** The extension level at which it is required to build the much-vauted required buildings. */

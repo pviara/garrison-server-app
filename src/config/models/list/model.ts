@@ -28,9 +28,7 @@ export interface IListDataEntity {
     jargon: string;
   }[];
 
-  /**
-   * Display picture(s). If exist(s), the icon is always mandatory.
-   */
+  /** Display picture(s). If exist(s), the icon is always mandatory. */
   pictures?: {
     icon: string;
     image?: string;

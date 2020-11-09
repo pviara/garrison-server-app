@@ -14,8 +14,6 @@ export interface IZoneList extends IList {
  * The representation of a banner inside the zone list dataset.
  */
 interface IZoneListDataEntity extends IListDataEntity {
-  /**
-   * In other words : faction (like the *horde* or the *alliance*).
-   */
+  /** In other words : faction (like the *horde* or the *alliance*). */
   side: string;
 }

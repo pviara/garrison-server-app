@@ -64,7 +64,7 @@ interface IBuildingListDataEntity extends IListDataEntity {
   types: {
     harvest?: IDependentHarvestBuildingType | ISelfSufficientHarvestBuildingType;
     // ... implement other types: production, research, military
-  }
+  };
 }
 
 /** 

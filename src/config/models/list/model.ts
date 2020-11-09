@@ -32,7 +32,7 @@ export interface IListDataEntity {
   pictures?: {
     icon: string;
     image?: string;
-  }
+  };
 }
 
 /**

@@ -32,7 +32,7 @@ interface IResearchListDataEntity extends IListDataEntity {
     identifier: string | {
       fightType: string;
     };
-  }
+  };
 
   /** How does this research affect its target ? */
   actions: {

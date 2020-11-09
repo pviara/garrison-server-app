@@ -34,7 +34,7 @@ interface IUnitDataEntity extends IListDataEntity {
 
       /** How does the unit fight ? Melee ? Distance ? */
       fight?: string | string[];
-    }
+    };
     
     /** Health points. */
     health: number;

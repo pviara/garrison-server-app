@@ -33,9 +33,6 @@ export interface IRequiredBuilding {
  * The representation of a building inside the building list dataset.
  */
 interface IBuildingListDataEntity extends IListDataEntity {
-  /** Building type(s) : production, harvest, military, research. */
-  types: string | string[];
-
   /** Instantiation requirements and characteristics. */
   instantation: {
     cost: IBuildingCost;
@@ -43,7 +40,7 @@ interface IBuildingListDataEntity extends IListDataEntity {
     duration: number;
     required?: IRequiredBuilding | IRequiredBuilding[];
   };
-
+  
   /** Upgrades list. */
   upgrades?: {
     level: number;
@@ -53,18 +50,21 @@ interface IBuildingListDataEntity extends IListDataEntity {
     }[];
     required?: IRequiredBuilding | IRequiredBuilding[];
   }[];
-
+  
   /** Extension characteristics. */
   extension?: {
     /** Requirements. */
     required?: IRequiredBuildingForExtensionLevel | IRequiredBuildingForExtensionLevel[];
-
+    
     /** Maximum extension level. */
     maxLevel?: number;
   };
-
-  /** Harvest building characteristics. */
-  harvest?: IBuildingHarvest | IBuildingDependantHarvest | IBuildingSelfSufficientHarvest;
+  
+  /** Building type(s) characteristics. */
+  types: {
+    harvest?: IDependentHarvestBuildingType | ISelfSufficientHarvestBuildingType;
+    // ... implement other types: production, research, military
+  }
 }
 
 /** The extension level at which it is required to build the much-vauted required buildings. */
@@ -84,7 +84,7 @@ interface IBuildingCost extends IListDataEntityCost {
 /**
  * The representation of a harvest building (e.g. farm, goldmine, sawmill...).
  */
-interface IBuildingHarvest {
+interface IHarvestBuildingType {
   /** Which resource is this building harvesting (gold, wood, food) ? */
   resource: string;
 }
@@ -92,7 +92,7 @@ interface IBuildingHarvest {
 /**
  * A building that needs one or more worker(s) to harvest a specific resource.
  */
-interface IBuildingDependantHarvest extends IBuildingHarvest {
+interface IDependentHarvestBuildingType extends IHarvestBuildingType {
   /** Maximum workforce on harvesting in this building. */
   maxWorkforce: number;
 }
@@ -100,7 +100,7 @@ interface IBuildingDependantHarvest extends IBuildingHarvest {
 /**
  * A building that autonomously harvests a specific resource once (e.g. gives 3 food).
  */
-interface IBuildingSelfSufficientHarvest extends IBuildingHarvest {
+interface ISelfSufficientHarvestBuildingType extends IHarvestBuildingType {
   /** What amount of resource is this building giving when it gets constructed ? */
   gift: number;
 }

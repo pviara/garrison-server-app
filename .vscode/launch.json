@@ -1,0 +1,14 @@
+{
+  // Make sure to open the app.ts file before hitting the debugger start button
+  "version": "0.2.0",
+  "configurations": [{
+    "name": "app.ts",
+    "type": "node",
+    "request": "launch",
+    "args": ["${relativeFile}"],
+    "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+    "sourceMaps": true,
+    "cwd": "${workspaceRoot}",
+    "protocol": "inspector",
+  }]
+}

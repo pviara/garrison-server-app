@@ -1,7 +1,7 @@
 import {
   IList,
   IListDataEntity
-} from '../list/model';
+} from './model';
 
 /**
  * The representation of a list of banners. 

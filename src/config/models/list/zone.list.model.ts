@@ -1,4 +1,7 @@
-import { IList, IListDataEntity } from '../list/model';
+import {
+  IList,
+  IListDataEntity
+} from './model';
 
 /**
  * The representation of a list of zones. 

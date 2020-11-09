@@ -17,9 +17,6 @@ export interface IUnitList extends IList {
  * The representation of a unit inside the unit list dataset.
  */
 interface IUnitDataEntity extends IListDataEntity {
-  /** Unit type(s) : worker, explorer, fighter. */
-  types: string | string[];
-
   /** Instantiation requirements and characteristics. */
   instantiation: {
     /** In which building is this unit being instantiated ? */
@@ -30,15 +27,23 @@ interface IUnitDataEntity extends IListDataEntity {
   };
 
   /** Global statistics. */
-  statistics?: {
+  statistics: {
+    type: {
+      /** Unit type(s) : worker, explorer, fighter. */
+      main: string | string[];
+
+      /** How does the unit fight ? Melee ? Distance ? */
+      fight?: string | string[];
+    }
+    
     /** Health points. */
     health: number;
 
     /** Attack statistics. */
-    attack: IUnitStatistic;
+    attack?: IUnitStatistic;
 
     /** Defense statistics. */
-    defense: IUnitStatistic;
+    defense?: IUnitStatistic;
   }
 }
 

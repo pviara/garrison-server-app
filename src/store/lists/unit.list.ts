@@ -5,7 +5,6 @@ export const unitList: IUnitList = {
   type: 'UNITS',
   dataset: [{
     code: 'peasant',
-    types: 'worker',
     word: [{
       side: 'alliance',
       jargon: 'peasant'
@@ -22,14 +21,16 @@ export const unitList: IUnitList = {
         food: 1
       },
       duration: 45
+    },
+    statistics: {
+      type: {
+        main: 'worker'
+      },
+      health: 70
     }
   },
   {
     code: 'militia',
-    types: [
-      'explorer',
-      'fighter'
-    ],
     word: [{
       side: 'alliance',
       jargon: 'militia'
@@ -48,6 +49,10 @@ export const unitList: IUnitList = {
       duration: 60
     },
     statistics: {
+      type: {
+        main: ['explorer', 'fighter'],
+        fight: 'melee'
+      },
       health: 120,
       attack: {
         points: {
@@ -69,7 +74,6 @@ export const unitList: IUnitList = {
   },
   {
     code: 'footman',
-    types: 'fighter',
     word: [{
       side: 'alliance',
       jargon: 'footman'
@@ -88,6 +92,10 @@ export const unitList: IUnitList = {
       duration: 75
     },
     statistics: {
+      type: {
+        main: 'fighter',
+        fight: 'melee'
+      },
       health: 200,
       attack: {
         points: {
@@ -109,10 +117,6 @@ export const unitList: IUnitList = {
   },
   {
     code: 'rifleman',
-    types: [
-      'explorer',
-      'fighter'
-    ],
     word: [{
       side: 'alliance',
       jargon: 'footman'
@@ -136,6 +140,10 @@ export const unitList: IUnitList = {
       }
     },
     statistics: {
+      type: {
+        main: ['explorer', 'fighter'],
+        fight: 'distance'
+      },
       health: 200,
       attack: {
         points: {
@@ -157,7 +165,6 @@ export const unitList: IUnitList = {
   },
   {
     code: 'knight',
-    types: 'fighter',
     word: [{
       side: 'alliance',
       jargon: 'knight'
@@ -182,6 +189,10 @@ export const unitList: IUnitList = {
       }
     },
     statistics: {
+      type: {
+        main: 'fighter',
+        fight: 'melee'
+      },
       health: 260,
       attack: {
         points: {

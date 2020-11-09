@@ -5,7 +5,6 @@ export const buildingList: IBuildingList = {
   type: 'BUILDINGS',
   dataset: [{
     code: 'town-hall',
-    types: 'production',
     word: [{
       side: 'alliance',
       jargon: 'town hall'
@@ -44,16 +43,12 @@ export const buildingList: IBuildingList = {
         side: 'horde',
         jargon: 'fortress'
       }]
-    }]
+    }],
+    types: {}
   },
   {
     code: 'goldmine',
-    types: 'harvest',
     word: 'goldmine',
-    harvest: {
-      resource: 'gold',
-      maxWorkforce: 7
-    },
     instantation: {
       cost: {
         gold: 120,
@@ -79,16 +74,17 @@ export const buildingList: IBuildingList = {
         }
       }],
       maxLevel: 5
+    },
+    types: {
+      harvest: {
+        resource: 'gold',
+        maxWorkforce: 7
+      }
     }
   },
   {
     code: 'sawmill',
-    types: 'harvest',
     word: 'sawmill',
-    harvest: {
-      resource: 'wood',
-      maxWorkforce: 7
-    },
     instantation: {
       cost: {
         gold: 120,
@@ -114,16 +110,17 @@ export const buildingList: IBuildingList = {
         }
       }],
       maxLevel: 5
+    },
+    types: {
+      harvest: {
+        resource: 'wood',
+        maxWorkforce: 7
+      }
     }
   },
   {
     code: 'farm',
-    types: 'harvest',
     word: 'farm',
-    harvest: {
-      resource: 'food',
-      gift: 6
-    },
     instantation: {
       cost: {
         gold: 80,
@@ -149,11 +146,16 @@ export const buildingList: IBuildingList = {
         }
       }],
       maxLevel: 5
+    },
+    types: {
+      harvest: {
+        resource: 'food',
+        gift: 6
+      }
     }
   },
   {
     code: 'scout-tower',
-    types: 'military',
     word: [{
       side: 'alliance',
       jargon: 'scout tower'
@@ -187,11 +189,11 @@ export const buildingList: IBuildingList = {
           code: 'workshop'
         }]
       }
-    }]
+    }],
+    types: {}
   },
   {
     code: 'barracks',
-    types: 'production',
     word: 'barracks',
     instantation: {
       cost: {
@@ -201,11 +203,11 @@ export const buildingList: IBuildingList = {
       },
       duration: 160,
       minWorkforce: 3
-    }
+    },
+    types: {}
   },
   {
     code: 'forge',
-    types: 'research',
     word: [{
       side: 'alliance',
       jargon: 'forge'
@@ -231,10 +233,10 @@ export const buildingList: IBuildingList = {
         }]
       }
     },
+    types: {}
   },
   {
     code: 'workshop',
-    types: 'research',
     word: [{
       side: 'alliance',
       jargon: 'workshop'
@@ -260,6 +262,7 @@ export const buildingList: IBuildingList = {
           code: 'forge'
         }]
       },
-    }
+    },
+    types: {}
   }]
 };

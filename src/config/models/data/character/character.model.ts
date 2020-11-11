@@ -1,4 +1,4 @@
-import { IDocument } from '../global.model';
+import { IDocument } from '../model';
 
 import { IGarrison } from '../garrison/garrison.model';
 

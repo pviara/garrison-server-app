@@ -32,9 +32,9 @@ export interface IRequiredBuilding {
 /**
  * The representation of a building inside the building list dataset.
  */
-interface IBuildingListDataEntity extends IListDataEntity {
+export interface IBuildingListDataEntity extends IListDataEntity {
   /** Instantiation requirements and characteristics. */
-  instantation: {
+  instantiation: {
     cost: IBuildingCost;
     minWorkforce: number;
     duration: number;

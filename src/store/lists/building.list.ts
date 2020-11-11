@@ -1,4 +1,4 @@
-import { IBuildingList } from '../../config/models/list/building.list.model';
+import { IBuildingList } from '../../config/models/data/list/building.list.model';
 
 export const buildingList: IBuildingList = {
   id: 4,
@@ -13,7 +13,7 @@ export const buildingList: IBuildingList = {
       side: 'horde',
       jargon: 'great hall'
     }],
-    instantation: {
+    instantiation: {
       cost: {
         gold: 385,
         wood: 200,
@@ -49,7 +49,7 @@ export const buildingList: IBuildingList = {
   {
     code: 'goldmine',
     word: 'goldmine',
-    instantation: {
+    instantiation: {
       cost: {
         gold: 120,
         wood: 60,
@@ -85,7 +85,7 @@ export const buildingList: IBuildingList = {
   {
     code: 'sawmill',
     word: 'sawmill',
-    instantation: {
+    instantiation: {
       cost: {
         gold: 120,
         wood: 60,
@@ -121,7 +121,7 @@ export const buildingList: IBuildingList = {
   {
     code: 'farm',
     word: 'farm',
-    instantation: {
+    instantiation: {
       cost: {
         gold: 80,
         wood: 20,
@@ -164,7 +164,7 @@ export const buildingList: IBuildingList = {
       side: 'horde',
       jargon: 'watch tower'
     }],
-    instantation: {
+    instantiation: {
       cost: {
         gold: 90,
         wood: 60,
@@ -195,7 +195,7 @@ export const buildingList: IBuildingList = {
   {
     code: 'barracks',
     word: 'barracks',
-    instantation: {
+    instantiation: {
       cost: {
         gold: 200,
         wood: 110,
@@ -216,7 +216,7 @@ export const buildingList: IBuildingList = {
       side: 'horde',
       jargon: 'war mill'
     }],
-    instantation: {
+    instantiation: {
       cost: {
         gold: 140,
         wood: 80,
@@ -245,7 +245,7 @@ export const buildingList: IBuildingList = {
       side: 'horde',
       jargon: 'factory'
     }],
-    instantation: {
+    instantiation: {
       cost: {
         gold: 140,
         wood: 80,

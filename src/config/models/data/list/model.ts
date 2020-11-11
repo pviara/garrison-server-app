@@ -1,4 +1,4 @@
-import { IDocument } from '../global.model';
+import { IDocument } from '../model';
 
 /**
  * A set of static data that all share the same type

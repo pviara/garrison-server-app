@@ -4,4 +4,4 @@ import userSchema from './user.schema';
 import { IUserDocument } from './user.types';
 
 /** Interactive mongoose user model. */
-export const UserModel = model<IUserDocument>('user', userSchema);
+export const userModel = model<IUserDocument>('user', userSchema);

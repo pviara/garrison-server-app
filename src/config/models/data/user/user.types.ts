@@ -1,3 +1,17 @@
+import { Document, Model } from 'mongoose';
+
+/**
+ * Represents a standard User Document from database.
+ * Includes both IUser and Document own fields.
+ */
+export interface IUserDocument extends IUser, Document {}
+
+/**
+ * Represents a standard User mongoose model.
+ * Contains documents of type IUserDocument.
+ */
+export interface IUserModel extends Model<IUserDocument> {}
+
 /**
  * The representation of a user.
  */

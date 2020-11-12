@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 
-import { IStaticEntity } from '../model';
+import { IStaticEntity } from '../types';
 
 /**
  * Represents a standard Faction Document from database.

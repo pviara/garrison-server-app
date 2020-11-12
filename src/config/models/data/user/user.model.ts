@@ -1,21 +1,7 @@
-import { IDocument } from '../model';
+import { model } from 'mongoose';
 
-/**
- * The representation of a user.
- */
-export interface IUser extends IDocument {
-  /** User's both displayed nickname and login. */
-  username: string;
-  
-  /** User's both e-mail and login. */
-  email: string;
+import userSchema from './user.schema';
+import { IUserDocument } from './user.types';
 
-  /** User's password details. */
-  password: {
-    hash: string;
-    salt: string;
-  };
-
-  /** Indicates whether the user has confirmed his account. */
-  isConfirmed: boolean;
-}
+/** Interactive mongoose user model. */
+export const UserModel = model<IUserDocument>('user', userSchema);

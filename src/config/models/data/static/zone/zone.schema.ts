@@ -1,6 +1,6 @@
-import mongoose, { Schema } from 'mongoose';
+import { Schema } from 'mongoose';
 
-const zoneSchema = new mongoose.Schema({
+const zoneSchema = new Schema({
   code: String,
   side: String,
   coordinates: {

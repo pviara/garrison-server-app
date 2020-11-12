@@ -1,6 +1,6 @@
-import mongoose, { Schema } from 'mongoose';
+import { Schema } from 'mongoose';
 
-const factionSchema = new mongoose.Schema({
+const factionSchema = new Schema({
   code: String,
   word: Schema.Types.Mixed,
   pictures: {

@@ -17,7 +17,7 @@ export interface IBannerModel extends Model<IBannerDocument> {}
 /**
  * The representation of a banner.
  */
-interface IBanner extends IStaticEntity {
+export interface IBanner extends IStaticEntity {
   /** In other words : faction (like the *horde* or the *alliance*). */
   side: string;
 }

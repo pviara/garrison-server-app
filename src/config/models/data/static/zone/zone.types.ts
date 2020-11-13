@@ -17,7 +17,7 @@ export interface IZoneModel extends Model<IZoneDocument> {}
 /**
  * The representation of a zone.
  */
-interface IZone extends IStaticEntity {
+export interface IZone extends IStaticEntity {
   /** In other words : faction (like the *horde* or the *alliance*). */
   side: string;
 

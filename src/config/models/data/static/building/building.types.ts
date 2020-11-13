@@ -53,7 +53,7 @@ export interface IBuilding extends IStaticEntity {
 }
 
 /** A building that can be required to build, extend or upgrade another building, or train a unit. */
-interface IRequiredBuilding {
+export interface IRequiredBuilding {
   /** The one or more required buildings. */
   buildings: {
     /** The unique identifier of the required building. */

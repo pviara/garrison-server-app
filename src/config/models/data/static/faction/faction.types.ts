@@ -17,4 +17,4 @@ export interface IFactionModel extends Model<IFactionDocument> {}
 /**
  * The representation of a faction.
  */
-interface IFaction extends IStaticEntity {}
+export interface IFaction extends IStaticEntity {}

@@ -23,7 +23,7 @@ export interface IBuilding extends IStaticEntity {
     cost: IBuildingCost;
     minWorkforce: number;
     duration: number;
-    requiredBuildings?: IRequiredBuilding | IRequiredBuilding[];
+    requiredEntities?: IRequiredBuilding | IRequiredBuilding[];
   };
   
   /** Upgrades list. */
@@ -33,13 +33,13 @@ export interface IBuilding extends IStaticEntity {
       side: string;
       jargon: string;
     }[];
-    requiredBuildings?: IRequiredBuilding | IRequiredBuilding[];
+    requiredEntities?: IRequiredBuilding | IRequiredBuilding[];
   }[];
   
   /** Extension characteristics. */
   extension?: {
     /** Requirements. */
-    requiredBuildings?: IRequiredBuildingForExtensionLevel | IRequiredBuildingForExtensionLevel[];
+    requiredEntities?: IRequiredBuildingForExtensionLevel | IRequiredBuildingForExtensionLevel[];
     
     /** Maximum extension level. */
     maxLevel?: number;

@@ -19,7 +19,7 @@ const buildingSchema = new Schema({
     },
     minWorkforce: Number,
     duration: Number,
-    requiredBuildings: {
+    requiredEntities: {
       type: Schema.Types.Mixed,
       required: false
     }
@@ -27,13 +27,13 @@ const buildingSchema = new Schema({
   upgrades: [{
     level: Number,
     word: Schema.Types.Mixed,
-    requiredBuildings: {
+    requiredEntities: {
       type: Schema.Types.Mixed,
       required: false
     }
   }],
   extension: {
-    requiredBuildings: {
+    requiredEntities: {
       type: Schema.Types.Mixed,
       required: false
     },

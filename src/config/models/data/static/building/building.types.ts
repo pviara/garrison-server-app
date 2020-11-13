@@ -46,10 +46,8 @@ export interface IBuilding extends IStaticEntity {
   };
   
   /** Building type(s) characteristics. */
-  types: {
-    harvest?: IDependentHarvestBuildingType | ISelfSufficientHarvestBuildingType;
-    // ... implement other types: production, research, military
-  };
+  harvest?: IDependentHarvestBuildingType | ISelfSufficientHarvestBuildingType;
+  // ... implement other types: production, research, military
 }
 
 /** A building that can be required to build, extend or upgrade another building, or train a unit. */

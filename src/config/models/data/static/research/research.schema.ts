@@ -4,9 +4,13 @@ import { findByCode } from '../static.types';
 const researchSchema = new Schema({
   code: {
     type: String,
-    unique: true
+    unique: true,
+    required: true
   },
-  word: Schema.Types.Mixed,
+  word: {
+    type: Schema.Types.Mixed,
+    required: true
+  },
   pictures: {
     icon: String,
     image: {
@@ -16,24 +20,33 @@ const researchSchema = new Schema({
     required: false
   },
   instantiation: {
-    cost: {
-      gold: Number,
-      wood: Number
+    type: {
+      cost: {
+        gold: Number,
+        wood: Number
+      },
+      duration: Number,
+      requiredEntities: {
+        type: Schema.Types.Mixed,
+        required: false
+      }
     },
-    duration: Number,
-    requiredEntities: {
-      type: Schema.Types.Mixed,
-      required: false
-    }
+    required: true
   },
   target: {
-    entity: String,
-    identifier: Schema.Types.Mixed
+    type: {
+      entity: String,
+      identifier: Schema.Types.Mixed
+    },
+    required: true
   },
   actions: {
-    statistics: String,
-    operation: String,
-    value: Number
+    type: {
+      statistics: String,
+      operation: String,
+      value: Number
+    },
+    required: true
   }
 });
 

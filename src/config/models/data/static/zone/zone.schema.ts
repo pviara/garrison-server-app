@@ -5,14 +5,24 @@ import { findByCode } from '../static.types';
 const zoneSchema = new Schema({
   code: {
     type: String,
-    unique: true
+    unique: true,
+    required: true
   },
-  side: String,
+  side: {
+    type: String,
+    required: true
+  },
   coordinates: {
-    x: Number,
-    y: Number
+    type: {
+      x: Number,
+      y: Number
+    },
+    required: true
   },
-  word: Schema.Types.Mixed,
+  word: {
+    type: Schema.Types.Mixed,
+    required: true
+  },
   pictures: {
     icon: String,
     image: {

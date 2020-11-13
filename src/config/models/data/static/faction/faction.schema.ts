@@ -5,9 +5,13 @@ import { findByCode } from '../static.types';
 const factionSchema = new Schema({
   code: {
     type: String,
-    unique: true
+    unique: true,
+    required: true
   },
-  word: Schema.Types.Mixed,
+  word: {
+    type: Schema.Types.Mixed,
+    required: true
+  },
   pictures: {
     icon: String,
     image: {

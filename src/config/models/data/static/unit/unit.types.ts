@@ -31,7 +31,7 @@ export interface IUnit extends IStaticEntity {
 
   /** Global statistics. */
   statistics: {
-    type: {
+    types: {
       /** Unit type(s) : worker, explorer, fighter. */
       main: string | string[];
 

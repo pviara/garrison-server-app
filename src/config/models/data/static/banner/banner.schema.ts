@@ -5,10 +5,17 @@ import { findByCode } from '../static.types';
 const bannerSchema = new Schema({
   code: {
     type: String,
-    unique: true
+    unique: true,
+    required: true
   },
-  side: String,
-  word: Schema.Types.Mixed,
+  side: {
+    type: String,
+    required: true
+  },
+  word: {
+    type: Schema.Types.Mixed,
+    required: true
+  },
   pictures: {
     icon: String,
     image: {

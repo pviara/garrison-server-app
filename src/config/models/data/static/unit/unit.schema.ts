@@ -5,9 +5,13 @@ import { findByCode } from '../static.types';
 const unitSchema = new Schema({
   code: {
     type: String,
-    unique: true
+    unique: true,
+    required: true
   },
-  word: Schema.Types.Mixed,
+  word: {
+    type: Schema.Types.Mixed,
+    required: true
+  },
   pictures: {
     icon: String,
     image: {
@@ -17,45 +21,55 @@ const unitSchema = new Schema({
     required: false
   },
   instantiation: {
-    building: String,
-    cost: {
-      gold: Number,
-      wood: Number,
-      food: Number
-    },
-    duration: Number,
-    requiredEntities: {
-      type: Schema.Types.Mixed,
-      required: false
-    }
-  },
-  statistics: {
     type: {
-      main: Schema.Types.Mixed,
-      fight: {
+      building: String,
+      cost: {
+        gold: Number,
+        wood: Number,
+        food: Number
+      },
+      duration: Number,
+      requiredEntities: {
         type: Schema.Types.Mixed,
         required: false
       }
     },
-    health: Number,
-    attack: {
-      points: {
-        min: Number,
-        max: Number
+    required: true
+  },
+  statistics: {
+    type: {
+      types: {
+        main: Schema.Types.Mixed,
+        fight: {
+          type: Schema.Types.Mixed,
+          required: false
+        }
       },
-      cooldown: Number,
-      isDistance: Boolean,
-      required: false
+      health: Number,
+      attack: {
+        type: {
+          points: {
+            min: Number,
+            max: Number
+          },
+          cooldown: Number,
+          isDistance: Boolean,
+        },
+        required: false
+      },
+      defense: {
+        type: {
+          points: {
+            min: Number,
+            max: Number
+          },
+          cooldown: Number,
+          isDistance: Boolean,
+        },
+        required: false
+      }
     },
-    defense: {
-      points: {
-        min: Number,
-        max: Number
-      },
-      cooldown: Number,
-      isDistance: Boolean,
-      required: false
-    }
+    required: true
   }
 });
 

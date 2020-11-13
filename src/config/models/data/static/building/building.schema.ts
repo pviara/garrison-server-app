@@ -5,9 +5,13 @@ import { findByCode } from '../static.types';
 const buildingSchema = new Schema({
   code: {
     type: String,
-    unique: true
+    unique: true,
+    required: true
   },
-  word: Schema.Types.Mixed,
+  word: {
+    type: Schema.Types.Mixed,
+    required: true
+  },
   pictures: {
     icon: String,
     image: {
@@ -17,17 +21,20 @@ const buildingSchema = new Schema({
     required: false
   },
   instantiation: {
-    cost: {
-      gold: Number,
-      wood: Number,
-      plot: Number
+    type: {
+      cost: {
+        gold: Number,
+        wood: Number,
+        plot: Number
+      },
+      minWorkforce: Number,
+      duration: Number,
+      requiredEntities: {
+        type: Schema.Types.Mixed,
+        required: false
+      }
     },
-    minWorkforce: Number,
-    duration: Number,
-    requiredEntities: {
-      type: Schema.Types.Mixed,
-      required: false
-    }
+    required: true
   },
   // for 'upgrades' array: the prop 'required' will not exempt it to be initialized inside the document
   // https://stackoverflow.com/questions/27268172/mongoose-schema-to-require-array-that-can-be-empty
@@ -43,16 +50,18 @@ const buildingSchema = new Schema({
     required: false
   },
   extension: {
-    requiredEntities: {
-      type: Schema.Types.Mixed,
-      required: false
+    type: {
+      requiredEntities: {
+        type: Schema.Types.Mixed,
+        required: false
+      },
+      maxLevel: Number,
     },
-    maxLevel: Number,
     required: false
   },
 
-  types: {
-    harvest: {
+  harvest: {
+    type: {
       resource: String,
       maxWorkforce: {
         type: Number,
@@ -61,10 +70,10 @@ const buildingSchema = new Schema({
       gift: {
         type: Number,
         required: false
-      },
-      required: false
-    }
-  }
+      }
+    },
+    required: false
+  },
 });
 
 buildingSchema.statics.findByCode = findByCode;

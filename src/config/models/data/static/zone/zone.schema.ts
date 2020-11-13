@@ -3,7 +3,10 @@ import { Schema } from 'mongoose';
 import { findByCode } from '../static.types';
 
 const zoneSchema = new Schema({
-  code: String,
+  code: {
+    type: String,
+    unique: true
+  },
   side: String,
   coordinates: {
     x: Number,

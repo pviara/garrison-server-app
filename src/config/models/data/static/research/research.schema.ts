@@ -2,7 +2,10 @@ import { Schema } from 'mongoose';
 import { findByCode } from '../static.types';
 
 const researchSchema = new Schema({
-  code: String,
+  code: {
+    type: String,
+    unique: true
+  },
   word: Schema.Types.Mixed,
   pictures: {
     icon: String,

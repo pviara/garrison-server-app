@@ -1,7 +1,6 @@
-import { IResearchList } from '../../config/models/list/research.list.model';
+import { IResearch } from '../../config/models/data/static/research/research.types';
 
-export const researchList: IResearchList = {
-  id: 6,
+export const researchList: { type: string, dataset: IResearch[] } = {
   type: 'RESEARCHES',
   dataset: [{
     code: 'melee-attack-global',
@@ -12,7 +11,7 @@ export const researchList: IResearchList = {
         wood: 50
       },
       duration: 60,
-      required: {
+      requiredEntities: {
         buildings: {
           code: 'barracks'
         }
@@ -44,7 +43,7 @@ export const researchList: IResearchList = {
         wood: 50
       },
       duration: 60,
-      required: {
+      requiredEntities: {
         buildings: {
           code: 'barracks'
         }

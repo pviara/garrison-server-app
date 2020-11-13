@@ -1,7 +1,6 @@
-import { IBannerList } from '../../config/models/list/banner.list.model';
+import { IBanner } from '../../config/models/data/static/banner/banner.types';
 
-export const bannerList: IBannerList = {
-  id: 1,
+export const bannerList: { type: string, dataset: IBanner[] } = {
   type: 'BANNERS',
   dataset: [{
     code: 'lordaeron',

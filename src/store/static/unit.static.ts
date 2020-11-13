@@ -1,7 +1,6 @@
-import { IUnitList } from '../../config/models/list/unit.list.model';
+import { IUnit } from '../../config/models/data/static/unit/unit.types';
 
-export const unitList: IUnitList = {
-  id: 5,
+export const unitList: { type: string, dataset: IUnit[] } = {
   type: 'UNITS',
   dataset: [{
     code: 'peasant',
@@ -133,7 +132,7 @@ export const unitList: IUnitList = {
         food: 3
       },
       duration: 85,
-      required: {
+      requiredEntities: {
         buildings: {
           code: 'forge'
         }
@@ -181,7 +180,7 @@ export const unitList: IUnitList = {
         food: 4
       },
       duration: 115,
-      required: {
+      requiredEntities: {
         buildings: {
           code: 'town-hall',
           upgradeLevel: 2

@@ -1,8 +1,6 @@
 import { IBanner } from '../../config/models/data/static/banner/banner.types';
 
-export const bannerList: { type: string, dataset: IBanner[] } = {
-  type: 'BANNERS',
-  dataset: [{
+export const bannerList: IBanner[] = [{
     code: 'lordaeron',
     word: 'lordaeron',
     side: 'alliance'
@@ -31,5 +29,5 @@ export const bannerList: { type: string, dataset: IBanner[] } = {
     code: 'frostwolf',
     word: 'frostwolf',
     side: 'horde'
-  }]
-};
+  }
+];

@@ -1,8 +1,6 @@
 import { IResearch } from '../../config/models/data/static/research/research.types';
 
-export const researchList: { type: string, dataset: IResearch[] } = {
-  type: 'RESEARCHES',
-  dataset: [{
+export const researchList: IResearch[] = [{
     code: 'melee-attack-global',
     word: 'sharp swords',
     instantiation: {
@@ -60,5 +58,5 @@ export const researchList: { type: string, dataset: IResearch[] } = {
       operation: '+',
       value: 2
     }]
-  }]
-};
+  }
+];

@@ -1,8 +1,6 @@
 import { IUnit } from '../../config/models/data/static/unit/unit.types';
 
-export const unitList: { type: string, dataset: IUnit[] } = {
-  type: 'UNITS',
-  dataset: [{
+export const unitList: IUnit[] = [{
     code: 'peasant',
     word: [{
       side: 'alliance',
@@ -210,5 +208,5 @@ export const unitList: { type: string, dataset: IUnit[] } = {
         isDistance: false
       }
     }
-  }]
-}
+  }
+];

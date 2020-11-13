@@ -1,9 +1,7 @@
 import { IZone } from '../../config/models/data/static/zone/zone.types';
 
 
-export const zoneList: { type: string, dataset: IZone[] } = {
-  type: 'BANNERS',
-  dataset: [{
+export const zoneList: IZone[] = [{
     code: 'tirisfal-glades',
     word: 'tirisfal glades',
     side: 'alliance',
@@ -56,5 +54,5 @@ export const zoneList: { type: string, dataset: IZone[] } = {
       x: 6,
       y: 8
     }
-  }]
-};
+  }
+];

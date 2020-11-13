@@ -31,10 +31,14 @@ const server = new Server();
       console.log('·▀▀▀▀  ▀  ▀ .▀  ▀.▀  ▀▀▀▀ ▀▀▀▀  ▀█▄▀▪▀▀ █▪');
       console.log(`> Version: v${require('../package')?.version}`);
       console.log(`> Port: ${port}`);
-      console.log('> \u001b[36mConnecting to database...\u001b[0m');
       
       // connect to MongoDB Atlas database
-      await dbConfigurator.connectToDatabase();
+      await dbConfigurator.connect();
+
+      // insert database default static data
+      await dbConfigurator.insertStaticData();
+      
+      // here we go baby, let them now!!
       console.log('> Ready to handle requests!\n');
   });
 })();

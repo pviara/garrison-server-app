@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 
-import { IStaticEntity } from '../types';
+import { IStaticEntity } from '../static.types';
 
 /**
  * Represents a standard Banner Document from database.

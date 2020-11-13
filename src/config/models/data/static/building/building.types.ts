@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 
-import { IStaticEntity, IStaticEntityCost } from '../types';
+import { IStaticEntity, IStaticEntityCost } from '../static.types';
 
 /**
  * Represents a standard Building Document from database.

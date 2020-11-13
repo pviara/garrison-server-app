@@ -1,4 +1,4 @@
-import { IStaticEntity } from '../../config/models/data/static/types';
+import { IStaticEntity } from '../../config/models/data/static/static.types';
 
 export const factionList: { type: string, dataset: IStaticEntity[] } = {
   type: 'FACTIONS',

@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 
-import { IStaticEntity, IStaticEntityCost } from '../static.types';
+import { IStaticEntity, IStaticEntityCost, IStaticEntityStatics } from '../static.types';
 
 import { IRequiredBuilding } from '../building/building.types';
 
@@ -14,7 +14,7 @@ export interface IUnitDocument extends IUnit, Document {}
  * Represents a standard Unit mongoose model.
  * Contains documents of type IUnitDocument.
  */
-export interface IUnitModel extends Model<IUnitDocument> {}
+export interface IUnitModel extends Model<IUnitDocument>, IStaticEntityStatics {}
 
 /**
  * The representation of a unit.

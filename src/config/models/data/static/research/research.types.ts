@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 
-import { IStaticEntity, IStaticEntityCost } from '../static.types';
+import { IStaticEntity, IStaticEntityCost, IStaticEntityStatics } from '../static.types';
 
 import { IRequiredBuilding } from '../building/building.types';
 
@@ -14,7 +14,7 @@ export interface IResearchDocument extends IResearch, Document {}
  * Represents a standard Research mongoose model.
  * Contains documents of type IResearchDocument.
  */
-export interface IResearchModel extends Model<IResearchDocument> {}
+export interface IResearchModel extends Model<IResearchDocument>, IStaticEntityStatics {}
 
 /**
  * The representation of a research.

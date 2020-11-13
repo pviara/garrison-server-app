@@ -1,3 +1,5 @@
+import { Document, Model } from 'mongoose';
+
 /**
  * A single static entity stored inside a collection of
  * entities sharing the same type.
@@ -31,4 +33,25 @@ export interface IStaticEntityCost {
 
   /** Cost in wood. */
   wood: number;
+}
+
+/**
+ * The representation of a static entity default statics.
+ */
+export interface IStaticEntityStatics {
+  /**
+   * Find a static entity by its code.
+   * @param this Model to use to look into the right collection.
+   * @param code Code to look for.
+   */
+  findByCode(this: Model<Document, {}>, code: string): IStaticEntity;
+}
+
+/**
+ * Find a static entity by its code.
+ * @param this Model to use to look into the right collection.
+ * @param code Code to look for.
+ */
+export async function findByCode(this: Model<Document, {}>, code: string) {
+  return await this.findOne({ code });
 }

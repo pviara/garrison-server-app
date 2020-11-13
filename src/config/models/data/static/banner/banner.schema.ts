@@ -1,5 +1,7 @@
 import { Schema } from 'mongoose';
 
+import { findByCode } from '../static.types';
+
 const bannerSchema = new Schema({
   code: String,
   side: String,
@@ -13,5 +15,7 @@ const bannerSchema = new Schema({
     required: false
   }
 });
+
+bannerSchema.statics.findByCode = findByCode;
 
 export default bannerSchema;

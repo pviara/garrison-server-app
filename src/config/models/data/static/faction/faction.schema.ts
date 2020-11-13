@@ -1,5 +1,7 @@
 import { Schema } from 'mongoose';
 
+import { findByCode } from '../static.types';
+
 const factionSchema = new Schema({
   code: String,
   word: Schema.Types.Mixed,
@@ -12,5 +14,7 @@ const factionSchema = new Schema({
     required: false
   }
 });
+
+factionSchema.statics.findByCode = findByCode;
 
 export default factionSchema;

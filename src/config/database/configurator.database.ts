@@ -61,42 +61,42 @@ class DbConfigurator {
     const lists = [
       { entities: bannerList,
         methods: {
-          findOne: (code: string) => bannerModel.findOne({ code }),
+          findByCode: (code: string) => bannerModel.findByCode(code),
           create: (entity: object) => bannerModel.create(entity as IBanner)
         }
       },
 
       { entities: buildingList,
         methods: {
-          findOne: (code: string) => buildingModel.findOne({ code }),
+          findByCode: (code: string) => buildingModel.findByCode(code),
           create: (entity: object) => buildingModel.create(entity as IBuilding)
         }
       },
 
       { entities: factionList,
         methods: {
-          findOne: (code: string) => factionModel.findOne({ code }),
+          findByCode: (code: string) => factionModel.findByCode(code),
           create: (entity: object) => factionModel.create(entity as IFaction)
         }
       },
 
       { entities: researchList,
         methods: {
-          findOne: (code: string) => researchModel.findOne({ code }),
+          findByCode: (code: string) => researchModel.findByCode(code),
           create: (entity: object) => researchModel.create(entity as IResearch)
         }
       },
 
       { entities: unitList,
         methods: {
-          findOne: (code: string) => unitModel.findOne({ code }),
+          findByCode: (code: string) => unitModel.findByCode(code),
           create: (entity: object) => unitModel.create(entity as IUnit)
         }
       },
         
       { entities: zoneList,
         methods: {
-          findOne: (code: string) => zoneModel.findOne({ code }),
+          findByCode: (code: string) => zoneModel.findByCode(code),
           create: (entity: object) => zoneModel.create(entity as IZone)
         }
       },
@@ -106,7 +106,7 @@ class DbConfigurator {
       // add each entity contained in the list to its matching collection
       // only if it doesn't already exist (of course 🤷‍♂️)
       for (const entity of list.entities) {
-        if (await list.methods.findOne(entity.code)) continue;
+        if (await list.methods.findByCode(entity.code)) continue;
         
         this._logger.log(logType.pending, `Creating entity ${entity.code}...`);
         const created = await list.methods.create(entity);

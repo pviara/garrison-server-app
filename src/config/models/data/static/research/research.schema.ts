@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose';
+import { findByCode } from '../static.types';
 
 const researchSchema = new Schema({
   code: String,
@@ -32,5 +33,7 @@ const researchSchema = new Schema({
     value: Number
   }
 });
+
+researchSchema.statics.findByCode = findByCode;
 
 export default researchSchema;

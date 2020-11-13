@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 
-import { IStaticEntity } from '../static.types';
+import { IStaticEntity, IStaticEntityStatics } from '../static.types';
 
 /**
  * Represents a standard Zone Document from database.
@@ -12,7 +12,7 @@ export interface IZoneDocument extends IZone, Document {}
  * Represents a standard Zone mongoose model.
  * Contains documents of type IZoneDocument.
  */
-export interface IZoneModel extends Model<IZoneDocument> {}
+export interface IZoneModel extends Model<IZoneDocument>, IStaticEntityStatics {}
 
 /**
  * The representation of a zone.

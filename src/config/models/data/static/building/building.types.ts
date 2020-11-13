@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 
-import { IStaticEntity, IStaticEntityCost } from '../static.types';
+import { IStaticEntity, IStaticEntityCost, IStaticEntityStatics } from '../static.types';
 
 /**
  * Represents a standard Building Document from database.
@@ -12,7 +12,7 @@ export interface IBuildingDocument extends IBuilding, Document {}
  * Represents a standard Building mongoose model.
  * Contains documents of type IBuildingDocument.
  */
-export interface IBuildingModel extends Model<IBuildingDocument> {}
+export interface IBuildingModel extends Model<IBuildingDocument>, IStaticEntityStatics {}
 
 /**
  * The representation of a building.

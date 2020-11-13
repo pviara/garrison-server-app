@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 
-import { IStaticEntity } from '../static.types';
+import { IStaticEntity, IStaticEntityStatics } from '../static.types';
 
 /**
  * Represents a standard Banner Document from database.
@@ -12,7 +12,7 @@ export interface IBannerDocument extends IBanner, Document {}
  * Represents a standard Banner mongoose model.
  * Contains documents of type IBannerDocument.
  */
-export interface IBannerModel extends Model<IBannerDocument> {}
+export interface IBannerModel extends Model<IBannerDocument>, IStaticEntityStatics {}
 
 /**
  * The representation of a banner.

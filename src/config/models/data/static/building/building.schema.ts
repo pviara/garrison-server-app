@@ -1,5 +1,7 @@
 import { Schema } from 'mongoose';
 
+import { findByCode } from '../static.types';
+
 const buildingSchema = new Schema({
   code: String,
   word: Schema.Types.Mixed,
@@ -61,5 +63,7 @@ const buildingSchema = new Schema({
     }
   }
 });
+
+buildingSchema.statics.findByCode = findByCode;
 
 export default buildingSchema;

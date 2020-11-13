@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 
-import dbConfigurator from './config/database/configurator';
+import dbConfigurator from './config/database/configurator.database';
 
 // load the environment variables from the .env file
 dotenv.config({

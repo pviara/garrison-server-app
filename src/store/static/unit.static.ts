@@ -20,7 +20,7 @@ export const unitList: IUnit[] = [{
       duration: 45
     },
     statistics: {
-      type: {
+      types: {
         main: 'worker'
       },
       health: 70
@@ -46,7 +46,7 @@ export const unitList: IUnit[] = [{
       duration: 60
     },
     statistics: {
-      type: {
+      types: {
         main: ['explorer', 'fighter'],
         fight: 'melee'
       },
@@ -89,7 +89,7 @@ export const unitList: IUnit[] = [{
       duration: 75
     },
     statistics: {
-      type: {
+      types: {
         main: 'fighter',
         fight: 'melee'
       },
@@ -137,7 +137,7 @@ export const unitList: IUnit[] = [{
       }
     },
     statistics: {
-      type: {
+      types: {
         main: ['explorer', 'fighter'],
         fight: 'distance'
       },
@@ -186,7 +186,7 @@ export const unitList: IUnit[] = [{
       }
     },
     statistics: {
-      type: {
+      types: {
         main: 'fighter',
         fight: 'melee'
       },

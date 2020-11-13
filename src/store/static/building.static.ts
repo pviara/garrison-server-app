@@ -44,8 +44,7 @@ export const buildingList: IBuilding[] = [{
           }
         ]
       }
-    ],
-    types: {}
+    ]
   },
   {
     code: 'goldmine',
@@ -77,11 +76,9 @@ export const buildingList: IBuilding[] = [{
       ],
       maxLevel: 5
     },
-    types: {
-      harvest: {
-        resource: 'gold',
-        maxWorkforce: 7
-      }
+    harvest: {
+      resource: 'gold',
+      maxWorkforce: 7
     }
   },
   {
@@ -114,11 +111,9 @@ export const buildingList: IBuilding[] = [{
       ],
       maxLevel: 5
     },
-    types: {
-      harvest: {
-        resource: 'wood',
-        maxWorkforce: 7
-      }
+    harvest: {
+      resource: 'wood',
+      maxWorkforce: 7
     }
   },
   {
@@ -151,11 +146,9 @@ export const buildingList: IBuilding[] = [{
       ],
       maxLevel: 5
     },
-    types: {
-      harvest: {
-        resource: 'food',
-        gift: 6
-      }
+    harvest: {
+      resource: 'food',
+      gift: 6
     }
   },
   {
@@ -196,8 +189,7 @@ export const buildingList: IBuilding[] = [{
           ]
         }
       }
-    ],
-    types: {}
+    ]
   },
   {
     code: 'barracks',
@@ -210,8 +202,7 @@ export const buildingList: IBuilding[] = [{
       },
       duration: 160,
       minWorkforce: 3
-    },
-    types: {}
+    }
   },
   {
     code: 'forge',
@@ -241,8 +232,7 @@ export const buildingList: IBuilding[] = [{
           }
         ]
       }
-    },
-    types: {}
+    }
   },
   {
     code: 'workshop',
@@ -273,7 +263,6 @@ export const buildingList: IBuilding[] = [{
           }
         ]
       },
-    },
-    types: {}
+    }
   }
 ];

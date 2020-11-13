@@ -24,20 +24,26 @@ const buildingSchema = new Schema({
       required: false
     }
   },
-  upgrades: [{
-    level: Number,
-    word: Schema.Types.Mixed,
-    requiredEntities: {
-      type: Schema.Types.Mixed,
-      required: false
-    }
-  }],
+  // for 'upgrades' array: the prop 'required' will not exempt it to be initialized inside the document
+  // https://stackoverflow.com/questions/27268172/mongoose-schema-to-require-array-that-can-be-empty
+  upgrades: {
+    type: [{
+      level: Number,
+      word: Schema.Types.Mixed,
+      requiredEntities: {
+        type: Schema.Types.Mixed,
+        required: false
+      },
+    }],
+    required: false
+  },
   extension: {
     requiredEntities: {
       type: Schema.Types.Mixed,
       required: false
     },
     maxLevel: Number,
+    required: false
   },
 
   types: {
@@ -51,6 +57,7 @@ const buildingSchema = new Schema({
         type: Number,
         required: false
       },
+      required: false
     }
   }
 });

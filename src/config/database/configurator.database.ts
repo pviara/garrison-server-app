@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+import { ELogType as logType } from '../models/log/log.model';
+import LoggerService from '../services/logger.service';
+
 import { IBuilding } from '../models/data/static/building/building.types';
 import { IBanner } from '../models/data/static/banner/banner.types';
 import { IFaction } from '../models/data/static/faction/faction.types';
@@ -25,12 +28,14 @@ import { zoneModel } from '../models/data/static/zone/zone.model';
  * Database configurator.
  */
 class DbConfigurator {
+  private _logger = new LoggerService(this.constructor.name);
+
   /**
    * Connect the app to the default database.
    */
   async connect() {
     try {
-      console.log('> \u001b[36mConnecting to database...\u001b[0m');
+      this._logger.log(logType.pending, 'Connecting to database...');
       await mongoose.connect(
         this._retrieveURI(),
         {
@@ -40,10 +45,11 @@ class DbConfigurator {
           useUnifiedTopology: true
         }
       );
-      console.log('> \u001b[90mConnected to database\u001b[0m');
+      this._logger.log(logType.pass, 'Connected to database');
+
     } catch (err) {
-      console.log('> \u001b[31mFailed to connect to database\u001b[0m');
-      console.error(err);
+      this._logger.log(logType.fail, 'Failed to connect to database');
+      throw err;
     }
   }
 
@@ -101,12 +107,12 @@ class DbConfigurator {
       // only if it doesn't already exist (of course 🤷‍♂️)
       for (const entity of list.entities) {
         if (await list.methods.findOne(entity.code)) continue;
-
-        console.log(`> \u001b[36mDATABASE: Creating entity ${entity.code}...\u001b[0m`);
+        
+        this._logger.log(logType.pending, `Creating entity ${entity.code}...`);
         const created = await list.methods.create(entity);
         
-        if (created) console.log(`> \u001b[90mDATABASE: Created entity ${entity.code} (${created.id})...\u001b[0m`);
-        else console.log(`> \u001b[31mDATABASE: Failed to create entity ${entity.code}\u001b[0m`); 
+        if (created) this._logger.log(logType.pass, `Created entity ${entity.code} (${created.id})`);
+        else this._logger.log(logType.fail, `Failed to create entity ${entity.code}`);
       }
     }
   }
@@ -116,7 +122,7 @@ class DbConfigurator {
    */
   private _retrieveURI() {
     if (!process.env.DB_URI || !process.env.DB_NAME || !process.env.DB_PASSWORD)
-      throw new Error('Couldn\'t retrieve either database URI, user or password from .env file.')
+      throw new Error('Couldn\'t retrieve either database URI, user or password from .env file.');
   
     return process.env.DB_URI
       .replace('<password>', process.env.DB_PASSWORD)

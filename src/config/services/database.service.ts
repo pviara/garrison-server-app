@@ -32,9 +32,9 @@ import { ICharacterDocument, ICharacterModel } from '../models/data/character/ch
 import { IFaction, IFactionDocument, IFactionModel } from '../models/data/static/faction/faction.types';
 import { IGarrisonDocument, IGarrisonModel } from '../models/data/garrison/garrison.types';
 import { IResearch, IResearchDocument, IResearchModel } from '../models/data/static/research/research.types';
-import { IZone, IZoneDocument, IZoneModel } from '../models/data/static/zone/zone.types';
 import { IUnit, IUnitDocument, IUnitModel } from '../models/data/static/unit/unit.types';
 import { IUserDocument, IUserModel } from '../models/data/user/user.types';
+import { IZone, IZoneDocument, IZoneModel } from '../models/data/static/zone/zone.types';
 
 /**
  * Application global database service.
@@ -49,12 +49,12 @@ class DatabaseService {
 
   /** Retrieve statics database. */
   get statics() {
-    return this._connections.find(co => co.name === 'statics');
+    return this._connections.find(co => co.name === process.env.DB_NAME_STATICS);
   }
 
   /** Retrieve dynamic database. */
   get dynamic() {
-    return this._connections.find(co => co.name === 'dynamic');
+    return this._connections.find(co => co.name === process.env.DB_NAME_DYNAMIC);
   }
 
   /**

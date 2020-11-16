@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 
-import dbConfigurator from './config/database/configurator.database';
+import dbService from './config/services/database.service';
 
 // load the environment variables from the .env file
 dotenv.config({
@@ -31,13 +31,10 @@ const server = new Server();
       console.log('·▀▀▀▀  ▀  ▀ .▀  ▀.▀  ▀▀▀▀ ▀▀▀▀  ▀█▄▀▪▀▀ █▪');
       console.log(`> Version: v${require('../package')?.version}`);
       console.log(`> Port: ${port}`);
-      
-      // connect to MongoDB Atlas database
-      await dbConfigurator.connect();
 
-      // insert database default static data
-      await dbConfigurator.insertStaticData();
-      
+      // connect to MongoDB Atlas database
+      await dbService.connectDatabases();
+
       // here we go baby, let them now!!
       console.log('> Ready to handle requests!\n');
   });

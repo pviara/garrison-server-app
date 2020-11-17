@@ -5,9 +5,11 @@ class Helper {
   /**
    * Remove accents from a string.
    * @param string String on which to remove accents.
+   * @param toLowerCase Must the given string be returned as lowercase ?
    */
-  static normalize(string: string) {
-    return string.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  static normalize(string: string, toLowerCase: boolean = false) {
+    const normalized = string.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return toLowerCase ? normalized.toLowerCase() : normalized;
   }
 
   /**

@@ -4,7 +4,13 @@ import { Document, Model } from 'mongoose';
  * Represents a standard User Document from database.
  * Includes both IUser and Document own fields.
  */
-export interface IUserDocument extends IUser, Document {}
+export interface IUserDocument extends IUser, Document {
+  /**
+   * Generate a new random, hashed password for the current user.
+   * @param this Current user.
+   */
+  generatePassword(this: IUserDocument): Promise<void>;
+}
 
 /**
  * Represents a standard User mongoose model.
@@ -37,7 +43,7 @@ interface IUser {
   email: string;
 
   /** User's password details. */
-  password: {
+  password?: {
     hash: string;
     salt: string;
   };

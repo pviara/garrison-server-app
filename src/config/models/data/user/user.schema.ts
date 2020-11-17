@@ -1,6 +1,9 @@
 import { Schema } from 'mongoose';
 
+import helper from '../../../../utils/helper.utils';
+
 import { findByEmail, findByName } from './user.types';
+import { generatePassword } from './user.methods';
 
 const userSchema = new Schema({
   username: {
@@ -10,6 +13,7 @@ const userSchema = new Schema({
   },
   email: {
     type: String,
+    set: _normalize,
     unique: true,
     required: true
   },
@@ -17,8 +21,7 @@ const userSchema = new Schema({
     type: {
       hash: String,
       salt: String
-    },
-    required: true
+    }
   },
   isConfirmed: {
     type: Boolean,
@@ -28,5 +31,15 @@ const userSchema = new Schema({
 
 userSchema.statics.findByName = findByName;
 userSchema.statics.findByEmail = findByEmail;
+
+userSchema.methods.generatePassword = generatePassword;
+
+/**
+ * Normalize user's e-mail using global helper method(s).
+ * @param email User's e-mail.
+ */
+function _normalize(email: string) {
+  return helper.normalize(email, true);
+}
 
 export default userSchema;

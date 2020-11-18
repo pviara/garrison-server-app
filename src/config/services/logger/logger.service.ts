@@ -1,4 +1,4 @@
-import { ELogType } from '../models/log/log.model';
+import { ELogType } from '../../models/log/log.model';
 
 /**
  * Application global logger service. Handle processes and results.

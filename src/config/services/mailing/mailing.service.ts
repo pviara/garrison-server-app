@@ -1,9 +1,8 @@
-import mjml2html from 'mjml';
 import { createTransport } from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 
-import { ELogType as logType } from '../../config/models/log/log.model';
-import LoggerService from '../../config/services/logger.service';
+import { ELogType as logType } from '../../models/log/log.model';
+import LoggerService from '../logger/logger.service';
 
 /**
  * Application global mailing service.

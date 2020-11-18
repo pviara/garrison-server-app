@@ -1,40 +1,42 @@
 import mongoose, { Connection } from 'mongoose';
 
-import { ELogType as logType } from '../models/log/log.model';
-import LoggerService from './logger.service';
+import { ELogType as logType } from '../../models/log/log.model';
+import LoggerService from '../logger/logger.service';
 
-import { 
+import UserDatabaseService from './user/user.database.service';
+
+import {
   DatabaseDynamicType,
   DatabaseStaticsType,
   DatabaseType
-} from '../models/data/model';
+} from '../../models/data/model';
 
-import bannerSchema from '../models/data/static/banner/banner.schema';
-import buildingSchema from '../models/data/static/building/building.schema';
-import characterSchema from '../models/data/character/character.schema';
-import factionSchema from '../models/data/static/faction/faction.schema';
-import garrisonSchema from '../models/data/garrison/garrison.schema';
-import researchSchema from '../models/data/static/research/research.schema';
-import unitSchema from '../models/data/static/unit/unit.schema';
-import userSchema from '../models/data/user/user.schema';
-import zoneSchema from '../models/data/static/zone/zone.schema';
+import bannerSchema from '../../models/data/static/banner/banner.schema';
+import buildingSchema from '../../models/data/static/building/building.schema';
+import characterSchema from '../../models/data/character/character.schema';
+import factionSchema from '../../models/data/static/faction/faction.schema';
+import garrisonSchema from '../../models/data/garrison/garrison.schema';
+import researchSchema from '../../models/data/static/research/research.schema';
+import unitSchema from '../../models/data/static/unit/unit.schema';
+import userSchema from '../../models/data/user/user.schema';
+import zoneSchema from '../../models/data/static/zone/zone.schema';
 
-import { bannerList } from '../../store/static/banner.static';
-import { buildingList } from '../../store/static/building.static';
-import { factionList } from '../../store/static/faction.static';
-import { researchList } from '../../store/static/research.static';
-import { unitList } from '../../store/static/unit.static';
-import { zoneList } from '../../store/static/zone.static';
+import { bannerList } from '../../../store/static/banner.static';
+import { buildingList } from '../../../store/static/building.static';
+import { factionList } from '../../../store/static/faction.static';
+import { researchList } from '../../../store/static/research.static';
+import { unitList } from '../../../store/static/unit.static';
+import { zoneList } from '../../../store/static/zone.static';
 
-import { IBanner, IBannerDocument, IBannerModel } from '../models/data/static/banner/banner.types';
-import { IBuilding, IBuildingDocument, IBuildingModel } from '../models/data/static/building/building.types';
-import { ICharacterDocument, ICharacterModel } from '../models/data/character/character.types';
-import { IFaction, IFactionDocument, IFactionModel } from '../models/data/static/faction/faction.types';
-import { IGarrisonDocument, IGarrisonModel } from '../models/data/garrison/garrison.types';
-import { IResearch, IResearchDocument, IResearchModel } from '../models/data/static/research/research.types';
-import { IUnit, IUnitDocument, IUnitModel } from '../models/data/static/unit/unit.types';
-import { IUserDocument, IUserModel } from '../models/data/user/user.types';
-import { IZone, IZoneDocument, IZoneModel } from '../models/data/static/zone/zone.types';
+import { IBanner, IBannerDocument, IBannerModel } from '../../models/data/static/banner/banner.types';
+import { IBuilding, IBuildingDocument, IBuildingModel } from '../../models/data/static/building/building.types';
+import { ICharacterDocument, ICharacterModel } from '../../models/data/character/character.types';
+import { IFaction, IFactionDocument, IFactionModel } from '../../models/data/static/faction/faction.types';
+import { IGarrisonDocument, IGarrisonModel } from '../../models/data/garrison/garrison.types';
+import { IResearch, IResearchDocument, IResearchModel } from '../../models/data/static/research/research.types';
+import { IUnit, IUnitDocument, IUnitModel } from '../../models/data/static/unit/unit.types';
+import { IUserDocument, IUserModel } from '../../models/data/user/user.types';
+import { IZone, IZoneDocument, IZoneModel } from '../../models/data/static/zone/zone.types';
 
 /**
  * Application global database service.
@@ -47,6 +49,8 @@ class DatabaseService {
 
   private _logger = new LoggerService(this.constructor.name);
 
+  private _userDbService = <UserDatabaseService>{};
+
   /** Retrieve statics database. */
   get statics() {
     return this._connections.find(co => co.name === process.env.DB_NAME_STATICS);
@@ -55,6 +59,11 @@ class DatabaseService {
   /** Retrieve dynamic database. */
   get dynamic() {
     return this._connections.find(co => co.name === process.env.DB_NAME_DYNAMIC);
+  }
+
+  /** Retrieve user database service. */
+  get userDbService() {
+    return this._userDbService;
   }
 
   /**
@@ -69,10 +78,24 @@ class DatabaseService {
 
     // init all models after having being connected to the databases
     await this._initAllModels();
+
+    // init all database services
+    await this._initAllServices();
   }
 
   /**
-   * Initialize all data models.
+   * Initialize all database services.
+   */
+  private async _initAllServices() {
+    // check if dynamic has been initialized
+    if (!this.dynamic) throw new Error(`Database \'${this._dbDynamicType}\' hasn\'t been initialized.`);
+
+    // init dynamic services
+    this._userDbService = new UserDatabaseService(this.dynamic);
+  }
+
+  /**
+   * Initialize all database models.
    */
   private async _initAllModels() {
     // starting with statics database...

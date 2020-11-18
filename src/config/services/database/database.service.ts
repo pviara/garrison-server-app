@@ -3,6 +3,7 @@ import mongoose, { Connection } from 'mongoose';
 import { ELogType as logType } from '../../models/log/log.model';
 import LoggerService from '../logger/logger.service';
 
+import BuildingRepository from '../../../repos/statics/building/building.repo';
 import UserRepository from '../../../repos/dynamic/user/user.repo';
 
 import {
@@ -49,6 +50,7 @@ class DatabaseService {
 
   private _logger = new LoggerService(this.constructor.name);
 
+  private _buildingRepo = <BuildingRepository>{};
   private _userRepo = <UserRepository>{};
 
   /** Retrieve statics database. */
@@ -59,6 +61,11 @@ class DatabaseService {
   /** Retrieve dynamic database. */
   get dynamic() {
     return this._connections.find(co => co.name === process.env.DB_NAME_DYNAMIC);
+  }
+
+  /** Retrieve building repository. */
+  get buildingRepo() {
+    return this._buildingRepo;
   }
 
   /** Retrieve user repository. */
@@ -80,16 +87,20 @@ class DatabaseService {
     await this._initAllModels();
 
     // init all database services
-    await this._initAllServices();
+    await this._initAllRepos();
   }
 
   /**
    * Initialize all database services.
    */
-  private async _initAllServices() {
-    // check if dynamic has been initialized
+  private async _initAllRepos() {
+    // check if both statics and dynamic databases have been initialized
     if (!this.dynamic) throw new Error(`Database \'${this._dbDynamicType}\' hasn\'t been initialized.`);
+    if (!this.statics) throw new Error(`Database \'${this._dbStaticsType}\' hasn\'t been initialized.`);
 
+    // init statics services
+    this._buildingRepo = new BuildingRepository(this.statics);
+    
     // init dynamic services
     this._userRepo = new UserRepository(this.dynamic);
   }

@@ -2,8 +2,7 @@ import { Schema } from 'mongoose';
 
 import helper from '../../../../utils/helper.utils';
 
-import { findByEmail, findByName } from './user.types';
-import { generatePassword } from './user.methods';
+import { findByEmail, findByName } from './user.statics';
 
 const userSchema = new Schema({
   username: {
@@ -31,8 +30,6 @@ const userSchema = new Schema({
 
 userSchema.statics.findByName = findByName;
 userSchema.statics.findByEmail = findByEmail;
-
-userSchema.methods.generatePassword = generatePassword;
 
 /**
  * Normalize user's e-mail using global helper method(s).

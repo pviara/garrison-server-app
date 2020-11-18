@@ -44,7 +44,7 @@ export interface IStaticEntityStatics {
    * @param this Model to use to look into the right collection.
    * @param code Code to look for.
    */
-  findByCode(this: Model<Document, {}>, code: string): IStaticEntity;
+  findByCode(this: Model<Document, {}>, code: string): Promise<IStaticEntity>;
 }
 
 /**

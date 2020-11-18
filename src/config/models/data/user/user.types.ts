@@ -4,13 +4,7 @@ import { Document, Model } from 'mongoose';
  * Represents a standard User Document from database.
  * Includes both IUser and Document own fields.
  */
-export interface IUserDocument extends IUser, Document {
-  /**
-   * Generate a new random, hashed password for the current user.
-   * @param this Current user.
-   */
-  generatePassword(this: IUserDocument): Promise<void>;
-}
+export interface IUserDocument extends IUser, Document {}
 
 /**
  * Represents a standard User mongoose model.
@@ -22,7 +16,7 @@ export interface IUserModel extends Model<IUserDocument> {
    * @param this User model.
    * @param name Name to look for.
    */
-  findByName(this: Model<IUserDocument, {}>, name: string): Promise<IUserDocument>;
+  findByName(this: Model<IUserDocument, {}>, username: string): Promise<IUserDocument>;
 
   /**
    * Find a user by its e-mail.
@@ -35,7 +29,7 @@ export interface IUserModel extends Model<IUserDocument> {
 /**
  * The representation of a user.
  */
-interface IUser {
+export interface IUser {
   /** User's both displayed nickname and login. */
   username: string;
   
@@ -50,22 +44,4 @@ interface IUser {
 
   /** Indicates whether the user has confirmed his account. */
   isConfirmed?: boolean;
-}
-
-/**
- * Find a user by its name.
- * @param this User model.
- * @param name Name to look for.
- */
-export async function findByName(this: Model<IUserDocument, {}>, name: string) {
-  return await this.findOne({ name });
-}
-
-/**
- * Find a user by its e-mail.
- * @param this User model.
- * @param name E-mail to look for.
- */
-export async function findByEmail(this: Model<IUserDocument, {}>, name: string) {
-  return await this.findOne({ name });
 }

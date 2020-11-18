@@ -1,8 +1,9 @@
 import dotenv from 'dotenv';
 import express from 'express';
 
-import dbService from './config/services/database.service';
-import mailingService from './config/services/mailing.service';
+import initService from './config/services/init.service';
+
+import dbService from './config/services/database/database.service';
 
 // load the environment variables from the .env file
 dotenv.config({
@@ -25,6 +26,10 @@ const server = new Server();
   server.app.listen(
     port,
     async () => {
+      // initialize the whole application
+      await initService.start();
+
+      // here we go baby, let them now!!
       console.log(' ▄▄ •  ▄▄▄· ▄▄▄  ▄▄▄  ▪  .▄▄ ·        ▐ ▄ ');
       console.log('▐█ ▀ ▪▐█ ▀█ ▀▄ █·▀▄ █·██ ▐█ ▀. ▪     •█▌▐█');
       console.log('▄█ ▀█▄▄█▀▀█ ▐▀▀▄ ▐▀▀▄ ▐█·▄▀▀▀█▄ ▄█▀▄ ▐█▐▐▌');
@@ -32,14 +37,6 @@ const server = new Server();
       console.log('·▀▀▀▀  ▀  ▀ .▀  ▀.▀  ▀▀▀▀ ▀▀▀▀  ▀█▄▀▪▀▀ █▪');
       console.log(`> Version: v${require('../package')?.version}`);
       console.log(`> Port: ${port}`);
-
-      // configure mailing transport
-      mailingService.configureTransport();
-
-      // connect to MongoDB Atlas database
-      await dbService.connectDatabases();
-
-      // here we go baby, let them now!!
       console.log('> Ready to handle requests!\n');
   });
 })();

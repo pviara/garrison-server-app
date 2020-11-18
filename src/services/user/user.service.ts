@@ -1,23 +1,23 @@
-import ErrorHandler from '../../../models/error/error-handler.model';
+import ErrorHandler from '../../config/models/error/error-handler.model';
 
-import LoggerService from '../../logger/logger.service';
-import { ELogType as logType } from '../../../models/log/log.model';
+import LoggerService from '../../config/services/logger/logger.service';
+import { ELogType as logType } from '../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
 
-import { IUser, IUserModel } from '../../../models/data/user/user.types';
+import { IUser, IUserModel } from '../../config/models/data/user/user.types';
 
-import IUserCreate from '../../../models/data/user/payloads/IUserCreate';
+import IUserCreate from '../../config/models/data/user/payloads/IUserCreate';
 
 import bcrypt from 'bcrypt';
 import pswGen from 'generate-password';
 
 import mjml2html from 'mjml';
 
-import mailingService from '../../mailing/mailing.service';
-import newUserEmail from '../../../../store/template/e-mail/new-user.email';
+import mailingService from '../../config/services/mailing/mailing.service';
+import newUserEmail from '../../store/template/e-mail/new-user.email';
 
-export default class UserDatabaseService {
+export default class UserService {
   private _logger = new LoggerService(this.constructor.name);
 
   private _model = <IUserModel>{};

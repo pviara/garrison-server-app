@@ -3,7 +3,7 @@ import mongoose, { Connection } from 'mongoose';
 import { ELogType as logType } from '../../models/log/log.model';
 import LoggerService from '../logger/logger.service';
 
-import UserDatabaseService from './user/user.database.service';
+import UserService from '../../../services/user/user.service';
 
 import {
   DatabaseDynamicType,
@@ -49,7 +49,7 @@ class DatabaseService {
 
   private _logger = new LoggerService(this.constructor.name);
 
-  private _userDbService = <UserDatabaseService>{};
+  private _userService = <UserService>{};
 
   /** Retrieve statics database. */
   get statics() {
@@ -62,8 +62,8 @@ class DatabaseService {
   }
 
   /** Retrieve user database service. */
-  get userDbService() {
-    return this._userDbService;
+  get userService() {
+    return this._userService;
   }
 
   /**
@@ -91,7 +91,7 @@ class DatabaseService {
     if (!this.dynamic) throw new Error(`Database \'${this._dbDynamicType}\' hasn\'t been initialized.`);
 
     // init dynamic services
-    this._userDbService = new UserDatabaseService(this.dynamic);
+    this._userService = new UserService(this.dynamic);
   }
 
   /**

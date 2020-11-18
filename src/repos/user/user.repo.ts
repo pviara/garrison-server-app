@@ -17,15 +17,18 @@ import mjml2html from 'mjml';
 import mailingService from '../../config/services/mailing/mailing.service';
 import newUserEmail from '../../store/template/e-mail/new-user.email';
 
-export default class UserService {
+/**
+ * Handle interactions with user documents from database dynamic.
+ */
+export default class UserRepository {
   private _logger = new LoggerService(this.constructor.name);
 
   private _model = <IUserModel>{};
 
   constructor(private _connection: Connection) {
-    this._logger.log(logType.pending, 'Initializing user db service...');
+    this._logger.log(logType.pending, 'Initializing user repo...');
     this._model = <IUserModel>this._connection?.model('user');
-    this._logger.log(logType.pass, 'Initialized user db service');
+    this._logger.log(logType.pass, 'Initialized user repo');
   }
 
   async findByName(name: string) {

@@ -3,7 +3,7 @@ import mongoose, { Connection } from 'mongoose';
 import { ELogType as logType } from '../../models/log/log.model';
 import LoggerService from '../logger/logger.service';
 
-import UserService from '../../../services/user/user.service';
+import UserService from '../../../repos/user/user.repo';
 
 import {
   DatabaseDynamicType,

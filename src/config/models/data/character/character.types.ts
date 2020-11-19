@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import { Document, Model } from 'mongoose';
 
 /**
@@ -16,6 +17,9 @@ export interface ICharacterModel extends Model<ICharacterDocument> {}
  * The representation of a character.
  */
 export interface ICharacter {
+  /** Character's owner. */
+  userId: ObjectId;
+  
   /** Character's name. */
   name: string;
 

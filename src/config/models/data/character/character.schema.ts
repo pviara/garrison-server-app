@@ -3,6 +3,10 @@ import { Schema } from 'mongoose';
 import helper from '../../../../utils/helper.utils';
 
 const characterSchema = new Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    required: true
+  },
   name: {
     type: String,
     set: helper.capitalize,

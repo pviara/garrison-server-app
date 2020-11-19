@@ -3,6 +3,7 @@ import ErrorHandler from '../../../config/models/error/error-handler.model';
 import LoggerService from '../../../config/services/logger/logger.service';
 import { ELogType as logType } from '../../../config/models/log/log.model';
 
+import { ObjectId } from 'mongodb';
 import { Connection } from 'mongoose';
 
 import { IUser, IUserModel } from '../../../config/models/data/user/user.types';
@@ -31,6 +32,11 @@ export default class UserRepository {
     this._logger.log(logType.pass, 'Initialized user repo');
   }
 
+  async findById(id: ObjectId) {
+    const t = 'hey';
+    return await this._model.findById(id);
+  }
+  
   async findByName(name: string) {
     return await this._model.findByName(name);
   }
@@ -66,7 +72,7 @@ export default class UserRepository {
     user.password = { hash, salt };
 
     // start creation process
-    await this._model.create(user);
+    const created = await this._model.create(user);
 
     // prepare the e-mail to send
     let emailContent = newUserEmail.generateHTML(user.username, user.email, genPassword);
@@ -74,5 +80,7 @@ export default class UserRepository {
 
     // send the foresaid e-mail
     await mailingService.send(user.email, 'Your credentials', emailContent);
+
+    return created;
   }
 }

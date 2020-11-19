@@ -3,8 +3,13 @@ import mongoose, { Connection } from 'mongoose';
 import { ELogType as logType } from '../../models/log/log.model';
 import LoggerService from '../logger/logger.service';
 
+import BannerRepository from '../../../repos/statics/banner/banner.repo';
 import BuildingRepository from '../../../repos/statics/building/building.repo';
+import CharacterRepository from '../../../repos/dynamic/character/character.repo';
+import FactionRepository from '../../../repos/statics/faction/faction.repo';
+import GarrisonRepository from '../../../repos/dynamic/garrison/garrison.repo';
 import UserRepository from '../../../repos/dynamic/user/user.repo';
+import ZoneRepository from '../../../repos/statics/zone/zone.repo';
 
 import {
   DatabaseDynamicType,
@@ -50,8 +55,13 @@ class DatabaseService {
 
   private _logger = new LoggerService(this.constructor.name);
 
+  private _bannerRepo = <BannerRepository>{};
   private _buildingRepo = <BuildingRepository>{};
+  private _characterRepo = <CharacterRepository>{};
+  private _factionRepo = <FactionRepository>{};
+  private _garrisonRepo = <GarrisonRepository>{};
   private _userRepo = <UserRepository>{};
+  private _zoneRepo = <ZoneRepository>{};
 
   /** Retrieve statics database. */
   get statics() {
@@ -63,14 +73,39 @@ class DatabaseService {
     return this._connections.find(co => co.name === process.env.DB_NAME_DYNAMIC);
   }
 
+  /** Retrieve banner repository. */
+  get bannerRepo() {
+    return this._bannerRepo;
+  }
+
   /** Retrieve building repository. */
   get buildingRepo() {
     return this._buildingRepo;
   }
 
+  /** Retrieve character repository. */
+  get characterRepo() {
+    return this._characterRepo;
+  }
+
+  /** Retrieve faction repository. */
+  get factionRepo() {
+    return this._factionRepo;
+  }
+
+  /** Retrieve garrison repo. */
+  get garrisonRepo() {
+    return this._garrisonRepo;
+  }
+
   /** Retrieve user repository. */
   get userRepo() {
     return this._userRepo;
+  }
+
+  /** Retrieve zone repository. */
+  get zoneRepo() {
+    return this._zoneRepo;
   }
 
   /**
@@ -99,10 +134,24 @@ class DatabaseService {
     if (!this.statics) throw new Error(`Database \'${this._dbStaticsType}\' hasn\'t been initialized.`);
 
     // init statics services
+    this._bannerRepo = new BannerRepository(this.statics);
     this._buildingRepo = new BuildingRepository(this.statics);
+    this._factionRepo = new FactionRepository(this.statics);
+    this._zoneRepo = new ZoneRepository(this.statics);
     
     // init dynamic services
     this._userRepo = new UserRepository(this.dynamic);
+    this._characterRepo = new CharacterRepository(
+      this.dynamic,
+      this._bannerRepo,
+      this._factionRepo,
+      this._userRepo
+    );
+    this._garrisonRepo = new GarrisonRepository(
+      this.dynamic,
+      this._characterRepo,
+      this._zoneRepo
+    );
   }
 
   /**

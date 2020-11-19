@@ -23,7 +23,7 @@ export interface ICharacter {
   /** Character's name. */
   name: string;
 
-  /** Player's side details. */
+  /** Character's side details. */
   side: {
     /** The faction whose player belongs to. */
     faction: string;

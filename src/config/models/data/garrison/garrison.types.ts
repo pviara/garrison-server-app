@@ -1,4 +1,5 @@
-import { Document, Model, Schema } from 'mongoose';
+import { ObjectId } from 'mongodb';
+import { Document, Model } from 'mongoose';
 
 /**
  * Represents a standard Garrison Document from database.
@@ -17,7 +18,7 @@ export interface IGarrisonModel extends Model<IGarrisonDocument> {}
  */
 export interface IGarrison {
   /** Garrison's chief. */
-  characterId: Schema.Types.ObjectId;
+  characterId: ObjectId;
 
   /** Garrison's name (e.g. 'The Old Retreat'). */
   name: string;

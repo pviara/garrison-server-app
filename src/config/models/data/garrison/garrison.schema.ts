@@ -45,7 +45,8 @@ const garrisonSchema = new Schema({
         state: {
           assignments: [{
             code: String,
-            quantity: Number
+            quantity: Number,
+            endDate: Date
           }]
         }
       }],

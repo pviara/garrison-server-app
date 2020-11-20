@@ -62,6 +62,9 @@ export interface IGarrison {
 
           /** Number of assigned units. */
           quantity: number;
+
+          /** End of assignment. */
+          endDate: Date;
         }[];
       }
     }[];
@@ -80,7 +83,7 @@ export interface IGarrison {
 /**
  * The representation of a building operated-construction history.
  */
-interface IOperatedConstruction {
+export interface IOperatedConstruction {
   /** When was the construction started ? */
   beginDate: Date;
 

@@ -13,6 +13,9 @@ import { IBuilding } from '../../../config/models/data/static/building/building.
 import { IBuildingCreate } from '../../../config/models/data/garrison/payloads/IBuildingCreate';
 import { IBuildingUpgradeOrExtend } from '../../../config/models/data/garrison/payloads/IBuildingUpgradeOrExtend';
 
+import { IUnit } from '../../../config/models/data/static/unit/unit.types';
+import { IUnitCreate } from '../../../config/models/data/garrison/payloads/IUnitCreate';
+
 import { IZone } from '../../../config/models/data/static/zone/zone.types'
 
 import BuildingRepository from '../../statics/building/building.repo';
@@ -55,7 +58,7 @@ export default class GarrisonRepository {
 
     // check on character existence
     const character = await this._characterRepo.findById(payload.characterId);
-    if (!character) throw new ErrorHandler(404, `Character '${payload.characterId}' couldn't be found.}`);
+    if (!character) throw new ErrorHandler(404, `Character '${payload.characterId}' couldn't be found.`);
 
     // check on zone existence
     const zone = await this._zoneRepo.findByCode(payload.zone);
@@ -110,11 +113,11 @@ export default class GarrisonRepository {
     
     // check on garrison existence
     const garrison = await this.findById(payload.garrisonId);
-    if (!garrison) throw new ErrorHandler(404, `Garrison ${payload.garrisonId} couldn't be found.}`);
+    if (!garrison) throw new ErrorHandler(404, `Garrison ${payload.garrisonId} couldn't be found.`);
     
     // check on building existence
     const building = await this._buildingRepo.findByCode(payload.code) as IBuilding;
-    if (!building) throw new ErrorHandler(404, `Building '${payload.code}' couldn't be found.}`);
+    if (!building) throw new ErrorHandler(404, `Building '${payload.code}' couldn't be found.`);
 
     let { duration, minWorkforce } = building.instantiation;
     const peasants = this.findUnit(garrison, 'peasant');
@@ -164,10 +167,11 @@ export default class GarrisonRepository {
       workforce: payload.workforce
     };
     
+    const buildingId = new ObjectId();
     garrison.instances.buildings = [
       ...garrison.instances.buildings,
       {
-        _id: new ObjectId(),
+        _id: buildingId,
         code: payload.code,
         constructions: [constructed]
       }
@@ -178,20 +182,24 @@ export default class GarrisonRepository {
     const plotCost = building.instantiation.cost.plot;
     if (garrison.resources.gold - goldCost < 0
     || garrison.resources.wood - woodCost < 0
-    || garrison.resources.wood - plotCost < 0)
+    || garrison.resources.plot - plotCost < 0)
       throw new ErrorHandler(412, 'Not enough resources.');
     
     garrison.resources = {
       ...garrison.resources,
-      gold: garrison.resources.gold - building.instantiation.cost.gold,
-      wood: garrison.resources.wood - building.instantiation.cost.wood,
-      plot: garrison.resources.plot - building.instantiation.cost.plot,
+      gold: garrison.resources.gold - goldCost,
+      wood: garrison.resources.wood - woodCost,
+      plot: garrison.resources.plot - plotCost
     }
+
+    if (building.harvest && building.harvest.gift)
+      garrison.resources[building.harvest.resource] += building.harvest.gift;
     
     // assign rallied workforce to their occupation
     peasants.state.assignments = [
       ...peasants.state.assignments,
       {
+        buildingId,
         quantity: payload.workforce,
         endDate: helper.addTime(now, newDuration * 1000)
       }
@@ -211,10 +219,10 @@ export default class GarrisonRepository {
     
     // check on garrison existence
     const garrison = await this.findById(payload.garrisonId);
-    if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.}`);
+    if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
     const garrBuilding = await this.findBuilding(garrison, payload.buildingId);
-    if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`)
+    if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence
     const building = await this._buildingRepo.findByCode(garrBuilding.code) as IBuilding;
@@ -315,7 +323,7 @@ export default class GarrisonRepository {
     const plotCost =  Math.round((building.instantiation.cost.plot / 2) * Math.pow(1.3, currentLevel + 1));
     if (garrison.resources.gold - goldCost < 0
     || garrison.resources.wood - woodCost < 0
-    || garrison.resources.wood - plotCost < 0)
+    || garrison.resources.plot - plotCost < 0)
       throw new ErrorHandler(412, 'Not enough resources.');
     
     garrison.resources = {
@@ -324,6 +332,11 @@ export default class GarrisonRepository {
       wood: garrison.resources.wood - woodCost,
       plot: garrison.resources.plot - plotCost
     }
+
+    if (building.harvest && building.harvest.gift)
+      garrison.resources[building.harvest.resource] += Math.round(
+        building.harvest.gift * Math.pow(1.2, currentLevel + 1)
+      );
     
     // assign rallied workforce to their occupation
     peasants.state.assignments = [
@@ -349,10 +362,10 @@ export default class GarrisonRepository {
     
     // check on garrison existence
     const garrison = await this.findById(payload.garrisonId);
-    if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.}`);
+    if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
     const garrBuilding = await this.findBuilding(garrison, payload.buildingId);
-    if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`)
+    if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence
     const building = await this._buildingRepo.findByCode(garrBuilding.code) as IBuilding;
@@ -453,7 +466,7 @@ export default class GarrisonRepository {
     const plotCost =  Math.round((building.instantiation.cost.plot / 2) * Math.pow(1.5, currentLevel + 1));
     if (garrison.resources.gold - goldCost < 0
     || garrison.resources.wood - woodCost < 0
-    || garrison.resources.wood - plotCost < 0)
+    || garrison.resources.plot - plotCost < 0)
       throw new ErrorHandler(412, 'Not enough resources.');
     
     garrison.resources = {
@@ -462,6 +475,11 @@ export default class GarrisonRepository {
       wood: garrison.resources.wood - woodCost,
       plot: garrison.resources.plot - plotCost
     }
+
+    if (building.harvest && building.harvest.gift)
+      garrison.resources[building.harvest.resource] += Math.round(
+        building.harvest.gift * Math.pow(1.2, currentLevel + 1)
+      );
     
     // assign rallied workforce to their occupation
     peasants.state.assignments = [
@@ -475,6 +493,100 @@ export default class GarrisonRepository {
 
     // mark modified elements then save in database
     garrison.markModified('instances.buildings');
+    garrison.markModified('instances.units');
+    await garrison.save();
+    
+    return garrison;
+  }
+
+  async addUnit(payload: IUnitCreate) {
+    // init the moment
+    const now = new Date();
+    
+    // check on garrison existence
+    const garrison = await this.findById(payload.garrisonId);
+    if (!garrison) throw new ErrorHandler(404, `Garrison ${payload.garrisonId} couldn't be found.`);
+    
+    // check on unit existence
+    const unit = await this._unitRepo.findByCode(payload.code) as IUnit;
+    if (!unit) throw new ErrorHandler(404, `Unit '${payload.code}' couldn't be found.`);
+
+    // check on instantiation requirements
+    const unfulfilled = unit.instantiation.requiredEntities?.buildings.some(b => {
+      // look for the building in garrison
+      const existing = garrison.instances.buildings.find(gB => gB.code === b.code);
+      if (!existing) return true;
+
+      if (b.upgradeLevel) {
+        // is the building at the required upgrade level ?
+        const upgraded = existing.constructions.find(c => <number>c.improvement?.level >= <number>b.upgradeLevel);
+        if (!upgraded) return true;
+
+        // is the building still being processed for this specific upgrade ?
+        if (upgraded.endDate.getTime() > now.getTime()) return true;
+      }
+
+      // is the building still being processed for its instantiation ?
+      const unavailable = existing.constructions.some(c => !c.improvement && (c.endDate.getTime() > now.getTime()));
+      if (unavailable) return true;
+    });
+    if (unfulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill instantiation requirements.');
+
+    // operate unit creation
+    const assignments: IGarrison['instances']['units'][any]['state']['assignments'] = [];
+    for (let i = 0; i < (payload.quantity || 1); i++) {
+      assignments.push({
+        quantity: 1,
+        endDate: helper.addTime(
+          assignments[i - 1]?.endDate || now,
+          unit.instantiation.duration * 1000
+        )
+      });
+    }
+
+    const newUnit = {
+      code: unit.code,
+      quantity: payload.quantity || 1,
+      state: { assignments }
+    };
+    
+    const index = garrison.instances.units.findIndex(u => u.code === newUnit.code);
+    if (index < 0) {
+      garrison.instances.units = [
+        ...garrison.instances.units,
+        newUnit
+      ];
+    } else {
+      garrison.instances.units[index] = {
+        code: garrison.instances.units[index].code,
+        quantity: garrison.instances.units[index].quantity + newUnit.quantity,
+        state: { 
+          assignments: garrison
+            .instances
+            .units[index]
+            .state
+            .assignments
+            .concat(newUnit.state.assignments)
+        }
+      };
+    }
+
+    const goldCost = unit.instantiation.cost.gold * newUnit.quantity;
+    const woodCost = unit.instantiation.cost.wood * newUnit.quantity;
+    const foodCost = unit.instantiation.cost.food * newUnit.quantity;
+    if (garrison.resources.gold - goldCost < 0
+    || garrison.resources.wood - woodCost < 0
+    || garrison.resources.food - foodCost < 0)
+      throw new ErrorHandler(412, 'Not enough resources.');
+
+    garrison.resources = {
+      ...garrison.resources,
+      gold: garrison.resources.gold - goldCost,
+      wood: garrison.resources.wood - woodCost,
+      food: garrison.resources.food - foodCost
+    }
+
+    // mark modified elements then save in database
     garrison.markModified('instances.units');
     await garrison.save();
     

@@ -11,13 +11,17 @@ export const unitList: IUnit[] = [{
       jargon: 'peon'
     }],
     instantiation: {
-      building: 'town-hall',
       cost: {
         gold: 60,
         wood: 10,
         food: 1
       },
-      duration: 45
+      duration: 45,
+      requiredEntities: {
+        buildings: [{
+          code: 'town-hall'
+        }]
+      }
     },
     statistics: {
       types: {
@@ -37,13 +41,17 @@ export const unitList: IUnit[] = [{
       jargon: 'watcher'
     }],
     instantiation: {
-      building: 'town-hall',
       cost: {
         gold: 95,
         wood: 0,
         food: 2
       },
-      duration: 60
+      duration: 60,
+      requiredEntities: {
+        buildings: [{
+          code: 'town-hall'
+        }]
+      }
     },
     statistics: {
       types: {
@@ -80,13 +88,17 @@ export const unitList: IUnit[] = [{
       jargon: 'grunt'
     }],
     instantiation: {
-      building: 'barracks',
       cost: {
         gold: 135,
         wood: 0,
         food: 2
       },
-      duration: 75
+      duration: 75,
+      requiredEntities: {
+        buildings: [{
+          code: 'barracks'
+        }]
+      }
     },
     statistics: {
       types: {
@@ -123,7 +135,6 @@ export const unitList: IUnit[] = [{
       jargon: 'headhunter'
     }],
     instantiation: {
-      building: 'barracks',
       cost: {
         gold: 205,
         wood: 30,
@@ -132,8 +143,11 @@ export const unitList: IUnit[] = [{
       duration: 85,
       requiredEntities: {
         buildings: [{
-          code: 'forge'
-        }]
+            code: 'barracks'
+          },
+          {
+            code: 'forge'
+          }]
       }
     },
     statistics: {
@@ -171,7 +185,6 @@ export const unitList: IUnit[] = [{
       jargon: 'wolfrider'
     }],
     instantiation: {
-      building: 'barracks',
       cost: {
         gold: 310,
         wood: 50,
@@ -180,6 +193,9 @@ export const unitList: IUnit[] = [{
       duration: 115,
       requiredEntities: {
         buildings: [{
+          code: 'barracks'
+        },
+        {
           code: 'town-hall',
           upgradeLevel: 2
         }]

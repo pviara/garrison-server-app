@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 /**
- * Garrison building build payload (can be instantiation, upgrade or even extension).
+ * Garrison building build payload.
  */
 export interface IBuildingCreate {
   garrisonId: ObjectId;

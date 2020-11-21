@@ -23,6 +23,15 @@ class Helper {
     // build the new capitalized string
     return string.replace(/(^.|-.| .)/g, (char) => char.toUpperCase());
   }
+
+  /**
+   * Add some time to an existing date.
+   * @param date Existing date.
+   * @param time Time to add.
+   */
+  static addTime(date: Date, time: number) {
+    return new Date(date.getTime() + time);
+  }
 }
 
 export default Helper;

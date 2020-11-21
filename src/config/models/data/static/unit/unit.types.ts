@@ -22,8 +22,6 @@ export interface IUnitModel extends Model<IUnitDocument>, IStaticEntityStatics {
 export interface IUnit extends IStaticEntity {
   /** Instantiation requirements and characteristics. */
   instantiation: {
-    /** In which building is this unit being instantiated ? */
-    building: string;
     cost: IUnitCost;
     duration: number;
     requiredEntities?: {

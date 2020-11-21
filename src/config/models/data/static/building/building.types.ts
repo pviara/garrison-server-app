@@ -52,7 +52,16 @@ export interface IBuilding extends IStaticEntity {
   };
   
   /** Building type(s) characteristics. */
-  harvest?: IDependentHarvestBuildingType | ISelfSufficientHarvestBuildingType;
+  harvest?: {
+    /** Which resource is this building harvesting (gold, wood, food) ? */
+    resource: 'gold' | 'wood' | 'plot' | 'food';
+
+    /** Maximum workforce on harvesting in this building. */
+    maxWorkforce?: number;
+    
+    /** What amount of resource is this building giving when it gets constructed ? */
+    gift?: number;
+  }
   // ... implement other types: production, research, military
 }
 
@@ -79,28 +88,4 @@ interface IRequiredBuildingForExtensionLevel extends IRequiredBuilding {
 interface IBuildingCost extends IStaticEntityCost {
   /** Cost in plot. */
   plot: number;
-}
-
-/**
- * The representation of a harvest building (e.g. farm, goldmine, sawmill...).
- */
-interface IHarvestBuildingType {
-  /** Which resource is this building harvesting (gold, wood, food) ? */
-  resource: string;
-}
-
-/**
- * A building that needs one or more worker(s) to harvest a specific resource.
- */
-interface IDependentHarvestBuildingType extends IHarvestBuildingType {
-  /** Maximum workforce on harvesting in this building. */
-  maxWorkforce: number;
-}
-
-/**
- * A building that autonomously harvests a specific resource once (e.g. gives 3 food).
- */
-interface ISelfSufficientHarvestBuildingType extends IHarvestBuildingType {
-  /** What amount of resource is this building giving when it gets constructed ? */
-  gift: number;
 }

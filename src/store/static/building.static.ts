@@ -59,21 +59,18 @@ export const buildingList: IBuilding[] = [{
       duration: 120
     },
     extension: {
-      requiredEntities: [{
+      requiredEntities: {
+        buildings: [{
           level: 2,
-          buildings: {
-            code: 'town-hall',
-            upgradeLevel: 1
-          }
+          code: 'town-hall',
+          upgradeLevel: 1
         },
         {
           level: 3,
-          buildings: {
-            code: 'town-hall',
-            upgradeLevel: 2
-          }
-        }
-      ],
+          code: 'town-hall',
+          upgradeLevel: 2
+        }]
+      },
       maxLevel: 5
     },
     harvest: {
@@ -94,21 +91,18 @@ export const buildingList: IBuilding[] = [{
       duration: 120
     },
     extension: {
-      requiredEntities: [{
+      requiredEntities: {
+        buildings: [{
           level: 2,
-          buildings: {
-            code: 'town-hall',
-            upgradeLevel: 1
-          }
+          code: 'town-hall',
+          upgradeLevel: 1
         },
         {
           level: 3,
-          buildings: {
-            code: 'town-hall',
-            upgradeLevel: 2
-          }
-        }
-      ],
+          code: 'town-hall',
+          upgradeLevel: 2
+        }]
+      },
       maxLevel: 5
     },
     harvest: {
@@ -129,21 +123,18 @@ export const buildingList: IBuilding[] = [{
       minWorkforce: 1
     },
     extension: {
-      requiredEntities: [{
+      requiredEntities: {
+        buildings: [{
           level: 2,
-          buildings: {
-            code: 'town-hall',
-            upgradeLevel: 1
-          }
+          code: 'town-hall',
+          upgradeLevel: 1
         },
         {
           level: 3,
-          buildings: {
-            code: 'town-hall',
-            upgradeLevel: 2
-          }
-        }
-      ],
+          code: 'town-hall',
+          upgradeLevel: 2
+        }]
+      },
       maxLevel: 5
     },
     harvest: {

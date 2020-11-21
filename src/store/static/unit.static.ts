@@ -131,9 +131,9 @@ export const unitList: IUnit[] = [{
       },
       duration: 85,
       requiredEntities: {
-        buildings: {
+        buildings: [{
           code: 'forge'
-        }
+        }]
       }
     },
     statistics: {
@@ -179,10 +179,10 @@ export const unitList: IUnit[] = [{
       },
       duration: 115,
       requiredEntities: {
-        buildings: {
+        buildings: [{
           code: 'town-hall',
           upgradeLevel: 2
-        }
+        }]
       }
     },
     statistics: {

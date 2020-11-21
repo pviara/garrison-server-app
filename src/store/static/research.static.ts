@@ -10,9 +10,9 @@ export const researchList: IResearch[] = [{
       },
       duration: 60,
       requiredEntities: {
-        buildings: {
+        buildings: [{
           code: 'barracks'
-        }
+        }]
       }
     },
     target: {
@@ -42,9 +42,9 @@ export const researchList: IResearch[] = [{
       },
       duration: 60,
       requiredEntities: {
-        buildings: {
+        buildings: [{
           code: 'barracks'
-        }
+        }]
       }
     },
     target: {

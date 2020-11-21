@@ -38,6 +38,9 @@ export interface IGarrison {
   instances: {
     /** Instantiated buildings. */
     buildings: {
+      /** Building unique id. */
+      _id?: ObjectId;
+
       /** Building unique identifier. */
       code: string;
 
@@ -57,8 +60,8 @@ export interface IGarrison {
       state: {
         /** Assignment list. */
         assignments: {
-          /** Assignment place (e.g. 'goldmine', 'sawmill'...). */
-          code: string;
+          /** Assignment building. */
+          buildingId?: ObjectId;
 
           /** Number of assigned units. */
           quantity: number;

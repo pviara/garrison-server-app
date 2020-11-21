@@ -25,6 +25,7 @@ const garrisonSchema = new Schema({
   instances: {
     type: {
       buildings: [{
+        _id: Schema.Types.ObjectId,
         code: String,
         constructions: [{
           beginDate: Date,
@@ -44,7 +45,7 @@ const garrisonSchema = new Schema({
         quantity: Number,
         state: {
           assignments: [{
-            code: String,
+            buildingId: Schema.Types.ObjectId,
             quantity: Number,
             endDate: Date
           }]

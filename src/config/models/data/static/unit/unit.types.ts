@@ -26,7 +26,9 @@ export interface IUnit extends IStaticEntity {
     building: string;
     cost: IUnitCost;
     duration: number;
-    requiredEntities?: IRequiredBuilding | IRequiredBuilding[];
+    requiredEntities?: {
+      buildings: IRequiredBuilding[];
+    }
   };
 
   /** Global statistics. */

@@ -24,7 +24,9 @@ export interface IResearch extends IStaticEntity {
   instantiation: {
     cost: IStaticEntityCost,
     duration: number;
-    requiredEntities?: IRequiredBuilding | IRequiredBuilding[];
+    requiredEntities?: {
+      buildings: IRequiredBuilding[];
+    }
   };
 
   target: {

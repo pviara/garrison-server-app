@@ -23,7 +23,9 @@ export interface IBuilding extends IStaticEntity {
     cost: IBuildingCost;
     minWorkforce: number;
     duration: number;
-    requiredEntities?: IRequiredBuilding | IRequiredBuilding[];
+    requiredEntities?: {
+      buildings: IRequiredBuilding[];
+    }
   };
   
   /** Upgrades list. */
@@ -33,13 +35,17 @@ export interface IBuilding extends IStaticEntity {
       side: string;
       jargon: string;
     }[];
-    requiredEntities?: IRequiredBuilding | IRequiredBuilding[];
+    requiredEntities?: {
+      buildings: IRequiredBuilding[];
+    }
   }[];
   
   /** Extension characteristics. */
   extension?: {
     /** Requirements. */
-    requiredEntities?: IRequiredBuildingForExtensionLevel | IRequiredBuildingForExtensionLevel[];
+    requiredEntities?: {
+      buildings: IRequiredBuildingForExtensionLevel[];
+    }
     
     /** Maximum extension level. */
     maxLevel?: number;
@@ -52,20 +58,11 @@ export interface IBuilding extends IStaticEntity {
 
 /** A building that can be required to build, extend or upgrade another building, or train a unit. */
 export interface IRequiredBuilding {
-  /** The one or more required buildings. */
-  buildings: {
-    /** The unique identifier of the required building. */
-    code: string;
-    
-    /** The required upgrade level of the required building. */
-    upgradeLevel?: number;
-  } | {
-    /** The unique identifier of the required building. */
-    code: string;
-    
-    /** The required upgrade level of the required building. */
-    upgradeLevel?: number;
-  }[];
+  /** The unique identifier of the required building. */
+  code: string;
+  
+  /** The required upgrade level of the required building. */
+  upgradeLevel?: number;
 }
 
 /** 

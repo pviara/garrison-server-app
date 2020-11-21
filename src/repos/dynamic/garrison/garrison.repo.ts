@@ -17,6 +17,7 @@ import { IZone } from '../../../config/models/data/static/zone/zone.types'
 
 import BuildingRepository from '../../statics/building/building.repo';
 import CharacterRepository from '../character/character.repo';
+import UnitRepository from '../../statics/unit/unit.repo';
 import ZoneRepository from '../../statics/zone/zone.repo';
 
 import helper from '../../../utils/helper.utils';
@@ -30,6 +31,7 @@ export default class GarrisonRepository {
     private _connection: Connection,
     private _buildingRepo: BuildingRepository,
     private _characterRepo: CharacterRepository,
+    private _unitRepo: UnitRepository,
     private _zoneRepo: ZoneRepository
   ) {
     this._logger.log(logType.pending, 'Initializing garrison repo...');

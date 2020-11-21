@@ -149,6 +149,7 @@ class DatabaseService {
     );
     this._garrisonRepo = new GarrisonRepository(
       this.dynamic,
+      this._buildingRepo,
       this._characterRepo,
       this._zoneRepo
     );

@@ -16,6 +16,8 @@ import { IBuildingUpgradeOrExtend } from '../../../config/models/data/garrison/p
 import { IUnit } from '../../../config/models/data/static/unit/unit.types';
 import { IUnitCreate } from '../../../config/models/data/garrison/payloads/IUnitCreate';
 
+import { IUserModel } from '../../../config/models/data/user/user.types';
+
 import { IZone } from '../../../config/models/data/static/zone/zone.types'
 
 import BuildingRepository from '../../statics/building/building.repo';
@@ -24,36 +26,53 @@ import UnitRepository from '../../statics/unit/unit.repo';
 import ZoneRepository from '../../statics/zone/zone.repo';
 
 import helper from '../../../utils/helper.utils';
+import UserRepository from '../user/user.repo';
 
 export default class GarrisonRepository {
   private _logger = new LoggerService(this.constructor.name);
 
-  private _model = <IGarrisonModel>{};
+  private _garrisonModel = <IGarrisonModel>{};
 
   constructor(
     private _connection: Connection,
     private _buildingRepo: BuildingRepository,
     private _characterRepo: CharacterRepository,
     private _unitRepo: UnitRepository,
+    private _userRepo: UserRepository,
     private _zoneRepo: ZoneRepository
   ) {
     this._logger.log(logType.pending, 'Initializing garrison repo...');
-    this._model = <IGarrisonModel>this._connection?.model('garrison');
+    this._garrisonModel = <IGarrisonModel>this._connection?.model('garrison');
     this._logger.log(logType.pass, 'Initialized garrison repo');
   }
 
   async findById(id: ObjectId) {
-    return await this._model.findById(id);
+    return await this._garrisonModel.findById(id);
+  }
+
+  async getFromUser(userId: ObjectId) {
+    // retrieve user
+    const user = await this._userRepo.findById(userId);
+    if (!user) throw new ErrorHandler(404, `User '${userId}' couldn't be found.`);
+
+    // retrieve character
+    const character = await this._characterRepo.getFromUser(userId);
+    if (!character) throw new ErrorHandler(404, `Character from userId '${userId}' couldn't be found.`);
+
+    // retrieve garrison
+    const garrison = await this.getFromCharacter(character._id);
+    if (!garrison) throw new ErrorHandler(404, `Character from characterId '${character._id}' couldn't be found.`);
+
+    return garrison;
   }
 
   async getFromCharacter(characterId: ObjectId) {
-    return await this._model.find({ characterId });
+    return await this._garrisonModel.findOne({ characterId });
   }
 
   async create(payload: IGarrisonCreate) {
-    const characterGarrisons = await this.getFromCharacter(payload.characterId);
-    const existing = characterGarrisons
-      ?.some(g => g.name.toLowerCase() === payload.name.toLowerCase());
+    const characterGarrison = await this.getFromCharacter(payload.characterId);
+    const existing = characterGarrison?.name.toLowerCase() === payload.name.toLowerCase();
     if (existing) throw new ErrorHandler(409, 'Already existing garrison.');
 
     // check on character existence
@@ -69,7 +88,7 @@ export default class GarrisonRepository {
       throw new ErrorHandler(400, 'Selected zone is not compliant with character\'s faction.');
 
     // create the garrison with default values
-    return this._model.create({
+    return this._garrisonModel.create({
       characterId: payload.characterId,
       name: payload.name,
       zone: payload.zone,

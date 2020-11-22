@@ -37,13 +37,12 @@ export default class CharacterRepository {
   }
 
   async getFromUser(userId: ObjectId) {
-    return await this._model.find({ userId });
+    return await this._model.findOne({ userId });
   }
 
   async create(payload: ICharacterCreate) {
-    const userCharacters = await this.getFromUser(payload.userId);
-    const existing = userCharacters
-      ?.some(c => c.name.toLowerCase() === payload.name.toLowerCase());
+    const userCharacter = await this.getFromUser(payload.userId);
+    const existing = userCharacter?.name.toLowerCase() === payload.name.toLowerCase();
     if (existing) throw new ErrorHandler(409, 'Already existing character.');
 
     // check on user existence

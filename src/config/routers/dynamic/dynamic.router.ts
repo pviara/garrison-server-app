@@ -1,18 +1,22 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 
 import ControllerService from '../../services/controller/controller.service';
+
+import GarrisonRouter from './garrison.router';
 
 /**
  * Father of dynamic routes.
  */
 export default class DynamicRouter {
   private _router = Router();
+  private _garrisonRouter = <GarrisonRouter>{};
 
   get router() {
     return this._router;
   }
 
   constructor(private _ctService: ControllerService) {
+    this._garrisonRouter = new GarrisonRouter(this._ctService);
     this._configure();
   }
 
@@ -20,8 +24,6 @@ export default class DynamicRouter {
    * Connect routes to their matching routers.
    */
   private _configure() {
-    this._router.get('/', (req: Request, res: Response, next: NextFunction) => {
-      res.status(200).json('Hey big boss how are you today ?');
-    });
+    this._router.use('/garrison', this._garrisonRouter.router);
   }
 }

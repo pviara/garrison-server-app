@@ -6,6 +6,7 @@ import DatabaseService from '../database/database.service';
 import BannerController from '../../../controllers/statics/banner.controller';
 import BuildingController from '../../../controllers/statics/building.controller';
 import FactionController from '../../../controllers/statics/faction.controller';
+import GarrisonController from '../../../controllers/dynamic/garrison.controller';
 import ResearchController from '../../../controllers/statics/research.controller';
 import UnitController from '../../../controllers/statics/unit.controller';
 import ZoneController from '../../../controllers/statics/zone.controller';
@@ -19,6 +20,7 @@ export default class ControllerService {
   private _bannerController = <BannerController>{};
   private _buildingController = <BuildingController>{};
   private _factionController = <FactionController>{};
+  private _garrisonController = <GarrisonController>{};
   private _researchController = <ResearchController>{};
   private _unitController = <UnitController>{};
   private _zoneController = <ZoneController>{};
@@ -33,6 +35,10 @@ export default class ControllerService {
 
   get factionController() {
     return this._factionController;
+  }
+
+  get garrisonController() {
+    return this._garrisonController;
   }
 
   get researchController() {
@@ -57,6 +63,7 @@ export default class ControllerService {
     this._bannerController = new BannerController(this._dbService.bannerRepo);
     this._buildingController = new BuildingController(this._dbService.buildingRepo);
     this._factionController = new FactionController(this._dbService.factionRepo);
+    this._garrisonController = new GarrisonController(this._dbService.garrisonRepo);
     this._researchController = new ResearchController(this._dbService.researchRepo);
     this._unitController = new UnitController(this._dbService.unitRepo);
     this._zoneController = new ZoneController(this._dbService.zoneRepo);

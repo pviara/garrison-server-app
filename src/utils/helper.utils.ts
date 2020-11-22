@@ -32,6 +32,14 @@ class Helper {
   static addTime(date: Date, time: number) {
     return new Date(date.getTime() + time);
   }
+
+  /**
+   * Check whether the given object is empty or not.
+   * @param obj Given object.
+   */
+  static isObjectEmpty(obj: object) {
+    return (Object.keys(obj).length === 0) ? true : false;
+  }
 }
 
 export default Helper;

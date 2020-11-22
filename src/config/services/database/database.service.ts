@@ -168,6 +168,7 @@ export default class DatabaseService {
       this._buildingRepo,
       this._characterRepo,
       this._unitRepo,
+      this._userRepo,
       this._zoneRepo
     );
   }

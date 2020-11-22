@@ -3,20 +3,20 @@ import { ELogType as logType } from '../../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
 
-import { IBannerModel } from '../../../config/models/data/static/banner/banner.types';
+import { IResearchModel } from '../../../config/models/data/static/research/research.types';
 
 /**
- * Handle interactions with banner static documents from database statics.
+ * Handle interactions with research static documents from database statics.
  */
-export default class BannerRepository {
+export default class ResearchRepository {
   private _logger = new LoggerService(this.constructor.name);
 
-  private _model = <IBannerModel>{};
+  private _model = <IResearchModel>{};
 
   constructor(private _connection: Connection) {
-    this._logger.log(logType.pending, 'Initializing banner repo...');
-    this._model = <IBannerModel>this._connection?.model('banner');
-    this._logger.log(logType.pass, 'Initialized banner repo');
+    this._logger.log(logType.pending, 'Initializing research repo...');
+    this._model = <IResearchModel>this._connection?.model('research');
+    this._logger.log(logType.pass, 'Initialized research repo');
   }
 
   async getAll() {

@@ -15,7 +15,8 @@ import pswGen from 'generate-password';
 
 import mjml2html from 'mjml';
 
-import mailingService from '../../../config/services/mailing/mailing.service';
+import { initService } from '../../../config/services/init.service';
+
 import newUserEmail from '../../../store/template/e-mail/new-user.email';
 
 /**
@@ -79,7 +80,7 @@ export default class UserRepository {
     emailContent = mjml2html(emailContent).html;
 
     // send the foresaid e-mail
-    await mailingService.send(user.email, 'Your credentials', emailContent);
+    await initService.emService.send(user.email, 'Your credentials', emailContent);
 
     return created;
   }

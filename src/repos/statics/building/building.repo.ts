@@ -19,6 +19,10 @@ export default class BuildingRepository {
     this._logger.log(logType.pass, 'Initialized building repo');
   }
 
+  async getAll() {
+    return await this._model.find({});
+  }
+
   async findByCode(code: string) {
     return await this._model.findByCode(code);
   }

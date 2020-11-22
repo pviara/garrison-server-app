@@ -19,6 +19,10 @@ export default class FactionRepository {
     this._logger.log(logType.pass, 'Initialized faction repo');
   }
 
+  async getAll() {
+    return await this._model.find({});
+  }
+
   async findByCode(code: string) {
     return await this._model.findByCode(code);
   }

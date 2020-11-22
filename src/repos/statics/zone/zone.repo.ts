@@ -16,6 +16,10 @@ export default class ZoneRepository {
     this._logger.log(logType.pass, 'Initialized zone repo');
   }
 
+  async getAll() {
+    return await this._model.find({});
+  }
+
   async findByCode(code: string) {
     return await this._model.findByCode(code);
   }

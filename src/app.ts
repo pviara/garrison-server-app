@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import express, { Request, Response, NextFunction } from 'express';
+import bodyParser from 'body-parser';
 
 import { initService } from './config/services/init.service';
 
@@ -29,13 +30,18 @@ import MasterRouter from './config/routers/master.router';
 
   // initialize server app
   const server = new Server();
-  await server.configureRouter();
 
+  // configurate server app body parser
+  server.app.use(bodyParser.json());
+  server.app.use(bodyParser.urlencoded());
+  
   // make server app handle any route starting with '/api'
+  await server.configureRouter();
   server.app.use('/api', server.master.router);
 
   // make server app handle any error
   server.app.use((err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
+    // console.error(`Error ${err.statusCode || 500} at ${req.method} ${req.path}\n${err.message}`);
     console.error(err);
     res.status(err.statusCode || 500).json({
       status: 'error',

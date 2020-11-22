@@ -8,6 +8,7 @@ import BuildingRepository from '../../../repos/statics/building/building.repo';
 import CharacterRepository from '../../../repos/dynamic/character/character.repo';
 import FactionRepository from '../../../repos/statics/faction/faction.repo';
 import GarrisonRepository from '../../../repos/dynamic/garrison/garrison.repo';
+import ResearchRepository from '../../../repos/statics/research/research.repo';
 import UnitRepository from '../../../repos/statics/unit/unit.repo';
 import UserRepository from '../../../repos/dynamic/user/user.repo';
 import ZoneRepository from '../../../repos/statics/zone/zone.repo';
@@ -48,7 +49,7 @@ import { IZone, IZoneDocument, IZoneModel } from '../../models/data/static/zone/
 /**
  * Application global database service.
  */
-class DatabaseService {
+export default class DatabaseService {
   private _dbStaticsType: DatabaseStaticsType = 'DB_NAME_STATICS';
   private _dbDynamicType: DatabaseDynamicType = 'DB_NAME_DYNAMIC';
 
@@ -60,6 +61,7 @@ class DatabaseService {
   private _buildingRepo = <BuildingRepository>{};
   private _characterRepo = <CharacterRepository>{};
   private _factionRepo = <FactionRepository>{};
+  private _researchRepo = <ResearchRepository>{};
   private _garrisonRepo = <GarrisonRepository>{};
   private _unitRepo = <UnitRepository>{};
   private _userRepo = <UserRepository>{};
@@ -98,6 +100,11 @@ class DatabaseService {
   /** Retrieve garrison repo. */
   get garrisonRepo() {
     return this._garrisonRepo;
+  }
+
+  /** Retrieve research repo. */
+  get researchRepo() {
+    return this._researchRepo;
   }
 
   /** Retrieve unit repo. */
@@ -144,6 +151,7 @@ class DatabaseService {
     this._bannerRepo = new BannerRepository(this.statics);
     this._buildingRepo = new BuildingRepository(this.statics);
     this._factionRepo = new FactionRepository(this.statics);
+    this._researchRepo= new ResearchRepository(this.statics);
     this._unitRepo = new UnitRepository(this.statics);
     this._zoneRepo = new ZoneRepository(this.statics);
     
@@ -298,5 +306,3 @@ class DatabaseService {
 
   }
 }
-
-export = new DatabaseService();

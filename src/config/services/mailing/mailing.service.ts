@@ -7,7 +7,7 @@ import LoggerService from '../logger/logger.service';
 /**
  * Application global mailing service.
  */
-class MailingService {
+export default class MailingService {
   private _transport = <Mail>{};
   private _hasBeenConfigured = false;
 
@@ -53,5 +53,3 @@ class MailingService {
     });
   }
 }
-
-export = new MailingService();

@@ -10,13 +10,11 @@ import { IGarrison, IGarrisonModel, IOperatedConstruction } from '../../../confi
 import IGarrisonCreate from '../../../config/models/data/garrison/payloads/IGarrisonCreate';
 
 import { IBuilding } from '../../../config/models/data/static/building/building.types';
-import { IBuildingCreate } from '../../../config/models/data/garrison/payloads/IBuildingCreate';
-import { IBuildingUpgradeOrExtend } from '../../../config/models/data/garrison/payloads/IBuildingUpgradeOrExtend';
+import IBuildingCreate from '../../../config/models/data/garrison/payloads/IBuildingCreate';
+import IBuildingUpgradeOrExtend from '../../../config/models/data/garrison/payloads/IBuildingUpgradeOrExtend';
 
 import { IUnit } from '../../../config/models/data/static/unit/unit.types';
-import { IUnitCreate } from '../../../config/models/data/garrison/payloads/IUnitCreate';
-
-import { IUserModel } from '../../../config/models/data/user/user.types';
+import IUnitCreate from '../../../config/models/data/garrison/payloads/IUnitCreate';
 
 import { IZone } from '../../../config/models/data/static/zone/zone.types'
 
@@ -88,7 +86,7 @@ export default class GarrisonRepository {
       throw new ErrorHandler(400, 'Selected zone is not compliant with character\'s faction.');
 
     // create the garrison with default values
-    return this._garrisonModel.create({
+    return await this._garrisonModel.create({
       characterId: payload.characterId,
       name: payload.name,
       zone: payload.zone,
@@ -229,7 +227,7 @@ export default class GarrisonRepository {
     garrison.markModified('instances.units');
     await garrison.save();
     
-    return garrison;
+    return await this.findById(garrison._id);
   }
 
   async upgradeBuilding(payload: IBuildingUpgradeOrExtend) {
@@ -255,7 +253,7 @@ export default class GarrisonRepository {
     const unavailableBuilding = garrBuilding
       .constructions
       .some(c => c.endDate.getTime() > now.getTime());
-    if (unavailableBuilding) throw new ErrorHandler(412, `Building '${building.code}' is already being processed.`);
+    if (unavailableBuilding) throw new ErrorHandler(412, `Building '${payload.buildingId}' is already being processed.`);
 
     // check on current building upgrade level
     const currentLevel = garrBuilding
@@ -372,7 +370,7 @@ export default class GarrisonRepository {
     garrison.markModified('instances.units');
     await garrison.save();
     
-    return garrison;
+    return await this.findById(garrison._id);
   }
 
   async extendBuilding(payload: IBuildingUpgradeOrExtend) {
@@ -398,7 +396,7 @@ export default class GarrisonRepository {
     const unavailableBuilding = garrBuilding
       .constructions
       .some(c => c.endDate.getTime() > now.getTime());
-    if (unavailableBuilding) throw new ErrorHandler(412, `Building '${building.code}' is already being processed.`);
+    if (unavailableBuilding) throw new ErrorHandler(412, `Building '${payload.buildingId}' is already being processed.`);
 
     // check on current building extension level
     const currentLevel = garrBuilding
@@ -515,7 +513,7 @@ export default class GarrisonRepository {
     garrison.markModified('instances.units');
     await garrison.save();
     
-    return garrison;
+    return await this.findById(garrison._id);
   }
 
   async addUnit(payload: IUnitCreate) {
@@ -609,6 +607,6 @@ export default class GarrisonRepository {
     garrison.markModified('instances.units');
     await garrison.save();
     
-    return garrison;
+    return await this.findById(garrison._id);
   }
 }

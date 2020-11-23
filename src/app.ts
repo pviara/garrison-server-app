@@ -33,7 +33,9 @@ import MasterRouter from './config/routers/master.router';
 
   // configurate server app body parser
   server.app.use(bodyParser.json());
-  server.app.use(bodyParser.urlencoded());
+  server.app.use(bodyParser.urlencoded({
+    extended: true
+  }));
   
   // make server app handle any route starting with '/api'
   await server.configureRouter();

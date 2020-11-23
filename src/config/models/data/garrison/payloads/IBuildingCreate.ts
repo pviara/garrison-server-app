@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 /**
  * Garrison building build payload.
  */
-export interface IBuildingCreate {
+export default interface IBuildingCreate {
   garrisonId: ObjectId;
   code: string;
   workforce: number;

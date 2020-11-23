@@ -40,5 +40,37 @@ export default class GarrisonRouter {
         })
         .catch(error => next(error));
     });
+    
+    this._router.post('/building', (req: Request, res: Response, next: NextFunction) => {
+      this._controller.addBuilding(req, res, next)
+        .then(result => {
+          res.status(200).json(result)
+        })
+        .catch(error => next(error));
+    });
+    
+    this._router.put('/building/upgrade', (req: Request, res: Response, next: NextFunction) => {
+      this._controller.upgradeBuilding(req, res, next)
+        .then(result => {
+          res.status(200).json(result)
+        })
+        .catch(error => next(error));
+    });
+    
+    this._router.put('/building/extend', (req: Request, res: Response, next: NextFunction) => {
+      this._controller.extendBuilding(req, res, next)
+        .then(result => {
+          res.status(200).json(result)
+        })
+        .catch(error => next(error));
+    });
+    
+    this._router.post('/unit', (req: Request, res: Response, next: NextFunction) => {
+      this._controller.addUnit(req, res, next)
+        .then(result => {
+          res.status(200).json(result)
+        })
+        .catch(error => next(error));
+    });
   }
 }

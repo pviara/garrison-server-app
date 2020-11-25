@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 
 import { initService } from './config/services/init.service';
 
@@ -36,6 +37,9 @@ import MasterRouter from './config/routers/master.router';
   server.app.use(bodyParser.urlencoded({
     extended: true
   }));
+
+  // make server app use cors
+  server.app.use(cors());
   
   // make server app handle any route starting with '/api'
   await server.configureRouter();

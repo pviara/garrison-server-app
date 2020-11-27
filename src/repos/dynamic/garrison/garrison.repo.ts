@@ -59,7 +59,7 @@ export default class GarrisonRepository {
 
     // retrieve garrison
     const garrison = await this.getFromCharacter(character._id);
-    if (!garrison) throw new ErrorHandler(404, `Character from characterId '${character._id}' couldn't be found.`);
+    if (!garrison) throw new ErrorHandler(404, `Garrison from characterId '${character._id}' couldn't be found.`);
 
     return garrison;
   }
@@ -139,7 +139,8 @@ export default class GarrisonRepository {
     let { duration, minWorkforce } = building.instantiation;
     const peasants = this.findUnit(garrison, 'peasant');
     if (!peasants) throw new ErrorHandler(404, 'Not a single peasant could be found.');
-
+    if (payload.workforce > peasants.quantity) throw new ErrorHandler(400, 'Given workforce cannot be greater than current peasant quantity.');
+    
     // check on peasants availability
     const unavailablePeasants = peasants
       .state
@@ -147,7 +148,9 @@ export default class GarrisonRepository {
       .filter(a => a.endDate.getTime() > now.getTime())
       .map(a => a.quantity)
       .reduce((prev, next) => prev + next, 0);
-    if ((peasants.quantity - unavailablePeasants) < minWorkforce) throw new ErrorHandler(400, 'Not enough available peasants.');
+    if ((payload.workforce > (peasants.quantity - unavailablePeasants))) throw new ErrorHandler(412, 'Not enough available peasants.');
+
+    if (payload.workforce < minWorkforce) throw new ErrorHandler(400, 'Given workforce is not enough.');
 
     if (payload.workforce > minWorkforce * 2)
       throw new ErrorHandler(400, 'A build-site cannot rally more than the double of minimum required workforce.');
@@ -294,6 +297,7 @@ export default class GarrisonRepository {
 
     const peasants = this.findUnit(garrison, 'peasant');
     if (!peasants) throw new ErrorHandler(404, 'Not a single peasant could be found.');
+    if (payload.workforce > peasants.quantity) throw new ErrorHandler(400, 'Given workforce cannot be greater than current peasant quantity.');
 
     // check on peasants availability
     const unavailablePeasants = peasants
@@ -302,7 +306,9 @@ export default class GarrisonRepository {
       .filter(a => a.endDate.getTime() > now.getTime())
       .map(a => a.quantity)
       .reduce((prev, next) => prev + next, 0);
-    if ((peasants.quantity - unavailablePeasants) < minWorkforce) throw new ErrorHandler(400, 'Not enough available peasants.');
+    if ((payload.workforce > (peasants.quantity - unavailablePeasants))) throw new ErrorHandler(412, 'Not enough available peasants.');
+
+    if (payload.workforce < minWorkforce) throw new ErrorHandler(400, 'Given workforce is not enough.');
 
     if (payload.workforce > minWorkforce * 2)
       throw new ErrorHandler(400, 'A build-site cannot rally more than the double of minimum required workforce.');
@@ -437,7 +443,8 @@ export default class GarrisonRepository {
 
     const peasants = this.findUnit(garrison, 'peasant');
     if (!peasants) throw new ErrorHandler(404, 'Not a single peasant could be found.');
-
+    if (payload.workforce > peasants.quantity) throw new ErrorHandler(400, 'Given workforce cannot be greater than current peasant quantity.');
+    
     // check on peasants availability
     const unavailablePeasants = peasants
       .state
@@ -445,7 +452,9 @@ export default class GarrisonRepository {
       .filter(a => a.endDate.getTime() > now.getTime())
       .map(a => a.quantity)
       .reduce((prev, next) => prev + next, 0);
-    if ((peasants.quantity - unavailablePeasants) < minWorkforce) throw new ErrorHandler(400, 'Not enough available peasants.');
+    if ((payload.workforce > (peasants.quantity - unavailablePeasants))) throw new ErrorHandler(412, 'Not enough available peasants.');
+
+    if (payload.workforce < minWorkforce) throw new ErrorHandler(400, 'Given workforce is not enough.');
 
     if (payload.workforce > minWorkforce * 2)
       throw new ErrorHandler(400, 'A build-site cannot rally more than the double of minimum required workforce.');

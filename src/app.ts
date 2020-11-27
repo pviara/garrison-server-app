@@ -47,8 +47,7 @@ import MasterRouter from './config/routers/master.router';
 
   // make server app handle any error
   server.app.use((err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
-    // console.error(`Error ${err.statusCode || 500} at ${req.method} ${req.path}\n${err.message}`);
-    console.error(err);
+    console.error(`> Error ${err.statusCode || 500} at ${req.method} ${req.path} | ${err.message}`);
     res.status(err.statusCode || 500).json({
       status: 'error',
       statusCode: err.statusCode,

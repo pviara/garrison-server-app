@@ -1,4 +1,6 @@
-import { IBuilding } from '../../config/models/data/static/building/building.types';
+import {
+  IBuilding
+} from '../../config/models/data/static/building/building.types';
 
 export const buildingList: IBuilding[] = [{
     code: 'town-hall',
@@ -56,20 +58,26 @@ export const buildingList: IBuilding[] = [{
         plot: 3
       },
       minWorkforce: 1,
-      duration: 120
+      duration: 120,
+      requiredEntities: {
+        buildings: [{
+          code: 'town-hall'
+        }]
+      }
     },
     extension: {
       requiredEntities: {
         buildings: [{
-          level: 2,
-          code: 'town-hall',
-          upgradeLevel: 1
-        },
-        {
-          level: 3,
-          code: 'town-hall',
-          upgradeLevel: 2
-        }]
+            level: 2,
+            code: 'town-hall',
+            upgradeLevel: 1
+          },
+          {
+            level: 3,
+            code: 'town-hall',
+            upgradeLevel: 2
+          }
+        ]
       },
       maxLevel: 5
     },
@@ -88,20 +96,26 @@ export const buildingList: IBuilding[] = [{
         plot: 3
       },
       minWorkforce: 1,
-      duration: 120
+      duration: 120,
+      requiredEntities: {
+        buildings: [{
+          code: 'town-hall'
+        }]
+      }
     },
     extension: {
       requiredEntities: {
         buildings: [{
-          level: 2,
-          code: 'town-hall',
-          upgradeLevel: 1
-        },
-        {
-          level: 3,
-          code: 'town-hall',
-          upgradeLevel: 2
-        }]
+            level: 2,
+            code: 'town-hall',
+            upgradeLevel: 1
+          },
+          {
+            level: 3,
+            code: 'town-hall',
+            upgradeLevel: 2
+          }
+        ]
       },
       maxLevel: 5
     },
@@ -120,20 +134,26 @@ export const buildingList: IBuilding[] = [{
         plot: 2
       },
       duration: 70,
-      minWorkforce: 1
+      minWorkforce: 1,
+      requiredEntities: {
+        buildings: [{
+          code: 'town-hall'
+        }]
+      }
     },
     extension: {
       requiredEntities: {
         buildings: [{
-          level: 2,
-          code: 'town-hall',
-          upgradeLevel: 1
-        },
-        {
-          level: 3,
-          code: 'town-hall',
-          upgradeLevel: 2
-        }]
+            level: 2,
+            code: 'town-hall',
+            upgradeLevel: 1
+          },
+          {
+            level: 3,
+            code: 'town-hall',
+            upgradeLevel: 2
+          }
+        ]
       },
       maxLevel: 5
     },
@@ -160,7 +180,12 @@ export const buildingList: IBuilding[] = [{
         plot: 1
       },
       duration: 100,
-      minWorkforce: 1
+      minWorkforce: 1,
+      requiredEntities: {
+        buildings: [{
+          code: 'town-hall'
+        }]
+      }
     },
     upgrades: [{
         level: 1,
@@ -192,7 +217,12 @@ export const buildingList: IBuilding[] = [{
         plot: 8
       },
       duration: 160,
-      minWorkforce: 3
+      minWorkforce: 3,
+      requiredEntities: {
+        buildings: [{
+          code: 'town-hall'
+        }]
+      }
     }
   },
   {

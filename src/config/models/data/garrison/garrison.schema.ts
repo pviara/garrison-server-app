@@ -18,7 +18,9 @@ const garrisonSchema = new Schema({
       gold: Number,
       wood: Number,
       food: Number,
-      plot: Number
+      plot: Number,
+      goldLastUpdate: Date,
+      woodLastUpdate: Date
     },
     required: true
   },

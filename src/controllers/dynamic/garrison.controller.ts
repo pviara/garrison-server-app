@@ -12,6 +12,7 @@ import { isValidObjectId } from 'mongoose';
 import helper from '../../utils/helper.utils';
 
 import ErrorHandler from '../../config/models/error/error-handler.model';
+import IUnitAssign from '../../config/models/data/garrison/payloads/IUnitAssign';
 
 export default class GarrisonController {
   constructor(private _repo: GarrisonRepository) {}
@@ -167,6 +168,29 @@ export default class GarrisonController {
       <IUnitCreate>{
         ...req.body,
         garrisonId: new ObjectId(req.body.garrisonId)
+    });
+  }
+
+  async assignUnit(req: Request, res: Response, next: NextFunction) {
+    if (!req.body
+      || helper.isObjectEmpty(req.body)
+      || !req.body.garrisonId
+      || !req.body.buildingId
+      || !req.body.code)
+        throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
+      
+    // check on both garrisonId and buildingId cast possibility
+    const isValidGarrisonId = isValidObjectId(req.body.garrisonId);
+    const isValidBuildingId = isValidObjectId(req.body.buildingId);
+    if (!isValidBuildingId || !isValidGarrisonId)
+      throw new ErrorHandler(400, `Unable to cast either '${req.body.garrisonId}' or '${req.body.buildingId}' to ObjectId.`);
+
+    // launch adding process
+    return await this._repo.assignUnit(
+      <IUnitAssign>{
+        ...req.body,
+        garrisonId: new ObjectId(req.body.garrisonId),
+        buildingId: new ObjectId(req.body.buildingId)
     });
   }
 }

@@ -56,11 +56,15 @@ export interface IBuilding extends IStaticEntity {
     /** Which resource is this building harvesting (gold, wood, food) ? */
     resource: 'gold' | 'wood' | 'plot' | 'food';
 
+    /**
+     * Either the amount of resource this building is giving when it gets constructed,
+     * or the amount of resource this building is giving every *t* time for 1 worker
+     * (it depends wheteher maxWorkforce property is included or not).
+     */
+    amount: number;
+
     /** Maximum workforce on harvesting in this building. */
     maxWorkforce?: number;
-    
-    /** What amount of resource is this building giving when it gets constructed ? */
-    gift?: number;
   }
   // ... implement other types: production, research, military
 }

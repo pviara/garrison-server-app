@@ -25,6 +25,7 @@ import ZoneRepository from '../../statics/zone/zone.repo';
 
 import helper from '../../../utils/helper.utils';
 import UserRepository from '../user/user.repo';
+import IUnitAssign from '../../../config/models/data/garrison/payloads/IUnitAssign';
 
 export default class GarrisonRepository {
   private _logger = new LoggerService(this.constructor.name);
@@ -146,7 +147,7 @@ export default class GarrisonRepository {
       .state
       .assignments
       .filter(a => a.endDate.getTime() > now.getTime())
-      .map(a => a.quantity)
+      .map(a => Number(a.quantity))
       .reduce((prev, next) => prev + next, 0);
     if ((payload.workforce > (peasants.quantity - unavailablePeasants))) throw new ErrorHandler(412, 'Not enough available peasants.');
 
@@ -197,6 +198,9 @@ export default class GarrisonRepository {
       }
     ];
 
+    // automatically update eligible resources
+    garrison.resources = (await this.updateResources(garrison)).resources;
+
     const goldCost = building.instantiation.cost.gold;
     const woodCost = building.instantiation.cost.wood;
     const plotCost = building.instantiation.cost.plot;
@@ -212,8 +216,15 @@ export default class GarrisonRepository {
       plot: garrison.resources.plot - plotCost
     }
 
-    if (building.harvest && building.harvest.gift)
-      garrison.resources[building.harvest.resource] += building.harvest.gift;
+    if (building.harvest && !building.harvest.maxWorkforce)
+      garrison.resources[building.harvest.resource] += building.harvest.amount;
+
+    if (building.harvest?.resource === 'gold' && !garrison.resources.goldLastUpdate) {
+      garrison.resources.goldLastUpdate = now;
+    }
+    else if (building.harvest?.resource === 'wood' && !garrison.resources.woodLastUpdate) {
+      garrison.resources.woodLastUpdate = now;
+    }
     
     // assign rallied workforce to their occupation
     peasants.state.assignments = [
@@ -221,6 +232,7 @@ export default class GarrisonRepository {
       {
         buildingId,
         quantity: payload.workforce,
+        type: 'construction',
         endDate: helper.addTime(now, newDuration * 1000)
       }
     ];
@@ -356,9 +368,9 @@ export default class GarrisonRepository {
       plot: garrison.resources.plot - plotCost
     }
 
-    if (building.harvest && building.harvest.gift)
+    if (building.harvest && !building.harvest.maxWorkforce)
       garrison.resources[building.harvest.resource] += Math.round(
-        building.harvest.gift * Math.pow(1.2, currentLevel + 1)
+        building.harvest.amount * Math.pow(1.2, currentLevel + 1)
       );
     
     // assign rallied workforce to their occupation
@@ -367,6 +379,7 @@ export default class GarrisonRepository {
       {
         buildingId: <ObjectId>garrBuilding._id,
         quantity: payload.workforce,
+        type: 'construction',
         endDate: helper.addTime(now, newDuration * 1000)
       }
     ];
@@ -502,9 +515,9 @@ export default class GarrisonRepository {
       plot: garrison.resources.plot - plotCost
     }
 
-    if (building.harvest && building.harvest.gift)
+    if (building.harvest && !building.harvest.maxWorkforce)
       garrison.resources[building.harvest.resource] += Math.round(
-        building.harvest.gift * Math.pow(1.2, currentLevel + 1)
+        building.harvest.amount * Math.pow(1.2, currentLevel + 1)
       );
     
     // assign rallied workforce to their occupation
@@ -513,6 +526,7 @@ export default class GarrisonRepository {
       {
         buildingId: <ObjectId>garrBuilding._id,
         quantity: payload.workforce,
+        type: 'construction',
         endDate: helper.addTime(now, newDuration * 1000)
       }
     ];
@@ -563,6 +577,7 @@ export default class GarrisonRepository {
     for (let i = 0; i < (payload.quantity || 1); i++) {
       assignments.push({
         quantity: 1,
+        type: 'instantiation',
         endDate: helper.addTime(
           assignments[i - 1]?.endDate || now,
           unit.instantiation.duration * 1000
@@ -617,5 +632,144 @@ export default class GarrisonRepository {
     await garrison.save();
     
     return await this.findById(garrison._id);
+  }
+
+  async assignUnit(payload: IUnitAssign) {
+    // init the moment
+    const now = new Date();
+    
+    // check on garrison existence
+    const garrison = await this.findById(payload.garrisonId);
+    if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
+
+    // check on building existence in dynamic
+    const garrBuilding = await this.findBuilding(garrison, payload.buildingId);
+    if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
+    
+    // check on building existence in statics
+    const building = await this._buildingRepo.findByCode(garrBuilding.code) as IBuilding;
+    if (!building) throw new ErrorHandler(404, `Building '${garrBuilding.code}' couldn't be found.`);
+
+    // handle only harvest building for now...
+    if (!building.harvest) throw new ErrorHandler(400, `No peasant can be assigned at building '${building.code}'.`);
+
+    // check on unit(s) existence in statics
+    const unit = await this._unitRepo.findByCode(payload.code) as IUnit;
+    if (!unit) throw new ErrorHandler(404, `Unit ${payload.code} couldn't be found.`);
+
+    // check on unit(s) existence in dynamic
+    const garrUnits = this.findUnit(garrison, payload.code);
+    if (!garrUnits) throw new ErrorHandler(404, `Not a single '${payload.code}' could be found.`);
+    if ((payload.quantity || 1) > garrUnits.quantity) throw new ErrorHandler(412, `Given workforce cannot be greater than current '${payload.code}' quantity.`);
+
+    // check on building availability
+    const unavailableBuilding = garrBuilding
+      .constructions
+      .some(c => c.endDate.getTime() > now.getTime());
+    if (unavailableBuilding) throw new ErrorHandler(412, `Building '${payload.buildingId}' is already being processed.`);
+
+    // check on unit(s) availability
+    const unavailableUnits = garrUnits
+      .state
+      .assignments
+      .filter(a => a.endDate.getTime() > now.getTime())
+      .map(a => Number(a.quantity))
+      .reduce((prev, next) => prev + next, 0);
+    if (((payload.quantity || 1) > (garrUnits.quantity - unavailableUnits))) throw new ErrorHandler(412, `Not enough available '${payload.code}'.`);
+
+    // assign units to the building
+    for (let i = 0; i < (payload.quantity || 1); i++) {
+      const index = garrUnits.state.assignments.findIndex(a => (a.buildingId?.toHexString() === garrBuilding._id?.toHexString()) && a.type === 'harvest');
+      if (index < 0) {
+        garrUnits.state.assignments.push({
+          buildingId: garrBuilding._id,
+          quantity: 1,
+          type: 'harvest',
+          endDate: new Date('2099-01-01')
+        });
+        continue;
+      }
+      garrUnits.state.assignments[index] = {
+        ...garrUnits.state.assignments[index],
+        quantity: garrUnits.state.assignments[index].quantity + 1
+      };
+    }
+
+    // init resource last update if there isn't any
+    if (building.harvest) {
+      if (building.code === 'goldmine' && !garrison.resources.goldLastUpdate) {
+        garrison.resources = {
+          ...garrison.resources,
+          goldLastUpdate: now
+        };
+      } else if (building.code === 'sawmill' && !garrison.resources.woodLastUpdate) {
+        garrison.resources = {
+          ...garrison.resources,
+          woodLastUpdate: now
+        };
+      }
+    }
+
+    // mark modified elements then save in database
+    garrison.markModified('instances.units');
+    await garrison.save();
+    
+    return await this.findById(garrison._id);
+  }
+
+  private async updateResources(garrison: IGarrison) {
+    // init the moment
+    const now = new Date();
+
+    for (const building of garrison.instances.buildings) {
+      // retrieve matching building from database statics
+      const matchStatics = await this._buildingRepo.findByCode(building.code) as IBuilding;
+      if (!matchStatics.harvest) continue;
+
+      // check on building availability
+      const unavailable = building
+        .constructions
+        .some(c => c.endDate.getTime() > now.getTime());
+      if (unavailable) continue;
+
+      // calculate assigned workers
+      const assignedWorkers = garrison
+        .instances
+        .units
+        .find(unit => unit.code === 'peasant')
+        ?.state
+        .assignments
+        .find(assignment => {
+          if (assignment.type !== 'harvest' || !assignment.buildingId || !building._id) return;
+
+          const buildingId = new ObjectId(assignment.buildingId);
+          if (buildingId.equals(building._id)) return assignment;
+        })
+        ?.quantity;
+      if (!assignedWorkers || assignedWorkers == 0) continue;
+
+      // calculate elapsed time since last resource automatic update
+      let elapsedMinutes = 0;
+      let goldNewLastUpdate;
+      let woodNewLastUpdate;
+      if (building.code === 'goldmine') {
+        if (!garrison.resources.goldLastUpdate) continue;
+        elapsedMinutes = (now.getTime() - garrison.resources.goldLastUpdate.getTime()) / 1000 / 60;
+        goldNewLastUpdate = now;
+      } else if (building.code === 'sawmill') {
+        if (!garrison.resources.woodLastUpdate) continue;
+        elapsedMinutes = (now.getTime() - garrison.resources.woodLastUpdate.getTime()) / 1000 / 60;
+        woodNewLastUpdate = now;
+      }
+      if (elapsedMinutes === 0) continue;
+        
+      garrison.resources = {
+        ...garrison.resources,
+        [matchStatics.harvest?.resource]: garrison.resources[matchStatics.harvest?.resource] + Math.floor((matchStatics.harvest.amount * elapsedMinutes) * assignedWorkers),
+        goldLastUpdate: goldNewLastUpdate || garrison.resources.goldLastUpdate,
+        woodLastUpdate: woodNewLastUpdate || garrison.resources.woodLastUpdate
+      };
+    }
+    return garrison;
   }
 }

@@ -32,6 +32,8 @@ export interface IGarrison {
     wood: number;
     food: number;
     plot: number;
+    goldLastUpdate?: Date;
+    woodLastUpdate?: Date;
   };
   
   /** Instances list. */
@@ -65,6 +67,9 @@ export interface IGarrison {
 
           /** Number of assigned units. */
           quantity: number;
+
+          /** Assignement type. */
+          type: 'instantiation' | 'construction' | 'harvest';
 
           /** End of assignment. */
           endDate: Date;

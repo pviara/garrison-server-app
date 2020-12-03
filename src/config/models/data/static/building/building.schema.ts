@@ -63,11 +63,8 @@ const buildingSchema = new Schema({
   harvest: {
     type: {
       resource: String,
+      amount: Number,
       maxWorkforce: {
-        type: Number,
-        required: false
-      },
-      gift: {
         type: Number,
         required: false
       }

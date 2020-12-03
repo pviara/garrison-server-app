@@ -83,6 +83,7 @@ export const buildingList: IBuilding[] = [{
     },
     harvest: {
       resource: 'gold',
+      amount: 3,
       maxWorkforce: 7
     }
   },
@@ -121,6 +122,7 @@ export const buildingList: IBuilding[] = [{
     },
     harvest: {
       resource: 'wood',
+      amount: 3,
       maxWorkforce: 7
     }
   },
@@ -159,7 +161,7 @@ export const buildingList: IBuilding[] = [{
     },
     harvest: {
       resource: 'food',
-      gift: 6
+      amount: 6
     }
   },
   {

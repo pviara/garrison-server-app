@@ -62,6 +62,9 @@ export interface IGarrison {
       state: {
         /** Assignment list. */
         assignments: {
+          /** Assignment unique id. */
+          _id?: ObjectId;
+          
           /** Assignment building. */
           buildingId?: ObjectId;
 

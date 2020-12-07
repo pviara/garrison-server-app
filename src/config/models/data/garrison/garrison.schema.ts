@@ -47,6 +47,7 @@ const garrisonSchema = new Schema({
         quantity: Number,
         state: {
           assignments: [{
+            _id: Schema.Types.ObjectId,
             buildingId: Schema.Types.ObjectId,
             quantity: Number,
             endDate: Date

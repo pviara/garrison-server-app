@@ -193,4 +193,27 @@ export default class GarrisonController {
         buildingId: new ObjectId(req.body.buildingId)
     });
   }
+
+  async unassignUnit(req: Request, res: Response, next: NextFunction) {
+    if (!req.body
+      || helper.isObjectEmpty(req.body)
+      || !req.body.garrisonId
+      || !req.body.buildingId
+      || !req.body.code)
+        throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
+      
+    // check on both garrisonId and buildingId cast possibility
+    const isValidGarrisonId = isValidObjectId(req.body.garrisonId);
+    const isValidBuildingId = isValidObjectId(req.body.buildingId);
+    if (!isValidBuildingId || !isValidGarrisonId)
+      throw new ErrorHandler(400, `Unable to cast either '${req.body.garrisonId}' or '${req.body.buildingId}' to ObjectId.`);
+
+    // launch adding process
+    return await this._repo.unassignUnit(
+      <IUnitAssign>{
+        ...req.body,
+        garrisonId: new ObjectId(req.body.garrisonId),
+        buildingId: new ObjectId(req.body.buildingId)
+    });
+  }
 }

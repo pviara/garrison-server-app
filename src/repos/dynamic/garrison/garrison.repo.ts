@@ -6,26 +6,27 @@ import { ELogType as logType } from '../../../config/models/log/log.model';
 import { Connection } from 'mongoose';
 import { ObjectId } from 'mongodb';
 
-import { IGarrison, IGarrisonModel, IOperatedConstruction } from '../../../config/models/data/garrison/garrison.types';
-import IGarrisonCreate from '../../../config/models/data/garrison/payloads/IGarrisonCreate';
-
 import { IBuilding } from '../../../config/models/data/static/building/building.types';
 import IBuildingCreate from '../../../config/models/data/garrison/payloads/IBuildingCreate';
 import IBuildingUpgradeOrExtend from '../../../config/models/data/garrison/payloads/IBuildingUpgradeOrExtend';
 
+import { IGarrison, IGarrisonModel, IOperatedConstruction } from '../../../config/models/data/garrison/garrison.types';
+import IGarrisonCreate from '../../../config/models/data/garrison/payloads/IGarrisonCreate';
+
 import { IUnit } from '../../../config/models/data/static/unit/unit.types';
+import IUnitAssign from '../../../config/models/data/garrison/payloads/IUnitAssign';
 import IUnitCreate from '../../../config/models/data/garrison/payloads/IUnitCreate';
+import IUnitUnassign from '../../../config/models/data/garrison/payloads/IUnitUnassign';
 
 import { IZone } from '../../../config/models/data/static/zone/zone.types'
 
 import BuildingRepository from '../../statics/building/building.repo';
 import CharacterRepository from '../character/character.repo';
 import UnitRepository from '../../statics/unit/unit.repo';
+import UserRepository from '../user/user.repo';
 import ZoneRepository from '../../statics/zone/zone.repo';
 
 import helper from '../../../utils/helper.utils';
-import UserRepository from '../user/user.repo';
-import IUnitAssign from '../../../config/models/data/garrison/payloads/IUnitAssign';
 
 export default class GarrisonRepository {
   private _logger = new LoggerService(this.constructor.name);
@@ -230,6 +231,7 @@ export default class GarrisonRepository {
     peasants.state.assignments = [
       ...peasants.state.assignments,
       {
+        _id: new ObjectId(),
         buildingId,
         quantity: payload.workforce,
         type: 'construction',
@@ -377,6 +379,7 @@ export default class GarrisonRepository {
     peasants.state.assignments = [
       ...peasants.state.assignments,
       {
+        _id: new ObjectId(),
         buildingId: <ObjectId>garrBuilding._id,
         quantity: payload.workforce,
         type: 'construction',
@@ -524,6 +527,7 @@ export default class GarrisonRepository {
     peasants.state.assignments = [
       ...peasants.state.assignments,
       {
+        _id: new ObjectId(),
         buildingId: <ObjectId>garrBuilding._id,
         quantity: payload.workforce,
         type: 'construction',
@@ -677,6 +681,11 @@ export default class GarrisonRepository {
       .reduce((prev, next) => prev + next, 0);
     if (((payload.quantity || 1) > (garrUnits.quantity - unavailableUnits))) throw new ErrorHandler(412, `Not enough available '${payload.code}'.`);
 
+    // update garrison resources if assigning one or more peasants
+    if (unit.code === 'peasant') {
+      garrison.resources = (await this.updateResources(garrison)).resources;
+    }
+
     // assign units to the building
     for (let i = 0; i < (payload.quantity || 1); i++) {
       const index = garrUnits.state.assignments.findIndex(a => (a.buildingId?.toHexString() === garrBuilding._id?.toHexString()) && a.type === 'harvest');
@@ -703,6 +712,78 @@ export default class GarrisonRepository {
           goldLastUpdate: now
         };
       } else if (building.code === 'sawmill' && !garrison.resources.woodLastUpdate) {
+        garrison.resources = {
+          ...garrison.resources,
+          woodLastUpdate: now
+        };
+      }
+    }
+
+    // mark modified elements then save in database
+    garrison.markModified('instances.units');
+    await garrison.save();
+    
+    return await this.findById(garrison._id);
+  }
+
+  async unassignUnit(payload: IUnitUnassign) {
+    // init the moment
+    const now = new Date();
+    
+    // check on garrison existence
+    const garrison = await this.findById(payload.garrisonId);
+    if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
+
+    // check on building existence in dynamic
+    const garrBuilding = await this.findBuilding(garrison, payload.buildingId);
+    if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
+    
+    // check on building existence in statics
+    const building = await this._buildingRepo.findByCode(garrBuilding.code) as IBuilding;
+    if (!building) throw new ErrorHandler(404, `Building '${garrBuilding.code}' couldn't be found.`);
+
+    // handle only harvest building for now...
+    if (!building.harvest) throw new ErrorHandler(400, `No peasant can be assigned at building '${building.code}'.`);
+
+    // check on unit(s) existence in statics
+    const unit = await this._unitRepo.findByCode(payload.code) as IUnit;
+    if (!unit) throw new ErrorHandler(404, `Unit ${payload.code} couldn't be found.`);
+
+    // check on unit(s) existence in dynamic
+    const garrUnits = this.findUnit(garrison, payload.code);
+    if (!garrUnits) throw new ErrorHandler(404, `Not a single '${payload.code}' could be found.`);
+    
+    // check on assignment existence
+    const index = garrUnits
+      .state
+      .assignments
+      .findIndex(a => {
+        if (garrBuilding._id && a.buildingId) {
+          const areSame = helper.areSameObjectId(garrBuilding._id, a.buildingId);
+          if (areSame && a.type === 'harvest') return a;
+        }
+      });
+    if (index < 0) throw new ErrorHandler(404, 'No assignment could be found.');
+    if (garrUnits.state.assignments[index].quantity < (payload.quantity || 1))
+      throw new ErrorHandler(412, 'Given quantity cannot be greather than current assigned peasants.');
+
+    // update garrison resources if unassigning one or more peasants
+    if (unit.code === 'peasant') {
+      garrison.resources = (await this.updateResources(garrison)).resources;
+    }
+
+    // unassigning units from the building
+    garrUnits.state.assignments[index].quantity = garrUnits.state.assignments[index].quantity - (payload.quantity || 1);
+    if (garrUnits.state.assignments[index].quantity === 0) garrUnits.state.assignments.splice(index, 1);
+
+    // update resource last update
+    if (building.harvest) {
+      if (building.code === 'goldmine') {
+        garrison.resources = {
+          ...garrison.resources,
+          goldLastUpdate: now
+        };
+      } else if (building.code === 'sawmill') {
         garrison.resources = {
           ...garrison.resources,
           woodLastUpdate: now

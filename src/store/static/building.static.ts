@@ -122,7 +122,7 @@ export const buildingList: IBuilding[] = [{
     },
     harvest: {
       resource: 'wood',
-      amount: 3,
+      amount: 2,
       maxWorkforce: 7
     }
   },

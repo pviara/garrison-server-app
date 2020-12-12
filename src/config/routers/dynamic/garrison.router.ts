@@ -80,5 +80,13 @@ export default class GarrisonRouter {
         })
         .catch(error => next(error));
     });
+
+    this._router.put('/unit/unassign', (req: Request, res: Response, next: NextFunction) => {
+      this._controller.unassignUnit(req, res, next)
+        .then(result => {
+          res.status(200).json(result)
+        })
+        .catch(error => next(error));
+    });
   }
 }

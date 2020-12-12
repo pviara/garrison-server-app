@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb';
+
 /**
  * Default helper class. Contains static methods everyone can use! ✨
  */
@@ -39,6 +41,16 @@ class Helper {
    */
   static isObjectEmpty(obj: object) {
     return (Object.keys(obj).length === 0) ? true : false;
+  }
+
+  /**
+   * Check whether all given object ids are the same one.
+   * @param objectIds Given object ids.
+   */
+  static areSameObjectId(...objectIds: ObjectId[]) {
+    return objectIds.some(someObjId => {
+      return objectIds.every(eachObjId => eachObjId.equals(someObjId));
+    });
   }
 }
 

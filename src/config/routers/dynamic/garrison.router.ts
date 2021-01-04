@@ -65,6 +65,14 @@ export default class GarrisonRouter {
         .catch(error => next(error));
     });
     
+    this._router.put('/building/cancel', (req: Request, res: Response, next: NextFunction) => {
+      this._controller.cancelConstruction(req, res, next)
+        .then(result => {
+          res.status(200).json(result)
+        })
+        .catch(error => next(error));
+    });
+    
     this._router.post('/unit', (req: Request, res: Response, next: NextFunction) => {
       this._controller.addUnit(req, res, next)
         .then(result => {

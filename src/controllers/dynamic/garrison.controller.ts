@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 import GarrisonRepository from '../../repos/dynamic/garrison/garrison.repo';
+import IBuildingConstructionCancel from '../../config/models/data/garrison/payloads/IBuildingConstructionCancel';
 import IGarrisonCreate from '../../config/models/data/garrison/payloads/IGarrisonCreate';
 import IBuildingCreate from '../../config/models/data/garrison/payloads/IBuildingCreate';
 import IBuildingUpgradeOrExtend from '../../config/models/data/garrison/payloads/IBuildingUpgradeOrExtend';
@@ -143,6 +144,39 @@ export default class GarrisonController {
         ...req.body,
         garrisonId: new ObjectId(req.body.garrisonId),
         buildingId: new ObjectId(req.body.buildingId)
+    });
+  }
+
+  /**
+   * Cancel a building construction.
+   * @param req Recevied client request.
+   * @param res Response to send.
+   * @param next Next express function (lifecycle).
+   */
+  async cancelConstruction(req: Request, res: Response, next: NextFunction) {
+    if (!req.body
+      || helper.isObjectEmpty(req.body)
+      || !req.body.garrisonId
+      || !req.body.buildingId
+      || !req.body.constructionId)
+        throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
+
+    // check on both garrisonId and buildingId cast possibility
+    const isValidGarrisonId = isValidObjectId(req.body.garrisonId);
+    const isValidBuildingId = isValidObjectId(req.body.buildingId);
+    const isValidConstructionId = isValidObjectId(req.body.constructionId);
+    if (!isValidBuildingId || !isValidGarrisonId || !isValidConstructionId)
+      throw new ErrorHandler(
+        400,
+        `Unable to cast either '${req.body.garrisonId}', '${req.body.buildingId}' or '${req.body.constructionId}' to ObjectId.`
+      );
+
+    // launch extension process
+    return await this._repo.cancelBuildingConstruction(
+      <IBuildingConstructionCancel>{
+        garrisonId: new ObjectId(req.body.garrisonId),
+        buildingId: new ObjectId(req.body.buildingId),
+        constructionId: new ObjectId(req.body.constructionId)
     });
   }
 

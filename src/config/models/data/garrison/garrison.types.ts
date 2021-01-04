@@ -95,6 +95,9 @@ export interface IGarrison {
  * The representation of a building operated-construction history.
  */
 export interface IOperatedConstruction {
+  /** Construction unique id. */
+  _id: ObjectId;
+  
   /** When was the construction started ? */
   beginDate: Date;
 
@@ -107,7 +110,7 @@ export interface IOperatedConstruction {
   /** Improvement details. */
   improvement?: {
     /** Either 'upgrade' or 'extension'. */
-    type: string;
+    type: 'upgrade' | 'extension';
 
     /** What was the upgrade/extension level to be built ? */
     level: number;

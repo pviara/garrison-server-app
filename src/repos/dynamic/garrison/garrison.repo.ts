@@ -7,6 +7,7 @@ import { Connection } from 'mongoose';
 import { ObjectId } from 'mongodb';
 
 import { IBuilding } from '../../../config/models/data/static/building/building.types';
+import IBuildingConstructionCancel from '../../../config/models/data/garrison/payloads/IBuildingConstructionCancel';
 import IBuildingCreate from '../../../config/models/data/garrison/payloads/IBuildingCreate';
 import IBuildingUpgradeOrExtend from '../../../config/models/data/garrison/payloads/IBuildingUpgradeOrExtend';
 
@@ -184,6 +185,7 @@ export default class GarrisonRepository {
 
     // operate building construction
     const constructed: IOperatedConstruction = {
+      _id: new ObjectId(),
       beginDate: now,
       endDate: helper.addTime(now, newDuration * 1000),
       workforce: payload.workforce
@@ -247,6 +249,72 @@ export default class GarrisonRepository {
     return await this.findById(garrison._id);
   }
 
+  async cancelBuildingConstruction(payload: IBuildingConstructionCancel) {
+    // check on garrison existence
+    const garrison = await this.findById(payload.garrisonId);
+    if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
+
+    const garrBuilding = this.findBuilding(garrison, payload.buildingId);
+    if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
+    
+    // check on building existence
+    const building = await this._buildingRepo.findByCode(garrBuilding.code) as IBuilding;
+    if (!building) throw new ErrorHandler(404, 'Building couldn\'t be found.');
+
+    // check on construction existence
+    const index = garrBuilding
+      .constructions
+      .findIndex(c => c._id.toHexString() === payload.constructionId.toHexString());
+    if (index < 0) throw new ErrorHandler(404, 'Construction couldn\'t be found.');
+
+    // compute the resources to refund before deleting the concerned construction
+    let gold = building.instantiation.cost.gold;
+    let wood = building.instantiation.cost.wood;
+    let plot = building.instantiation.cost.plot;
+    
+    // check whether the current construction process is an improvement
+    const improvement = garrBuilding.constructions[index].improvement;
+    if (improvement) {
+      gold = gold * Math.pow(1.6, improvement.level);
+      wood = wood * Math.pow(1.6, improvement.level);
+      plot = Math.round((plot / 2) * Math.pow(1.3, improvement.level));
+
+      // delete just the concerned construction
+      garrBuilding.constructions.splice(index, 1);
+    } else {
+      // delete the whole building since no other construction can be found
+      garrison.instances.buildings.splice(
+        garrison.instances.buildings.findIndex(b => b._id?.toHexString() === garrBuilding._id?.toHexString()),
+        1
+      );
+    }
+
+    // refund the man please 💰
+    garrison.resources = {
+      ...garrison.resources,
+      gold: garrison.resources.gold + gold,
+      wood: garrison.resources.wood + wood,
+      plot: garrison.resources.plot + plot
+    };
+
+    // unassign concerned workers
+    const peasants = this.findUnit(garrison, 'peasant');
+    peasants?.state.assignments.splice(
+      peasants.state.assignments.findIndex(a => {
+        if (a.endDate.getTime() === garrBuilding.constructions[index].endDate.getTime())
+          return a;
+      }),
+      1
+    );
+
+    // mark modified elements then save in database
+    garrison.markModified('instances.buildings');
+    garrison.markModified('instances.units');
+    await garrison.save();
+
+    return await this.findById(garrison._id);
+  }
+
   async upgradeBuilding(payload: IBuildingUpgradeOrExtend) {
     // init the moment
     const now = new Date();
@@ -255,7 +323,7 @@ export default class GarrisonRepository {
     const garrison = await this.findById(payload.garrisonId);
     if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
-    const garrBuilding = await this.findBuilding(garrison, payload.buildingId);
+    const garrBuilding = this.findBuilding(garrison, payload.buildingId);
     if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence
@@ -333,6 +401,7 @@ export default class GarrisonRepository {
 
     // operate building upgrade
     const constructed: IOperatedConstruction = {
+      _id: new ObjectId(),
       beginDate: now,
       endDate: helper.addTime(now, newDuration * 1000),
       workforce: payload.workforce,
@@ -403,7 +472,7 @@ export default class GarrisonRepository {
     const garrison = await this.findById(payload.garrisonId);
     if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
-    const garrBuilding = await this.findBuilding(garrison, payload.buildingId);
+    const garrBuilding = this.findBuilding(garrison, payload.buildingId);
     if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence
@@ -481,6 +550,7 @@ export default class GarrisonRepository {
 
     // operate building upgrade
     const constructed: IOperatedConstruction = {
+      _id: new ObjectId(),
       beginDate: now,
       endDate: helper.addTime(now, newDuration * 1000),
       workforce: payload.workforce,
@@ -647,7 +717,7 @@ export default class GarrisonRepository {
     if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
     // check on building existence in dynamic
-    const garrBuilding = await this.findBuilding(garrison, payload.buildingId);
+    const garrBuilding = this.findBuilding(garrison, payload.buildingId);
     if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence in statics
@@ -735,7 +805,7 @@ export default class GarrisonRepository {
     if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
     // check on building existence in dynamic
-    const garrBuilding = await this.findBuilding(garrison, payload.buildingId);
+    const garrBuilding = this.findBuilding(garrison, payload.buildingId);
     if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence in statics

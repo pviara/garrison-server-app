@@ -305,6 +305,10 @@ export default class GarrisonRepository {
           .buildings
           .some(b => b.code === building.code);
         if (!stillExisting) delete garrison.resources.woodLastUpdate;
+      } else if (!building.harvest.maxWorkforce) {
+        garrison.resources[building.harvest.resource] -= Math.round(
+          building.harvest.amount * Math.pow(1.2, improvement?.level || 1)
+        ) - 1;
       }
     }
 

@@ -282,6 +282,8 @@ export default class GarrisonRepository {
       );
     }
 
+    // TODO Also refund the man with plots !!!!
+
     // refund the man please 💰
     garrison.resources = {
       ...garrison.resources,
@@ -306,9 +308,9 @@ export default class GarrisonRepository {
           .some(b => b.code === building.code);
         if (!stillExisting) delete garrison.resources.woodLastUpdate;
       } else if (!building.harvest.maxWorkforce) {
-        garrison.resources[building.harvest.resource] -= Math.round(
+        garrison.resources[building.harvest.resource] -= Math.floor(
           building.harvest.amount * Math.pow(1.2, improvement?.level || 1)
-        ) - 1;
+        );
       }
     }
 
@@ -316,7 +318,7 @@ export default class GarrisonRepository {
     const peasants = this.findUnit(garrison, 'peasant');
     peasants?.state.assignments.splice(
       peasants.state.assignments.findIndex(a => {
-        if (a.endDate.getTime() === garrBuilding.constructions[index].endDate.getTime())
+        if (a.endDate.getTime() === garrBuilding.constructions[index]?.endDate.getTime())
           return a;
       }),
       1
@@ -455,7 +457,7 @@ export default class GarrisonRepository {
     }
 
     if (building.harvest && !building.harvest.maxWorkforce)
-      garrison.resources[building.harvest.resource] += Math.round(
+      garrison.resources[building.harvest.resource] += Math.floor(
         building.harvest.amount * Math.pow(1.2, currentLevel + 1)
       );
     
@@ -604,7 +606,7 @@ export default class GarrisonRepository {
     }
 
     if (building.harvest && !building.harvest.maxWorkforce)
-      garrison.resources[building.harvest.resource] += Math.round(
+      garrison.resources[building.harvest.resource] += Math.floor(
         building.harvest.amount * Math.pow(1.2, currentLevel + 1)
       );
     

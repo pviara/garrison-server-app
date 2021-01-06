@@ -849,15 +849,23 @@ export default class GarrisonRepository {
     // update resource last update
     if (building.harvest) {
       if (building.code === 'goldmine') {
-        garrison.resources = {
-          ...garrison.resources,
-          goldLastUpdate: now
-        };
+        // check if at least 1 worker is assigned to some harvest building
+        const noActiveworker = !garrUnits.state.assignments.some(a => {
+          return a.type === 'harvest' && garrison
+            .instances
+            .buildings
+            .find(b => b?._id?.equals(a.buildingId || "") && b.code === building.code);
+        });
+        if (noActiveworker) delete garrison.resources.goldLastUpdate;
       } else if (building.code === 'sawmill') {
-        garrison.resources = {
-          ...garrison.resources,
-          woodLastUpdate: now
-        };
+        // check if at least 1 worker is assigned to some harvest building
+        const noActiveworker = !garrUnits.state.assignments.some(a => {
+          return a.type === 'harvest' && garrison
+            .instances
+            .buildings
+            .find(b => b?._id?.equals(a.buildingId || "") && b.code === building.code);
+        });
+        if (noActiveworker) delete garrison.resources.woodLastUpdate;
       }
     }
 

@@ -221,13 +221,6 @@ export default class GarrisonRepository {
 
     if (building.harvest && !building.harvest.maxWorkforce)
       garrison.resources[building.harvest.resource] += building.harvest.amount;
-
-    if (building.harvest?.resource === 'gold' && !garrison.resources.goldLastUpdate) {
-      garrison.resources.goldLastUpdate = now;
-    }
-    else if (building.harvest?.resource === 'wood' && !garrison.resources.woodLastUpdate) {
-      garrison.resources.woodLastUpdate = now;
-    }
     
     // assign rallied workforce to their occupation
     peasants.state.assignments = [
@@ -296,6 +289,24 @@ export default class GarrisonRepository {
       wood: garrison.resources.wood + wood,
       plot: garrison.resources.plot + plot
     };
+
+    if (building.harvest) {
+      if (building.code === 'goldmine') {
+        // if the deleted building was the only remaining building of this type, delete last update date
+        const stillExisting = garrison
+          .instances
+          .buildings
+          .some(b => b.code === building.code);
+        if (!stillExisting) delete garrison.resources.goldLastUpdate;
+      } else if (building.code === 'sawmill') {
+        // if the deleted building was the only remaining building of this type, delete last update date
+        const stillExisting = garrison
+          .instances
+          .buildings
+          .some(b => b.code === building.code);
+        if (!stillExisting) delete garrison.resources.woodLastUpdate;
+      }
+    }
 
     // unassign concerned workers
     const peasants = this.findUnit(garrison, 'peasant');

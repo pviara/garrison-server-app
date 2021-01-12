@@ -282,8 +282,6 @@ export default class GarrisonRepository {
       );
     }
 
-    // TODO Also refund the man with plots !!!!
-
     // refund the man please 💰
     garrison.resources = {
       ...garrison.resources,
@@ -308,9 +306,12 @@ export default class GarrisonRepository {
           .some(b => b.code === building.code);
         if (!stillExisting) delete garrison.resources.woodLastUpdate;
       } else if (!building.harvest.maxWorkforce) {
-        garrison.resources[building.harvest.resource] -= Math.floor(
+        let reimbursement = 0;
+        reimbursement = garrison.resources[building.harvest.resource] - Math.floor(
           building.harvest.amount * Math.pow(1.2, improvement?.level || 1)
         );
+
+        garrison.resources[building.harvest.resource] = reimbursement >= 0 ? reimbursement : 0;
       }
     }
 
@@ -702,6 +703,9 @@ export default class GarrisonRepository {
         }
       };
     }
+
+    // automatically update eligible resources
+    garrison.resources = (await this.updateResources(garrison)).resources;
 
     const goldCost = unit.instantiation.cost.gold * newUnit.quantity;
     const woodCost = unit.instantiation.cost.wood * newUnit.quantity;

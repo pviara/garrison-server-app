@@ -16,12 +16,6 @@ export interface IStaticEntity {
     side: string;
     jargon: string;
   }[];
-
-  /** Display picture(s). If exist(s), the icon is always mandatory. */
-  pictures?: {
-    icon: string;
-    image?: string;
-  };
 }
 
 /**

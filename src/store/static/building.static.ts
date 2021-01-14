@@ -140,6 +140,12 @@ export const buildingList: IBuilding[] = [{
       requiredEntities: {
         buildings: [{
           code: 'town-hall'
+        },
+        {
+          code: 'goldmine'
+        },
+        {
+          code: 'sawmill'
         }]
       }
     },
@@ -186,6 +192,12 @@ export const buildingList: IBuilding[] = [{
       requiredEntities: {
         buildings: [{
           code: 'town-hall'
+        },
+        {
+          code: 'goldmine'
+        },
+        {
+          code: 'sawmill'
         }]
       }
     },
@@ -223,6 +235,12 @@ export const buildingList: IBuilding[] = [{
       requiredEntities: {
         buildings: [{
           code: 'town-hall'
+        },
+        {
+          code: 'goldmine'
+        },
+        {
+          code: 'sawmill'
         }]
       }
     }
@@ -249,6 +267,9 @@ export const buildingList: IBuilding[] = [{
       requiredEntities: {
         buildings: [{
             code: 'town-hall'
+          },
+          {
+            code: 'goldmine'
           },
           {
             code: 'sawmill'
@@ -280,6 +301,12 @@ export const buildingList: IBuilding[] = [{
         buildings: [{
             code: 'town-hall',
             upgradeLevel: 1
+          },
+          {
+            code: 'goldmine'
+          },
+          {
+            code: 'sawmill'
           },
           {
             code: 'forge'

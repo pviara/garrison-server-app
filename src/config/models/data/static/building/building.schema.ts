@@ -12,14 +12,6 @@ const buildingSchema = new Schema({
     type: Schema.Types.Mixed,
     required: true
   },
-  pictures: {
-    icon: String,
-    image: {
-      type: String,
-      required: false
-    },
-    required: false
-  },
   instantiation: {
     type: {
       cost: {

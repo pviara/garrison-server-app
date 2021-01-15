@@ -12,6 +12,10 @@ const buildingSchema = new Schema({
     type: Schema.Types.Mixed,
     required: true
   },
+  description: {
+    type: String,
+    required: false
+  },
   instantiation: {
     type: {
       cost: {
@@ -51,7 +55,6 @@ const buildingSchema = new Schema({
     },
     required: false
   },
-
   harvest: {
     type: {
       resource: String,

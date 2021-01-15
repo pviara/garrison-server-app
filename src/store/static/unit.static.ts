@@ -128,7 +128,7 @@ export const unitList: IUnit[] = [{
     code: 'rifleman',
     word: [{
       side: 'alliance',
-      jargon: 'footman'
+      jargon: 'rifleman'
     },
     {
       side: 'horde',

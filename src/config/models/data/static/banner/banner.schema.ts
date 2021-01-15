@@ -16,6 +16,10 @@ const bannerSchema = new Schema({
     type: Schema.Types.Mixed,
     required: true
   },
+  description: {
+    type: String,
+    required: false
+  },
   pictures: {
     icon: String,
     image: {

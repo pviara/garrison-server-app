@@ -16,6 +16,11 @@ export interface IStaticEntity {
     side: string;
     jargon: string;
   }[];
+
+  /**
+   * Entity description.
+   */
+  description?: string;
 }
 
 /**

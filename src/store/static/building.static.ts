@@ -13,6 +13,7 @@ export const buildingList: IBuilding[] = [{
         jargon: 'great hall'
       }
     ],
+    description: 'The Town Hall is the center of any Human settlement. You\'ll need it to build any other building, or to train any other unit.',
     instantiation: {
       cost: {
         gold: 385,
@@ -51,6 +52,7 @@ export const buildingList: IBuilding[] = [{
   {
     code: 'goldmine',
     word: 'goldmine',
+    description: 'The goldmine is one of the three main harvest buildings. Once a peasant is sent there, he continuously harvests some gold. The more peasants are harvesting, the faster gold you get.',
     instantiation: {
       cost: {
         gold: 120,
@@ -90,6 +92,7 @@ export const buildingList: IBuilding[] = [{
   {
     code: 'sawmill',
     word: 'sawmill',
+    description: 'The sawmill is one of the three main harvest buildings. Once a peasant is sent there, he continuously harvests some wood. The more peasants are harvesting, the faster wood you get.',
     instantiation: {
       cost: {
         gold: 120,
@@ -129,6 +132,7 @@ export const buildingList: IBuilding[] = [{
   {
     code: 'farm',
     word: 'farm',
+    description: 'The farm is one of the three main harvest buildings. Once a farm is built, it immediatly gives you some food so you can train some new units. The resource acquisition is definitive.',
     instantiation: {
       cost: {
         gold: 80,
@@ -172,6 +176,7 @@ export const buildingList: IBuilding[] = [{
   },
   {
     code: 'scout-tower',
+    description: 'The scout tower is the most basic military building. It extends your field of vision and gives you between one or two plots once it is built, so that you can build some new buildings.',
     word: [{
         side: 'alliance',
         jargon: 'scout tower'
@@ -224,6 +229,7 @@ export const buildingList: IBuilding[] = [{
   {
     code: 'barracks',
     word: 'barracks',
+    description: 'Barracks is the ultimate military building. Once built, you can train some units and go to battle. There\'s no need to say that without some barracks, you won\'t win any war.',
     instantiation: {
       cost: {
         gold: 200,
@@ -256,6 +262,7 @@ export const buildingList: IBuilding[] = [{
         jargon: 'war mill'
       }
     ],
+    description: 'The forge is a research building that once built gives you access to many researches and some new units to train. Winning a war is not only about having ten thousands footmen to hand.',
     instantiation: {
       cost: {
         gold: 140,
@@ -289,6 +296,7 @@ export const buildingList: IBuilding[] = [{
         jargon: 'factory'
       }
     ],
+    description: 'The workshop is a research building specialized in ennemy buildings destruction. It gives you access to new researches and some new units to train. Careful with the fire power please.',
     instantiation: {
       cost: {
         gold: 140,

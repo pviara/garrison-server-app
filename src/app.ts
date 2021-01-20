@@ -1,7 +1,8 @@
-import dotenv from 'dotenv';
-import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import express, { Request, Response, NextFunction } from 'express';
+import morgan from 'morgan';
 
 import { initService } from './config/services/init.service';
 
@@ -41,14 +42,22 @@ import MasterRouter from './config/routers/master.router';
   // make server app use cors
   server.app.use(cors());
   
+  // make server app use morgan logging system
+  server.app.use(
+    morgan(':method :url :status :res[content-length] - :response-time ms')
+  );
+  
   // make server app handle any route starting with '/api'
   await server.configureRouter();
   server.app.use('/api', server.master.router);
 
   // make server app handle any error
   server.app.use((err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
-    console.error(`> Error ${err.statusCode || 500} at ${req.method} ${req.path} | ${err.message}`);
-    res.status(err.statusCode || 500).json({
+    const statusCode = err.statusCode || 500;
+    if (statusCode === 500) console.error(err.stack);
+    else console.error(`Error (handled): "${err.message}"`);
+
+    res.status(statusCode).json({
       status: 'error',
       statusCode: err.statusCode,
       message: err.message

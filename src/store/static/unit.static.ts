@@ -10,6 +10,7 @@ export const unitList: IUnit[] = [{
       side: 'horde',
       jargon: 'peon'
     }],
+    description: 'The most basic unit. Surely dumb, but essential to build your basement.',
     instantiation: {
       cost: {
         gold: 60,
@@ -40,6 +41,7 @@ export const unitList: IUnit[] = [{
       side: 'horde',
       jargon: 'watcher'
     }],
+    description: 'Not quite a warrior, but still a fighter. The most basic fighting unit you can find, but still a protector of your fiefdom.',
     instantiation: {
       cost: {
         gold: 95,
@@ -87,6 +89,7 @@ export const unitList: IUnit[] = [{
       side: 'horde',
       jargon: 'grunt'
     }],
+    description: 'A hand-to-hand fighter that you will find very useful in any battle. Swords, axes... anything that he can grab he can fight with.',
     instantiation: {
       cost: {
         gold: 135,
@@ -134,6 +137,7 @@ export const unitList: IUnit[] = [{
       side: 'horde',
       jargon: 'headhunter'
     }],
+    description: 'Using his rifle or his spike to reach his enemies, he can make some serious damages.',
     instantiation: {
       cost: {
         gold: 205,
@@ -184,6 +188,7 @@ export const unitList: IUnit[] = [{
       side: 'horde',
       jargon: 'wolfrider'
     }],
+    description: 'The most powerful fighter, also very confident. Makes serious damages to his enemies, no matter who they are or what they stand for.',
     instantiation: {
       cost: {
         gold: 310,

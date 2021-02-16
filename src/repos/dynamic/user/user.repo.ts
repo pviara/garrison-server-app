@@ -34,7 +34,6 @@ export default class UserRepository {
   }
 
   async findById(id: ObjectId) {
-    const t = 'hey';
     return await this._model.findById(id);
   }
   

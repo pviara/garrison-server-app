@@ -32,10 +32,15 @@ export default class GarrisonController {
     const isValidId = isValidObjectId(req.params.userId);
     if (!isValidId) throw new ErrorHandler(400, `Unable to cast '${req.params.userId}' to ObjectId.`);
 
-    // try to fetch it from dynamic
-    const result = await this._repo.getFromUser(new ObjectId(req.params.userId));
-    if (helper.isObjectEmpty(result)) // empty check because one cannot retrieve a null or undefined value
-      throw new ErrorHandler(404, `Garrison from user '${req.params.userId}' couldn't be found.`);
+    // try to fetch it from dynamic user
+    let result = null;
+    try {
+      result = await this._repo.getFromUser(new ObjectId(req.params.userId));
+    } catch (e) {
+      // try to fetch it from dynamic garrison
+      result = await this._repo.findById(new ObjectId(req.params.userId));
+    }
+    if (!result) throw new ErrorHandler(404, `Garrison from userId/id ${req.params.userId} couldn't be found.`);
 
     // return it
     return result;

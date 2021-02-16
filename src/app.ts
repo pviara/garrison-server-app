@@ -42,9 +42,11 @@ import MasterRouter from './config/routers/master.router';
   // make server app use cors
   server.app.use(cors());
   
-  // make server app use morgan logging system
+  // make server app use morgan logging system with custom tokens
+  morgan.token('angle-bracket', () => '>');
+  morgan.token('timestamp', () => new Date().toISOString());
   server.app.use(
-    morgan(':method :url :status :res[content-length] - :response-time ms')
+    morgan(':angle-bracket :timestamp :method :url :status :res[content-length] - :response-time ms')
   );
   
   // make server app handle any route starting with '/api'
@@ -55,7 +57,7 @@ import MasterRouter from './config/routers/master.router';
   server.app.use((err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.statusCode || 500;
     if (statusCode === 500) console.error(err.stack);
-    else console.error(`Error (handled): "${err.message}"`);
+    else console.error(`↱ Error: "${err.message}"`);
 
     res.status(statusCode).json({
       status: 'error',
@@ -65,10 +67,10 @@ import MasterRouter from './config/routers/master.router';
   });
 
   // make server listen on some port
-  ((port = process.env.APP_PORT || 5000) => {
+  (async (port = process.env.APP_PORT || 5000) => {
     server.app.listen(
       port,
-      () => {
+      async () => {
         // here we go baby, let them now!!
         console.log(' ▄▄ •  ▄▄▄· ▄▄▄  ▄▄▄  ▪  .▄▄ ·        ▐ ▄ ');
         console.log('▐█ ▀ ▪▐█ ▀█ ▀▄ █·▀▄ █·██ ▐█ ▀. ▪     •█▌▐█');
@@ -77,7 +79,7 @@ import MasterRouter from './config/routers/master.router';
         console.log('·▀▀▀▀  ▀  ▀ .▀  ▀.▀  ▀▀▀▀ ▀▀▀▀  ▀█▄▀▪▀▀ █▪');
         console.log(`> Version: v${require('../package')?.version}`);
         console.log(`> Port: ${port}`);
-        console.log('> Ready to handle requests!\n');
+        console.log('> Ready to handle requests!');
     });
   })();
 })();

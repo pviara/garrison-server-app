@@ -59,7 +59,7 @@ export interface IBuilding extends IStaticEntity {
     /**
      * Either the amount of resource this building is giving when it gets constructed,
      * or the amount of resource this building is giving every *t* time for 1 worker
-     * (it depends wheteher maxWorkforce property is included or not).
+     * (it depends whether maxWorkforce property is included or not).
      */
     amount: number;
 

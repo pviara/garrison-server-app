@@ -942,10 +942,18 @@ export default class GarrisonRepository {
         woodNewLastUpdate = now;
       }
       if (elapsedMinutes === 0) continue;
-        
+
+      // calculate gained resource according to elapsed minutes
+      let newResources = garrison.resources[matchStatics.harvest?.resource] + Math.floor(
+        (matchStatics.harvest.amount * elapsedMinutes) * assignedWorkers
+      );
+
+      // limit gained resources to available plots (1 plot = 30 points)
+      if (newResources > garrison.resources.plot * 30) newResources = garrison.resources.plot * 30;
+
       garrison.resources = {
         ...garrison.resources,
-        [matchStatics.harvest?.resource]: garrison.resources[matchStatics.harvest?.resource] + Math.floor((matchStatics.harvest.amount * elapsedMinutes) * assignedWorkers),
+        [matchStatics.harvest?.resource]: newResources,
         goldLastUpdate: goldNewLastUpdate || garrison.resources.goldLastUpdate,
         woodLastUpdate: woodNewLastUpdate || garrison.resources.woodLastUpdate
       };

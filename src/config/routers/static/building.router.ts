@@ -2,22 +2,22 @@ import { Router, Request, Response, NextFunction } from 'express';
 
 import ControllerService from '../../services/controller/controller.service';
 
-import StaticFactionController from '../../../controllers/statics/static.faction.controller';
+import BuildingController from '../../../controllers/static/building.controller';
 
 /**
- * Father of faction routes.
+ * Father of building routes.
  */
-export default class FactionRouter {
+export default class BuildingRouter {
   private _router = Router();
 
-  private _controller = <StaticFactionController>{};
+  private _controller = <BuildingController>{};
 
   get router() {
     return this._router;
   }
 
   constructor(private _ctService: ControllerService) {
-    this._controller = this._ctService.factionController;
+    this._controller = this._ctService.buildingController;
     this._configure();
   }
 

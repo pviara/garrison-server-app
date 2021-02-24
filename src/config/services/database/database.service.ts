@@ -3,15 +3,15 @@ import mongoose, { Connection } from 'mongoose';
 import { ELogType as logType } from '../../models/log/log.model';
 import LoggerService from '../logger/logger.service';
 
-import BannerRepository from '../../../repos/statics/banner/banner.repo';
-import BuildingRepository from '../../../repos/statics/building/building.repo';
+import BannerRepository from '../../../repos/static/banner.repo';
+import BuildingRepository from '../../../repos/static/building.repo';
 import CharacterRepository from '../../../repos/dynamic/character/character.repo';
-import FactionRepository from '../../../repos/statics/faction/faction.repo';
+import FactionRepository from '../../../repos/static/faction.repo';
 import GarrisonRepository from '../../../repos/dynamic/garrison/garrison.repo';
-import ResearchRepository from '../../../repos/statics/research/research.repo';
-import UnitRepository from '../../../repos/statics/unit/unit.repo';
+import ResearchRepository from '../../../repos/static/research.repo';
+import UnitRepository from '../../../repos/static/unit.repo';
 import UserRepository from '../../../repos/dynamic/user/user.repo';
-import ZoneRepository from '../../../repos/statics/zone/zone.repo';
+import ZoneRepository from '../../../repos/static/zone.repo';
 
 import {
   DatabaseDynamicType,
@@ -50,7 +50,7 @@ import { IZone, IZoneDocument, IZoneModel } from '../../models/data/static/zone/
  * Application global database service.
  */
 export default class DatabaseService {
-  private _dbStaticsType: DatabaseStaticType = 'DB_NAME_STATIC';
+  private _dbStaticType: DatabaseStaticType = 'DB_NAME_STATIC';
   private _dbDynamicType: DatabaseDynamicType = 'DB_NAME_DYNAMIC';
 
   private _connections: Connection[] = [];
@@ -68,7 +68,7 @@ export default class DatabaseService {
   private _zoneRepo = <ZoneRepository>{};
 
   /** Retrieve statics database. */
-  get statics() {
+  get static() {
     return this._connections.find(co => co.name === process.env.DB_NAME_STATIC);
   }
 
@@ -126,8 +126,8 @@ export default class DatabaseService {
    * Connect and register all existing databases to the application.
    */
   async connectDatabases() {
-    if (!this._connections.find(co => co.name === this._dbStaticsType))
-      await this._addConnection(this._dbStaticsType);
+    if (!this._connections.find(co => co.name === this._dbStaticType))
+      await this._addConnection(this._dbStaticType);
 
     if (!this._connections.find(co => co.name === this._dbDynamicType))
       await this._addConnection(this._dbDynamicType);
@@ -145,15 +145,15 @@ export default class DatabaseService {
   private async _initAllRepos() {
     // check if both statics and dynamic databases have been initialized
     if (!this.dynamic) throw new Error(`Database \'${this._dbDynamicType}\' hasn\'t been initialized.`);
-    if (!this.statics) throw new Error(`Database \'${this._dbStaticsType}\' hasn\'t been initialized.`);
+    if (!this.static) throw new Error(`Database \'${this._dbStaticType}\' hasn\'t been initialized.`);
 
     // init statics services
-    this._bannerRepo = new BannerRepository(this.statics);
-    this._buildingRepo = new BuildingRepository(this.statics);
-    this._factionRepo = new FactionRepository(this.statics);
-    this._researchRepo= new ResearchRepository(this.statics);
-    this._unitRepo = new UnitRepository(this.statics);
-    this._zoneRepo = new ZoneRepository(this.statics);
+    this._bannerRepo = new BannerRepository(this.static);
+    this._buildingRepo = new BuildingRepository(this.static);
+    this._factionRepo = new FactionRepository(this.static);
+    this._researchRepo= new ResearchRepository(this.static);
+    this._unitRepo = new UnitRepository(this.static);
+    this._zoneRepo = new ZoneRepository(this.static);
     
     // init dynamic services
     this._userRepo = new UserRepository(this.dynamic);
@@ -178,12 +178,12 @@ export default class DatabaseService {
    */
   private async _initAllModels() {
     // starting with statics database...
-    this.statics?.model<IBannerDocument>('banner', bannerSchema) as IBannerModel;
-    this.statics?.model<IBuildingDocument>('building', buildingSchema) as IBuildingModel;
-    this.statics?.model<IFactionDocument>('faction', factionSchema) as IFactionModel;
-    this.statics?.model<IResearchDocument>('research', researchSchema) as IResearchModel;
-    this.statics?.model<IUnitDocument>('unit', unitSchema) as IUnitModel;
-    this.statics?.model<IZoneDocument>('zone', zoneSchema) as IZoneModel;
+    this.static?.model<IBannerDocument>('banner', bannerSchema) as IBannerModel;
+    this.static?.model<IBuildingDocument>('building', buildingSchema) as IBuildingModel;
+    this.static?.model<IFactionDocument>('faction', factionSchema) as IFactionModel;
+    this.static?.model<IResearchDocument>('research', researchSchema) as IResearchModel;
+    this.static?.model<IUnitDocument>('unit', unitSchema) as IUnitModel;
+    this.static?.model<IZoneDocument>('zone', zoneSchema) as IZoneModel;
 
     // fill the statics database
     await this._fillStatics();
@@ -202,43 +202,43 @@ export default class DatabaseService {
     const lists = [
       { entities: bannerList,
         methods: {
-          findByCode: (code: string) => (this.statics?.model('banner') as IBannerModel).findByCode(code),
-          create: (entity: object) => (this.statics?.model('banner') as IBannerModel).create(entity as IBanner)
+          findByCode: (code: string) => (this.static?.model('banner') as IBannerModel).findByCode(code),
+          create: (entity: object) => (this.static?.model('banner') as IBannerModel).create(entity as IBanner)
         }
       },
 
       { entities: buildingList,
         methods: {
-          findByCode: (code: string) => (this.statics?.model('building') as IBuildingModel).findByCode(code),
-          create: (entity: object) => (this.statics?.model('building') as IBuildingModel).create(entity as IBuilding)
+          findByCode: (code: string) => (this.static?.model('building') as IBuildingModel).findByCode(code),
+          create: (entity: object) => (this.static?.model('building') as IBuildingModel).create(entity as IBuilding)
         }
       },
 
       { entities: factionList,
         methods: {
-          findByCode: (code: string) => (this.statics?.model('faction') as IFactionModel).findByCode(code),
-          create: (entity: object) => (this.statics?.model('faction') as IFactionModel).create(entity as IFaction)
+          findByCode: (code: string) => (this.static?.model('faction') as IFactionModel).findByCode(code),
+          create: (entity: object) => (this.static?.model('faction') as IFactionModel).create(entity as IFaction)
         }
       },
 
       { entities: researchList,
         methods: {
-          findByCode: (code: string) => (this.statics?.model('research') as IResearchModel).findByCode(code),
-          create: (entity: object) => (this.statics?.model('research') as IResearchModel).create(entity as IResearch)
+          findByCode: (code: string) => (this.static?.model('research') as IResearchModel).findByCode(code),
+          create: (entity: object) => (this.static?.model('research') as IResearchModel).create(entity as IResearch)
         }
       },
 
       { entities: unitList,
         methods: {
-          findByCode: (code: string) => (this.statics?.model('unit') as IUnitModel).findByCode(code),
-          create: (entity: object) => (this.statics?.model('unit') as IUnitModel).create(entity as IUnit)
+          findByCode: (code: string) => (this.static?.model('unit') as IUnitModel).findByCode(code),
+          create: (entity: object) => (this.static?.model('unit') as IUnitModel).create(entity as IUnit)
         }
       },
         
       { entities: zoneList,
         methods: {
-          findByCode: (code: string) => (this.statics?.model('zone') as IZoneModel).findByCode(code),
-          create: (entity: object) => (this.statics?.model('zone') as IZoneModel).create(entity as IZone)
+          findByCode: (code: string) => (this.static?.model('zone') as IZoneModel).findByCode(code),
+          create: (entity: object) => (this.static?.model('zone') as IZoneModel).create(entity as IZone)
         }
       },
     ];

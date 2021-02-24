@@ -1,39 +1,39 @@
 import { Request, Response, NextFunction } from 'express';
 
-import FactionRepository from '../../repos/statics/faction/faction.repo';
+import BuildingRepository from '../../repos/static/building.repo';
 
 import helper from '../../utils/helper.utils';
 
-import { IFactionDocument } from '../../config/models/data/static/faction/faction.types';
+import { IBuildingDocument } from '../../config/models/data/static/building/building.types';
 
 import ErrorHandler from '../../config/models/error/error-handler.model';
 
-export default class StaticFactionController {
-  private _factions: IFactionDocument[] = [];
+export default class BuildingController {
+  private _buildings: IBuildingDocument[] = [];
   
-  constructor(private _repo: FactionRepository) {}
+  constructor(private _repo: BuildingRepository) {}
 
   /**
-   * Get all factions from statics database.
+   * Get all buildings from statics database.
    * @param req Recevied client request.
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
   async getAll(req: Request, res: Response, next: NextFunction) {
     // look for the building in cache data
-    if (this._factions.length > 0) return this._factions;
+    if (this._buildings.length > 0) return this._buildings;
 
     // try to fetch it from statics
-    const result = <IFactionDocument[]>await this._repo.getAll();
-    if (!result) throw new ErrorHandler(404, 'Not a single faction could be found.');
+    const result = <IBuildingDocument[]>await this._repo.getAll();
+    if (!result) throw new ErrorHandler(404, 'Not a single building could be found.');
 
     // add it to cache data then return it
-    this._factions = result;
+    this._buildings = result;
     return result;
   }
 
   /**
-   * Get a specific faction from statics database.
+   * Get a specific building from statics database.
    * @param req Recevied client request.
    * @param res Response to send.
    * @param next Next express function (lifecycle).
@@ -43,14 +43,14 @@ export default class StaticFactionController {
       throw new ErrorHandler(400, 'Missing code in params.');
 
     // look for the building in cache data
-    const existing = this._factions.find(b => b?.code === req.params.code);
+    const existing = this._buildings.find(b => b?.code === req.params.code);
     if (!existing) {
       // try to fetch it from statics
-      const result = <IFactionDocument>await this._repo.findByCode(req.params.code as string);
-      if (!result) throw new ErrorHandler(404, `Faction '${req.params.code}' couldn't be found.`);
+      const result = <IBuildingDocument>await this._repo.findByCode(req.params.code as string);
+      if (!result) throw new ErrorHandler(404, `Building '${req.params.code}' couldn't be found.`);
 
       // add it to cache data then return it
-      this._factions = [...this._factions, result];
+      this._buildings = [...this._buildings, result];
       return result;
     }
     return existing;

@@ -1,8 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 
-import ControllerService from '../../services/controller/controller.service';
+import ControllerService from '../../../services/controller/controller.service';
 
-import GarrisonController from '../../../controllers/dynamic/garrison.controller';
+import GarrisonController from '../../../../controllers/dynamic/garrison/garrison.controller';
 
 /**
  * Father of garrison routes.

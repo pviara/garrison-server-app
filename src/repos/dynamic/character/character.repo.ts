@@ -9,8 +9,8 @@ import { ObjectId } from 'mongodb';
 import { ICharacterModel } from '../../../config/models/data/character/character.types';
 import ICharacterCreate from '../../../config/models/data/character/payloads/ICharacterCreate';
 
-import BannerRepository from '../../statics/banner/banner.repo';
-import FactionRepository from '../../statics/faction/faction.repo';
+import BannerRepository from '../../static/banner.repo';
+import FactionRepository from '../../static/faction.repo';
 import UserRepository from '../user/user.repo';
 
 /**

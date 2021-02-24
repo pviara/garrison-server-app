@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 
-import BannerRepository from '../../repos/statics/banner/banner.repo';
+import BannerRepository from '../../repos/static/banner.repo';
 import { IBannerDocument } from '../../config/models/data/static/banner/banner.types';
 
 import helper from '../../utils/helper.utils';
 
 import ErrorHandler from '../../config/models/error/error-handler.model';
 
-export default class StaticBannerController {
+export default class BannerController {
   private _banners: IBannerDocument[] = [];
   
   constructor(private _repo: BannerRepository) {}

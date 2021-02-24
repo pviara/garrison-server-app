@@ -1,9 +1,9 @@
-import LoggerService from '../../../config/services/logger/logger.service';
-import { ELogType as logType } from '../../../config/models/log/log.model';
+import LoggerService from '../../config/services/logger/logger.service';
+import { ELogType as logType } from '../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
 
-import { IZoneModel } from '../../../config/models/data/static/zone/zone.types';
+import { IZoneModel } from '../../config/models/data/static/zone/zone.types';
 
 export default class ZoneRepository {
   private _logger = new LoggerService(this.constructor.name);

@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import ControllerService from '../../services/controller/controller.service';
 
-import GarrisonRouter from './garrison.router';
+import GarrisonRouter from './garrison/garrison.router';
 
 /**
  * Father of dynamic routes.

@@ -2,22 +2,22 @@ import { Router, Request, Response, NextFunction } from 'express';
 
 import ControllerService from '../../services/controller/controller.service';
 
-import StaticBannerController from '../../../controllers/statics/static.banner.controller';
+import UnitController from '../../../controllers/static/unit.controller';
 
 /**
- * Father of banner routes.
+ * Father of unit routes.
  */
-export default class BannerRouter {
+export default class UnitRouter {
   private _router = Router();
 
-  private _controller = <StaticBannerController>{};
+  private _controller = <UnitController>{};
 
   get router() {
     return this._router;
   }
 
   constructor(private _ctService: ControllerService) {
-    this._controller = this._ctService.bannerController;
+    this._controller = this._ctService.unitController;
     this._configure();
   }
 

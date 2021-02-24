@@ -1,12 +1,12 @@
-import LoggerService from '../../../config/services/logger/logger.service';
-import { ELogType as logType } from '../../../config/models/log/log.model';
+import LoggerService from '../../config/services/logger/logger.service';
+import { ELogType as logType } from '../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
 
-import { IResearchModel } from '../../../config/models/data/static/research/research.types';
+import { IResearchModel } from '../../config/models/data/static/research/research.types';
 
 /**
- * Handle interactions with research static documents from database statics.
+ * Handle interactions with research static documents from database static.
  */
 export default class ResearchRepository {
   private _logger = new LoggerService(this.constructor.name);

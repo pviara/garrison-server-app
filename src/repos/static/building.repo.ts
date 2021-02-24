@@ -1,12 +1,12 @@
-import LoggerService from '../../../config/services/logger/logger.service';
-import { ELogType as logType } from '../../../config/models/log/log.model';
+import LoggerService from '../../config/services/logger/logger.service';
+import { ELogType as logType } from '../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
 
-import { IBuildingModel } from '../../../config/models/data/static/building/building.types';
+import { IBuildingModel } from '../../config/models/data/static/building/building.types';
 
 /**
- * Handle interactions with building static documents from database statics.
+ * Handle interactions with building static documents from database static.
  */
 export default class BuildingRepository {
   private _logger = new LoggerService(this.constructor.name);

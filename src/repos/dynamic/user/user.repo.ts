@@ -17,7 +17,7 @@ import mjml2html from 'mjml';
 
 import { initService } from '../../../config/services/init.service';
 
-import newUserEmail from '../../../store/template/e-mail/new-user.email';
+import newUserEmail from '../../../store/template/e-mail/new-user.email.template';
 
 /**
  * Handle interactions with user documents from database dynamic.

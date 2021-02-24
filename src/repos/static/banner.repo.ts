@@ -1,12 +1,12 @@
-import LoggerService from '../../../config/services/logger/logger.service';
-import { ELogType as logType } from '../../../config/models/log/log.model';
+import LoggerService from '../../config/services/logger/logger.service';
+import { ELogType as logType } from '../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
 
-import { IBannerModel } from '../../../config/models/data/static/banner/banner.types';
+import { IBannerModel } from '../../config/models/data/static/banner/banner.types';
 
 /**
- * Handle interactions with banner static documents from database statics.
+ * Handle interactions with banner static documents from database static.
  */
 export default class BannerRepository {
   private _logger = new LoggerService(this.constructor.name);

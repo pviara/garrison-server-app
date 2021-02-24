@@ -12,7 +12,7 @@ import ZoneRouter from './zone.router';
 /**
  * Father of statics routes.
  */
-export default class StaticsRouter {
+export default class StaticRouter {
   private _router = Router();
   private _bannerRouter = <BannerRouter>{};
   private _buildingRouter = <BuildingRouter>{};

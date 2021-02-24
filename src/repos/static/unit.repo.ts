@@ -1,12 +1,12 @@
-import LoggerService from '../../../config/services/logger/logger.service';
-import { ELogType as logType } from '../../../config/models/log/log.model';
+import LoggerService from '../../config/services/logger/logger.service';
+import { ELogType as logType } from '../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
 
-import { IUnitModel } from '../../../config/models/data/static/unit/unit.types';
+import { IUnitModel } from '../../config/models/data/static/unit/unit.types';
 
 /**
- * Handle interactions with unit static documents from database statics.
+ * Handle interactions with unit static documents from database static.
  */
 export default class UnitRepository {
   private _logger = new LoggerService(this.constructor.name);

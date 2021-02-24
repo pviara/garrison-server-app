@@ -21,11 +21,11 @@ import IUnitUnassign from '../../../config/models/data/garrison/payloads/IUnitUn
 
 import { IZone } from '../../../config/models/data/static/zone/zone.types'
 
-import BuildingRepository from '../../statics/building/building.repo';
+import BuildingRepository from '../../static/building.repo';
 import CharacterRepository from '../character/character.repo';
-import UnitRepository from '../../statics/unit/unit.repo';
+import UnitRepository from '../../static/unit.repo';
 import UserRepository from '../user/user.repo';
-import ZoneRepository from '../../statics/zone/zone.repo';
+import ZoneRepository from '../../static/zone.repo';
 
 import helper from '../../../utils/helper.utils';
 
@@ -902,7 +902,7 @@ export default class GarrisonRepository {
     const now = new Date();
 
     for (const building of garrison.instances.buildings) {
-      // retrieve matching building from database statics
+      // retrieve matching building from database static
       const matchStatics = await this._buildingRepo.findByCode(building.code) as IBuilding;
       if (!matchStatics.harvest) continue;
 

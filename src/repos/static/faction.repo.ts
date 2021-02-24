@@ -1,12 +1,12 @@
-import LoggerService from '../../../config/services/logger/logger.service';
-import { ELogType as logType } from '../../../config/models/log/log.model';
+import LoggerService from '../../config/services/logger/logger.service';
+import { ELogType as logType } from '../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
 
-import { IFactionModel } from '../../../config/models/data/static/faction/faction.types';
+import { IFactionModel } from '../../config/models/data/static/faction/faction.types';
 
 /**
- * Handle interactions with faction static documents from database statics.
+ * Handle interactions with faction static documents from database static.
  */
 export default class FactionRepository {
   private _logger = new LoggerService(this.constructor.name);

@@ -2,7 +2,7 @@ import { createTransport } from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 
 import { ELogType as logType } from '../../models/log/log.model';
-import LoggerService from '../logger/logger.service';
+import MonitoringService from '../monitoring/monitoring.service'
 
 /**
  * Application global mailing service.
@@ -11,7 +11,7 @@ export default class MailingService {
   private _transport = <Mail>{};
   private _hasBeenConfigured = false;
 
-  private _logger = new LoggerService(this.constructor.name);
+  private _monitor = new MonitoringService(this.constructor.name);
 
   /**
    * Configure the current mailing service.
@@ -19,7 +19,7 @@ export default class MailingService {
   configureTransport() {
     if (this._hasBeenConfigured) return;
     try {
-      this._logger.log(logType.pending, 'Configuring mailing service...');
+      this._monitor.log(logType.pending, 'Configuring mailing service...');
       if (!process.env.SMTP_USER_EMAIL || !process.env.SMTP_USER_PASSWORD)
         throw new Error('Couldn\'t retrieve either SMTP user or password from .env file.');
 
@@ -31,9 +31,9 @@ export default class MailingService {
         }
       });
       this._hasBeenConfigured = true;
-      this._logger.log(logType.pass, 'Configured mailing service');
+      this._monitor.log(logType.pass, 'Configured mailing service');
     } catch (err) {
-      this._logger.log(logType.fail, 'Failed to configure mailing service');
+      this._monitor.log(logType.fail, 'Failed to configure mailing service');
       throw err;
     }
   }

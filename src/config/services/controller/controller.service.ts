@@ -1,4 +1,4 @@
-import LoggerService from '../logger/logger.service';
+import MonitoringService from '../monitoring/monitoring.service';
 import { ELogType as logType } from '../../models/log/log.model';
 
 import DatabaseService from '../database/database.service';
@@ -15,7 +15,7 @@ import ZoneController from '../../../controllers/static/zone.controller';
  * Application global controller service.
  */
 export default class ControllerService {
-  private _logger = new LoggerService(this.constructor.name);
+  private _monitor = new MonitoringService(this.constructor.name);
 
   private _bannerController = <BannerController>{};
   private _buildingController = <BuildingController>{};
@@ -59,7 +59,7 @@ export default class ControllerService {
    * Configure the current controller service.
    */
   configureControllers() {
-    this._logger.log(logType.pending, 'Configuring controller service...');
+    this._monitor.log(logType.pending, 'Configuring controller service...');
     this._bannerController = new BannerController(this._dbService.bannerRepo);
     this._buildingController = new BuildingController(this._dbService.buildingRepo);
     this._factionController = new FactionController(this._dbService.factionRepo);
@@ -67,6 +67,6 @@ export default class ControllerService {
     this._researchController = new ResearchController(this._dbService.researchRepo);
     this._unitController = new UnitController(this._dbService.unitRepo);
     this._zoneController = new ZoneController(this._dbService.zoneRepo);
-    this._logger.log(logType.pass, 'Configured controller service');
+    this._monitor.log(logType.pass, 'Configured controller service');
   }
 }

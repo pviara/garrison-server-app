@@ -1,6 +1,6 @@
 import ErrorHandler from '../../../config/models/error/error-handler.model';
 
-import LoggerService from '../../../config/services/logger/logger.service';
+import MonitoringService from '../../../config/services/monitoring/monitoring.service';
 import { ELogType as logType } from '../../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
@@ -17,7 +17,7 @@ import UserRepository from '../user/user.repo';
  * Handle interactions with character documents from database dynamic.
  */
 export default class CharacterRepository {
-  private _logger = new LoggerService(this.constructor.name);
+  private _monitor = new MonitoringService(this.constructor.name);
 
   private _model = <ICharacterModel>{};
 
@@ -27,9 +27,9 @@ export default class CharacterRepository {
     private _factionRepo: FactionRepository,
     private _userRepo: UserRepository
   ) {
-    this._logger.log(logType.pending, 'Initializing character repo...');
+    this._monitor.log(logType.pending, 'Initializing character repo...');
     this._model = <ICharacterModel>this._connection?.model('character');
-    this._logger.log(logType.pass, 'Initialized character repo');
+    this._monitor.log(logType.pass, 'Initialized character repo');
   }
 
   async findById(id: ObjectId) {

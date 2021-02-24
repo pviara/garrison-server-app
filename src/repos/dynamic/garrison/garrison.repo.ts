@@ -1,6 +1,6 @@
 import ErrorHandler from '../../../config/models/error/error-handler.model';
 
-import LoggerService from '../../../config/services/logger/logger.service';
+import MonitoringService from '../../../config/services/monitoring/monitoring.service'
 import { ELogType as logType } from '../../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
@@ -30,7 +30,7 @@ import ZoneRepository from '../../static/zone.repo';
 import helper from '../../../utils/helper.utils';
 
 export default class GarrisonRepository {
-  private _logger = new LoggerService(this.constructor.name);
+  private _monitor = new MonitoringService(this.constructor.name);
 
   private _garrisonModel = <IGarrisonModel>{};
 
@@ -42,9 +42,9 @@ export default class GarrisonRepository {
     private _userRepo: UserRepository,
     private _zoneRepo: ZoneRepository
   ) {
-    this._logger.log(logType.pending, 'Initializing garrison repo...');
+    this._monitor.log(logType.pending, 'Initializing garrison repo...');
     this._garrisonModel = <IGarrisonModel>this._connection?.model('garrison');
-    this._logger.log(logType.pass, 'Initialized garrison repo');
+    this._monitor.log(logType.pass, 'Initialized garrison repo');
   }
 
   async findById(id: ObjectId) {

@@ -1,6 +1,6 @@
 import ErrorHandler from '../../../config/models/error/error-handler.model';
 
-import LoggerService from '../../../config/services/logger/logger.service';
+import MonitoringService from '../../../config/services/monitoring/monitoring.service'
 import { ELogType as logType } from '../../../config/models/log/log.model';
 
 import { ObjectId } from 'mongodb';
@@ -23,14 +23,14 @@ import newUserEmail from '../../../store/template/e-mail/new-user.email.template
  * Handle interactions with user documents from database dynamic.
  */
 export default class UserRepository {
-  private _logger = new LoggerService(this.constructor.name);
+  private _monitor = new MonitoringService(this.constructor.name);
 
   private _model = <IUserModel>{};
 
   constructor(private _connection: Connection) {
-    this._logger.log(logType.pending, 'Initializing user repo...');
+    this._monitor.log(logType.pending, 'Initializing user repo...');
     this._model = <IUserModel>this._connection?.model('user');
-    this._logger.log(logType.pass, 'Initialized user repo');
+    this._monitor.log(logType.pass, 'Initialized user repo');
   }
 
   async findById(id: ObjectId) {

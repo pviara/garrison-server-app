@@ -1,4 +1,4 @@
-import LoggerService from '../../config/services/logger/logger.service';
+import MonitoringService from '../../config/services/monitoring/monitoring.service'
 import { ELogType as logType } from '../../config/models/log/log.model';
 
 import { Connection } from 'mongoose';
@@ -9,14 +9,14 @@ import { IBannerModel } from '../../config/models/data/static/banner/banner.type
  * Handle interactions with banner static documents from database static.
  */
 export default class BannerRepository {
-  private _logger = new LoggerService(this.constructor.name);
+  private _monitor = new MonitoringService(this.constructor.name);
 
   private _model = <IBannerModel>{};
 
   constructor(private _connection: Connection) {
-    this._logger.log(logType.pending, 'Initializing banner repo...');
+    this._monitor.log(logType.pending, 'Initializing banner repo...');
     this._model = <IBannerModel>this._connection?.model('banner');
-    this._logger.log(logType.pass, 'Initialized banner repo');
+    this._monitor.log(logType.pass, 'Initialized banner repo');
   }
 
   async getAll() {

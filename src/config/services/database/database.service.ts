@@ -1,7 +1,7 @@
 import mongoose, { Connection } from 'mongoose';
 
 import { ELogType as logType } from '../../models/log/log.model';
-import LoggerService from '../logger/logger.service';
+import MonitoringService from '../monitoring/monitoring.service'
 
 import BannerRepository from '../../../repos/static/banner.repo';
 import BuildingRepository from '../../../repos/static/building.repo';
@@ -55,7 +55,7 @@ export default class DatabaseService {
 
   private _connections: Connection[] = [];
 
-  private _logger = new LoggerService(this.constructor.name);
+  private _monitor = new MonitoringService(this.constructor.name);
 
   private _bannerRepo = <BannerRepository>{};
   private _buildingRepo = <BuildingRepository>{};
@@ -249,11 +249,11 @@ export default class DatabaseService {
       for (const entity of list.entities) {
         if (await list.methods.findByCode(entity.code)) continue;
         
-        this._logger.log(logType.pending, `Creating entity ${entity.code}...`);
+        this._monitor.log(logType.pending, `Creating entity ${entity.code}...`);
         const created = await list.methods.create(entity);
         
-        if (created) this._logger.log(logType.pass, `Created entity ${entity.code} (${created.id})`);
-        else this._logger.log(logType.fail, `Failed to create entity ${entity.code}`);
+        if (created) this._monitor.log(logType.pass, `Created entity ${entity.code} (${created.id})`);
+        else this._monitor.log(logType.fail, `Failed to create entity ${entity.code}`);
       }
     }
   }
@@ -297,11 +297,11 @@ export default class DatabaseService {
     };
 
     try {
-      this._logger.log(logType.pending, `Connecting to database ${dbType}...`);
+      this._monitor.log(logType.pending, `Connecting to database ${dbType}...`);
       this._connections = this._connections.concat(await createConnection(dbType));
-      this._logger.log(logType.pass, `Connected to database ${dbType}`);
+      this._monitor.log(logType.pass, `Connected to database ${dbType}`);
     } catch (err) {
-      this._logger.log(logType.fail, `Failed to connect to database ${dbType}`);
+      this._monitor.log(logType.fail, `Failed to connect to database ${dbType}`);
       throw err;
     }
 

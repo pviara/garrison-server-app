@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 
 import ControllerService from '../../services/controller/controller.service';
 
-import BannerController from '../../../controllers/statics/banner.controller';
+import StaticBannerController from '../../../controllers/statics/static.banner.controller';
 
 /**
  * Father of banner routes.
@@ -10,7 +10,7 @@ import BannerController from '../../../controllers/statics/banner.controller';
 export default class BannerRouter {
   private _router = Router();
 
-  private _controller = <BannerController>{};
+  private _controller = <StaticBannerController>{};
 
   get router() {
     return this._router;

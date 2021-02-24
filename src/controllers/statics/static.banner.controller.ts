@@ -7,7 +7,7 @@ import helper from '../../utils/helper.utils';
 
 import ErrorHandler from '../../config/models/error/error-handler.model';
 
-export default class BannerController {
+export default class StaticBannerController {
   private _banners: IBannerDocument[] = [];
   
   constructor(private _repo: BannerRepository) {}

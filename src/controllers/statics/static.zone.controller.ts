@@ -8,7 +8,7 @@ import { IZoneDocument } from '../../config/models/data/static/zone/zone.types';
 
 import ErrorHandler from '../../config/models/error/error-handler.model';
 
-export default class ZoneController {
+export default class StaticZoneController {
   private _zones: IZoneDocument[] = [];
   
   constructor(private _repo: ZoneRepository) {}

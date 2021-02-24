@@ -3,13 +3,13 @@ import { ELogType as logType } from '../../models/log/log.model';
 
 import DatabaseService from '../database/database.service';
 
-import BannerController from '../../../controllers/statics/banner.controller';
-import BuildingController from '../../../controllers/statics/building.controller';
-import FactionController from '../../../controllers/statics/faction.controller';
+import StaticBannerController from '../../../controllers/statics/static.banner.controller';
+import StaticBuildingController from '../../../controllers/statics/static.building.controller';
+import StaticFactionController from '../../../controllers/statics/static.faction.controller';
 import GarrisonController from '../../../controllers/dynamic/garrison.controller';
-import ResearchController from '../../../controllers/statics/research.controller';
-import UnitController from '../../../controllers/statics/unit.controller';
-import ZoneController from '../../../controllers/statics/zone.controller';
+import StaticResearchController from '../../../controllers/statics/static.research.controller';
+import StaticUnitController from '../../../controllers/statics/static.unit.controller';
+import StaticZoneController from '../../../controllers/statics/static.zone.controller';
 
 /**
  * Application global controller service.
@@ -17,13 +17,13 @@ import ZoneController from '../../../controllers/statics/zone.controller';
 export default class ControllerService {
   private _logger = new LoggerService(this.constructor.name);
 
-  private _bannerController = <BannerController>{};
-  private _buildingController = <BuildingController>{};
-  private _factionController = <FactionController>{};
+  private _bannerController = <StaticBannerController>{};
+  private _buildingController = <StaticBuildingController>{};
+  private _factionController = <StaticFactionController>{};
   private _garrisonController = <GarrisonController>{};
-  private _researchController = <ResearchController>{};
-  private _unitController = <UnitController>{};
-  private _zoneController = <ZoneController>{};
+  private _researchController = <StaticResearchController>{};
+  private _unitController = <StaticUnitController>{};
+  private _zoneController = <StaticZoneController>{};
 
   get bannerController() {
     return this._bannerController;
@@ -60,13 +60,13 @@ export default class ControllerService {
    */
   configureControllers() {
     this._logger.log(logType.pending, 'Configuring controller service...');
-    this._bannerController = new BannerController(this._dbService.bannerRepo);
-    this._buildingController = new BuildingController(this._dbService.buildingRepo);
-    this._factionController = new FactionController(this._dbService.factionRepo);
+    this._bannerController = new StaticBannerController(this._dbService.bannerRepo);
+    this._buildingController = new StaticBuildingController(this._dbService.buildingRepo);
+    this._factionController = new StaticFactionController(this._dbService.factionRepo);
     this._garrisonController = new GarrisonController(this._dbService.garrisonRepo);
-    this._researchController = new ResearchController(this._dbService.researchRepo);
-    this._unitController = new UnitController(this._dbService.unitRepo);
-    this._zoneController = new ZoneController(this._dbService.zoneRepo);
+    this._researchController = new StaticResearchController(this._dbService.researchRepo);
+    this._unitController = new StaticUnitController(this._dbService.unitRepo);
+    this._zoneController = new StaticZoneController(this._dbService.zoneRepo);
     this._logger.log(logType.pass, 'Configured controller service');
   }
 }

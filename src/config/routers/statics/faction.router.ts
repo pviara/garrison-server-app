@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 
 import ControllerService from '../../services/controller/controller.service';
 
-import FactionController from '../../../controllers/statics/faction.controller';
+import StaticFactionController from '../../../controllers/statics/static.faction.controller';
 
 /**
  * Father of faction routes.
@@ -10,7 +10,7 @@ import FactionController from '../../../controllers/statics/faction.controller';
 export default class FactionRouter {
   private _router = Router();
 
-  private _controller = <FactionController>{};
+  private _controller = <StaticFactionController>{};
 
   get router() {
     return this._router;

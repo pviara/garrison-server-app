@@ -15,7 +15,7 @@ import ZoneRepository from '../../../repos/statics/zone/zone.repo';
 
 import {
   DatabaseDynamicType,
-  DatabaseStaticsType,
+  DatabaseStaticType,
   DatabaseType
 } from '../../models/data/model';
 
@@ -50,7 +50,7 @@ import { IZone, IZoneDocument, IZoneModel } from '../../models/data/static/zone/
  * Application global database service.
  */
 export default class DatabaseService {
-  private _dbStaticsType: DatabaseStaticsType = 'DB_NAME_STATICS';
+  private _dbStaticsType: DatabaseStaticType = 'DB_NAME_STATIC';
   private _dbDynamicType: DatabaseDynamicType = 'DB_NAME_DYNAMIC';
 
   private _connections: Connection[] = [];
@@ -69,7 +69,7 @@ export default class DatabaseService {
 
   /** Retrieve statics database. */
   get statics() {
-    return this._connections.find(co => co.name === process.env.DB_NAME_STATICS);
+    return this._connections.find(co => co.name === process.env.DB_NAME_STATIC);
   }
 
   /** Retrieve dynamic database. */

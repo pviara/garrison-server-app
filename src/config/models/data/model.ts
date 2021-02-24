@@ -1,4 +1,4 @@
 // all existing database types
-export type DatabaseStaticsType = 'DB_NAME_STATICS';
+export type DatabaseStaticType = 'DB_NAME_STATIC';
 export type DatabaseDynamicType = 'DB_NAME_DYNAMIC';
-export type DatabaseType = DatabaseStaticsType | DatabaseDynamicType;
+export type DatabaseType = DatabaseStaticType | DatabaseDynamicType;

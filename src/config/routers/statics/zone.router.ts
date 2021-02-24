@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 
 import ControllerService from '../../services/controller/controller.service';
 
-import ZoneController from '../../../controllers/statics/zone.controller';
+import StaticZoneController from '../../../controllers/statics/static.zone.controller';
 
 /**
  * Father of zone routes.
@@ -10,7 +10,7 @@ import ZoneController from '../../../controllers/statics/zone.controller';
 export default class ZoneRouter {
   private _router = Router();
 
-  private _controller = <ZoneController>{};
+  private _controller = <StaticZoneController>{};
 
   get router() {
     return this._router;

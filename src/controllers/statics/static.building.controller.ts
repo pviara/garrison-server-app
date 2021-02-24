@@ -8,7 +8,7 @@ import { IBuildingDocument } from '../../config/models/data/static/building/buil
 
 import ErrorHandler from '../../config/models/error/error-handler.model';
 
-export default class BuildingController {
+export default class StaticBuildingController {
   private _buildings: IBuildingDocument[] = [];
   
   constructor(private _repo: BuildingRepository) {}

@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 
 import ControllerService from '../../services/controller/controller.service';
 
-import UnitController from '../../../controllers/statics/unit.controller';
+import StaticUnitController from '../../../controllers/statics/static.unit.controller';
 
 /**
  * Father of unit routes.
@@ -10,7 +10,7 @@ import UnitController from '../../../controllers/statics/unit.controller';
 export default class UnitRouter {
   private _router = Router();
 
-  private _controller = <UnitController>{};
+  private _controller = <StaticUnitController>{};
 
   get router() {
     return this._router;

@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 
 import ControllerService from '../../services/controller/controller.service';
 
-import ResearchController from '../../../controllers/statics/research.controller';
+import StaticResearchController from '../../../controllers/statics/static.research.controller';
 
 /**
  * Father of research routes.
@@ -10,7 +10,7 @@ import ResearchController from '../../../controllers/statics/research.controller
 export default class ResearchRouter {
   private _router = Router();
 
-  private _controller = <ResearchController>{};
+  private _controller = <StaticResearchController>{};
 
   get router() {
     return this._router;

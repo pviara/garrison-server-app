@@ -1,23 +1,24 @@
 import ErrorHandler from '../../../config/models/error/error-handler.model';
 
-import MonitoringService from '../../../config/services/monitoring/monitoring.service'
 import { ELogType as logType } from '../../../config/models/log/log.model';
+import IMonitored from '../../../config/models/IMonitored';
+import MonitoringService from '../../../config/services/monitoring/monitoring.service'
 
 import { Connection } from 'mongoose';
 import { ObjectId } from 'mongodb';
 
 import { IBuilding } from '../../../config/models/data/static/building/building.types';
-import IBuildingConstructionCancel from '../../../config/models/data/garrison/payloads/IBuildingConstructionCancel';
-import IBuildingCreate from '../../../config/models/data/garrison/payloads/IBuildingCreate';
-import IBuildingUpgradeOrExtend from '../../../config/models/data/garrison/payloads/IBuildingUpgradeOrExtend';
+import IBuildingConstructionCancel from '../../../config/models/data/dynamic/garrison/payloads/IBuildingConstructionCancel';
+import IBuildingCreate from '../../../config/models/data/dynamic/garrison/payloads/IBuildingCreate';
+import IBuildingUpgradeOrExtend from '../../../config/models/data/dynamic/garrison/payloads/IBuildingUpgradeOrExtend';
 
-import { IGarrison, IGarrisonModel, IOperatedConstruction } from '../../../config/models/data/garrison/garrison.types';
-import IGarrisonCreate from '../../../config/models/data/garrison/payloads/IGarrisonCreate';
+import { IGarrison, IGarrisonModel, IOperatedConstruction } from '../../../config/models/data/dynamic/garrison/garrison.types';
+import IGarrisonCreate from '../../../config/models/data/dynamic/garrison/payloads/IGarrisonCreate';
 
 import { IUnit } from '../../../config/models/data/static/unit/unit.types';
-import IUnitAssign from '../../../config/models/data/garrison/payloads/IUnitAssign';
-import IUnitCreate from '../../../config/models/data/garrison/payloads/IUnitCreate';
-import IUnitUnassign from '../../../config/models/data/garrison/payloads/IUnitUnassign';
+import IUnitAssign from '../../../config/models/data/dynamic/garrison/payloads/IUnitAssign';
+import IUnitCreate from '../../../config/models/data/dynamic/garrison/payloads/IUnitCreate';
+import IUnitUnassign from '../../../config/models/data/dynamic/garrison/payloads/IUnitUnassign';
 
 import { IZone } from '../../../config/models/data/static/zone/zone.types'
 
@@ -29,26 +30,27 @@ import ZoneRepository from '../../static/zone.repo';
 
 import helper from '../../../utils/helper.utils';
 
-export default class GarrisonRepository {
+export default class GarrisonRepository implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
-
-  private _garrisonModel = <IGarrisonModel>{};
+  
+  /** Retrieve class monitoring service. */
+  get monitor() {
+    return this._monitor;
+  }
 
   constructor(
-    private _connection: Connection,
+    private _model: IGarrisonModel,
     private _buildingRepo: BuildingRepository,
     private _characterRepo: CharacterRepository,
     private _unitRepo: UnitRepository,
     private _userRepo: UserRepository,
     private _zoneRepo: ZoneRepository
   ) {
-    this._monitor.log(logType.pending, 'Initializing garrison repo...');
-    this._garrisonModel = <IGarrisonModel>this._connection?.model('garrison');
-    this._monitor.log(logType.pass, 'Initialized garrison repo');
+    this._monitor.log(logType.pass, 'Initialized garrison repository');
   }
 
   async findById(id: ObjectId) {
-    return await this._garrisonModel.findById(id);
+    return await this._model.findById(id);
   }
 
   async getFromUser(userId: ObjectId) {
@@ -68,7 +70,7 @@ export default class GarrisonRepository {
   }
 
   async getFromCharacter(characterId: ObjectId) {
-    return await this._garrisonModel.findOne({ characterId });
+    return await this._model.findOne({ characterId });
   }
 
   async create(payload: IGarrisonCreate) {
@@ -89,7 +91,7 @@ export default class GarrisonRepository {
       throw new ErrorHandler(400, 'Selected zone is not compliant with character\'s faction.');
 
     // create the garrison with default values
-    return await this._garrisonModel.create({
+    return await this._model.create({
       characterId: payload.characterId,
       name: payload.name,
       zone: payload.zone,

@@ -1,7 +1,5 @@
-import MonitoringService from '../../config/services/monitoring/monitoring.service'
 import { ELogType as logType } from '../../config/models/log/log.model';
-
-import { Connection } from 'mongoose';
+import MonitoringService from '../../config/services/monitoring/monitoring.service'
 
 import { IBannerModel } from '../../config/models/data/static/banner/banner.types';
 
@@ -11,12 +9,8 @@ import { IBannerModel } from '../../config/models/data/static/banner/banner.type
 export default class BannerRepository {
   private _monitor = new MonitoringService(this.constructor.name);
 
-  private _model = <IBannerModel>{};
-
-  constructor(private _connection: Connection) {
-    this._monitor.log(logType.pending, 'Initializing banner repo...');
-    this._model = <IBannerModel>this._connection?.model('banner');
-    this._monitor.log(logType.pass, 'Initialized banner repo');
+  constructor(private _model: IBannerModel) {
+    this._monitor.log(logType.pass, 'Initialized banner repository');
   }
 
   async getAll() {

@@ -1,22 +1,32 @@
+import { ELogType as logType } from '../../models/log/log.model';
+import IMonitored from '../../models/IMonitored';
+import MonitoringService from '../monitoring/monitoring.service'
+
 import { createTransport } from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
-
-import { ELogType as logType } from '../../models/log/log.model';
-import MonitoringService from '../monitoring/monitoring.service'
 
 /**
  * Application global mailing service.
  */
-export default class MailingService {
+export default class MailingService implements IMonitored {
   private _transport = <Mail>{};
   private _hasBeenConfigured = false;
 
   private _monitor = new MonitoringService(this.constructor.name);
 
+  /** Retrieve class monitoring service. */
+  get monitor() {
+    return this._monitor;
+  }
+
+  constructor() {
+    this._configureTransport();
+  }
+
   /**
    * Configure the current mailing service.
    */
-  configureTransport() {
+  private _configureTransport() {
     if (this._hasBeenConfigured) return;
     try {
       this._monitor.log(logType.pending, 'Configuring mailing service...');

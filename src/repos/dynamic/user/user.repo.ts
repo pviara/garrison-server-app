@@ -6,9 +6,9 @@ import { ELogType as logType } from '../../../config/models/log/log.model';
 import { ObjectId } from 'mongodb';
 import { Connection } from 'mongoose';
 
-import { IUser, IUserModel } from '../../../config/models/data/user/user.types';
+import { IUser, IUserModel } from '../../../config/models/data/dynamic/user/user.types';
 
-import IUserCreate from '../../../config/models/data/user/payloads/IUserCreate';
+import IUserCreate from '../../../config/models/data/dynamic/user/payloads/IUserCreate';
 
 import bcrypt from 'bcrypt';
 import pswGen from 'generate-password';
@@ -18,19 +18,21 @@ import mjml2html from 'mjml';
 import { initService } from '../../../config/services/init.service';
 
 import newUserEmail from '../../../store/template/e-mail/new-user.email.template';
+import IMonitored from '../../../config/models/IMonitored';
 
 /**
  * Handle interactions with user documents from database dynamic.
  */
-export default class UserRepository {
+export default class UserRepository implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
 
-  private _model = <IUserModel>{};
-
-  constructor(private _connection: Connection) {
-    this._monitor.log(logType.pending, 'Initializing user repo...');
-    this._model = <IUserModel>this._connection?.model('user');
-    this._monitor.log(logType.pass, 'Initialized user repo');
+  /** Retrieve class monitoring service. */
+  get monitor() {
+    return this._monitor;
+  }
+  
+  constructor(private _model: IUserModel) {
+    this._monitor.log(logType.pass, 'Initialized user repository');
   }
 
   async findById(id: ObjectId) {
@@ -79,7 +81,7 @@ export default class UserRepository {
     emailContent = mjml2html(emailContent).html;
 
     // send the foresaid e-mail
-    await initService.emService.send(user.email, 'Your credentials', emailContent);
+    await initService.emailingService.send(user.email, 'Your credentials', emailContent);
 
     return created;
   }

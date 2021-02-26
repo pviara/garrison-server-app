@@ -1,29 +1,44 @@
+import { ELogType as logType } from '../../models/log/log.model';
+import IMonitored from '../../models/IMonitored';
+import MonitoringService from '../../services/monitoring/monitoring.service';
+
 import { Router } from 'express';
 
-import ControllerService from '../../services/controller/controller.service';
+import DynamicControllerService from '../../services/controller/dynamic.controller.service';
 
 import GarrisonRouter from './garrison/garrison.router';
 
 /**
  * Father of dynamic routes.
  */
-export default class DynamicRouter {
+export default class DynamicRouter implements IMonitored {
+  private _monitor = new MonitoringService(this.constructor.name);
+
   private _router = Router();
   private _garrisonRouter = <GarrisonRouter>{};
+  
+  /** Retrieve class monitoring service. */
+  get monitor() {
+    return this._monitor;
+  }
 
   get router() {
     return this._router;
   }
 
-  constructor(private _ctService: ControllerService) {
-    this._garrisonRouter = new GarrisonRouter(this._ctService);
-    this._configure();
+  constructor(private _dynamicControllerService: DynamicControllerService) {
+    this._setupRoutes();
   }
 
   /**
    * Connect routes to their matching routers.
    */
-  private _configure() {
+  private _setupRoutes() {
+    this._monitor.log(logType.pending, 'Setting up dynamic routes...');
+
+    this._garrisonRouter = new GarrisonRouter(this._dynamicControllerService.garrisonController);
     this._router.use('/garrison', this._garrisonRouter.router);
+
+    this._monitor.log(logType.pass, 'Set up dynamic routes');
   }
 }

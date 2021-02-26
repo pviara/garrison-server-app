@@ -1,13 +1,13 @@
 import ErrorHandler from '../../../config/models/error/error-handler.model';
 
-import MonitoringService from '../../../config/services/monitoring/monitoring.service';
 import { ELogType as logType } from '../../../config/models/log/log.model';
+import IMonitored from '../../../config/models/IMonitored';
+import MonitoringService from '../../../config/services/monitoring/monitoring.service';
 
-import { Connection } from 'mongoose';
 import { ObjectId } from 'mongodb';
 
-import { ICharacterModel } from '../../../config/models/data/character/character.types';
-import ICharacterCreate from '../../../config/models/data/character/payloads/ICharacterCreate';
+import { ICharacterModel } from '../../../config/models/data/dynamic/character/character.types';
+import ICharacterCreate from '../../../config/models/data/dynamic/character/payloads/ICharacterCreate';
 
 import BannerRepository from '../../static/banner.repo';
 import FactionRepository from '../../static/faction.repo';
@@ -16,20 +16,20 @@ import UserRepository from '../user/user.repo';
 /**
  * Handle interactions with character documents from database dynamic.
  */
-export default class CharacterRepository {
+export default class CharacterRepository implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
 
-  private _model = <ICharacterModel>{};
-
+  get monitor() {
+    return this._monitor;
+  }
+  
   constructor(
-    private _connection: Connection,
+    private _model: ICharacterModel,
     private _bannerRepo: BannerRepository,
     private _factionRepo: FactionRepository,
     private _userRepo: UserRepository
   ) {
-    this._monitor.log(logType.pending, 'Initializing character repo...');
-    this._model = <ICharacterModel>this._connection?.model('character');
-    this._monitor.log(logType.pass, 'Initialized character repo');
+    this._monitor.log(logType.pass, 'Initialized character repository');
   }
 
   async findById(id: ObjectId) {

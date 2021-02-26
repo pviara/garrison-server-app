@@ -1,30 +1,38 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { ELogType as logType } from '../../../../config/models/log/log.model';
+import IMonitored from '../../../models/IMonitored';
+import MonitoringService from '../../../services/monitoring/monitoring.service'
 
-import ControllerService from '../../../services/controller/controller.service';
+import { Router, Request, Response, NextFunction } from 'express';
 
 import GarrisonController from '../../../../controllers/dynamic/garrison/garrison.controller';
 
 /**
  * Father of garrison routes.
  */
-export default class GarrisonRouter {
+export default class GarrisonRouter implements IMonitored {
+  private _monitor = new MonitoringService(this.constructor.name);
+  
   private _router = Router();
-
-  private _controller = <GarrisonController>{};
+  
+  /** Retrieve class monitoring service. */
+  get monitor() {
+    return this._monitor;
+  }
 
   get router() {
     return this._router;
   }
 
-  constructor(private _ctService: ControllerService) {
-    this._controller = this._ctService.garrisonController;
-    this._configure();
+  constructor(private _controller: GarrisonController) {
+    this._setupRoutes();
   }
 
   /**
    * Connect routes to their matching controller methods.
    */
-  private _configure() {
+  private _setupRoutes() {
+    this._monitor.log(logType.pending, 'Setting up garrison routes...');
+
     this._router.get('/:userId', (req: Request, res: Response, next: NextFunction) => {
       this._controller.get(req, res, next)
         .then(result => {
@@ -96,5 +104,7 @@ export default class GarrisonRouter {
         })
         .catch(error => next(error));
     });
+
+    this._monitor.log(logType.pass, 'Set up garrison routes');
   }
 }

@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
 
-import helper from '../../../../utils/helper.utils';
+import helper from '../../../../../utils/helper.utils';
 
 import { findByEmail, findByName } from './user.statics';
 

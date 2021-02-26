@@ -1,7 +1,5 @@
-import MonitoringService from '../../config/services/monitoring/monitoring.service';
 import { ELogType as logType } from '../../config/models/log/log.model';
-
-import { Connection } from 'mongoose';
+import MonitoringService from '../../config/services/monitoring/monitoring.service';
 
 import { IUnitModel } from '../../config/models/data/static/unit/unit.types';
 
@@ -11,12 +9,8 @@ import { IUnitModel } from '../../config/models/data/static/unit/unit.types';
 export default class UnitRepository {
   private _monitor = new MonitoringService(this.constructor.name);
 
-  private _model = <IUnitModel>{};
-
-  constructor(private _connection: Connection) {
-    this._monitor.log(logType.pending, 'Initializing building repo...');
-    this._model = <IUnitModel>this._connection?.model('unit');
-    this._monitor.log(logType.pass, 'Initialized building repo');
+  constructor(private _model: IUnitModel) {
+    this._monitor.log(logType.pass, 'Initialized unit repository');
   }
 
   async getAll() {

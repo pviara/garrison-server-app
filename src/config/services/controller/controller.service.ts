@@ -1,72 +1,58 @@
-import MonitoringService from '../monitoring/monitoring.service';
 import { ELogType as logType } from '../../models/log/log.model';
+import IMonitored from '../../models/IMonitored';
+import MonitoringService from '../monitoring/monitoring.service';
 
-import DatabaseService from '../database/database.service';
+import DynamicRepositoryService from '../repos/dynamic.repository.service';
+import StaticRepositoryService from '../repos/static.repository.service';
 
-import BannerController from '../../../controllers/static/banner.controller';
-import BuildingController from '../../../controllers/static/building.controller';
-import FactionController from '../../../controllers/static/faction.controller';
-import GarrisonController from '../../../controllers/dynamic/garrison/garrison.controller';
-import ResearchController from '../../../controllers/static/research.controller';
-import UnitController from '../../../controllers/static/unit.controller';
-import ZoneController from '../../../controllers/static/zone.controller';
+import DynamicControllerService from './dynamic.controller.service';
+import StaticControllerService from './static.controller.service';
 
 /**
  * Application global controller service.
  */
-export default class ControllerService {
+export default class ControllerService implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
 
-  private _bannerController = <BannerController>{};
-  private _buildingController = <BuildingController>{};
-  private _factionController = <FactionController>{};
-  private _garrisonController = <GarrisonController>{};
-  private _researchController = <ResearchController>{};
-  private _unitController = <UnitController>{};
-  private _zoneController = <ZoneController>{};
+  private _dynamicControllerService = <DynamicControllerService>{};
+  private _staticControllerService = <StaticControllerService>{};
 
-  get bannerController() {
-    return this._bannerController;
+  /** Retrieve dynamic controller service. */
+  get dynamicControllerService() {
+    return this._dynamicControllerService;
+  }
+  
+  /** Retrieve class monitoring service. */
+  get monitor() {
+    return this._monitor;
   }
 
-  get buildingController() {
-    return this._buildingController;
+  /** Retrieve static controller service. */
+  get staticControllerService() {
+    return this._staticControllerService;
   }
 
-  get factionController() {
-    return this._factionController;
+  constructor(
+    private _dynamicRepositories: DynamicRepositoryService['allRepositories'],
+    private _staticRepositories: StaticRepositoryService['allRepositories']
+  ) {
+    this._setupControllers();
   }
-
-  get garrisonController() {
-    return this._garrisonController;
-  }
-
-  get researchController() {
-    return this._researchController;
-  }
-
-  get unitController() {
-    return this._unitController;
-  }
-
-  get zoneController() {
-    return this._zoneController;
-  }
-
-  constructor(private _dbService: DatabaseService) {}
 
   /**
-   * Configure the current controller service.
+   * Setup both dynamic and static controller services.
+   * @param dynamicRepos Dynamic repositories.
+   * @param staticRepos Static repositories.
    */
-  configureControllers() {
-    this._monitor.log(logType.pending, 'Configuring controller service...');
-    this._bannerController = new BannerController(this._dbService.bannerRepo);
-    this._buildingController = new BuildingController(this._dbService.buildingRepo);
-    this._factionController = new FactionController(this._dbService.factionRepo);
-    this._garrisonController = new GarrisonController(this._dbService.garrisonRepo);
-    this._researchController = new ResearchController(this._dbService.researchRepo);
-    this._unitController = new UnitController(this._dbService.unitRepo);
-    this._zoneController = new ZoneController(this._dbService.zoneRepo);
-    this._monitor.log(logType.pass, 'Configured controller service');
+  private _setupControllers(
+    dynamicRepos = this._dynamicRepositories,
+    staticRepos = this._staticRepositories
+  ) {
+    this._monitor.log(logType.pending, 'Setting up controller services...');
+
+    this._staticControllerService = new StaticControllerService(staticRepos);
+    this._dynamicControllerService = new DynamicControllerService(dynamicRepos);
+    
+    this._monitor.log(logType.pass, 'Set up controller services');
   }
 }

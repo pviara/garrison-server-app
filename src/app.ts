@@ -26,7 +26,7 @@ import MasterRouter from './config/routers/master.router';
 
     async configureRouter() {
       await initService.start();
-      this.master = new MasterRouter(initService.ctService);
+      this.master = new MasterRouter(initService.controllerService);
     }
   }
 

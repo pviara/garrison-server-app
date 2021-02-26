@@ -7,13 +7,9 @@ import { IZoneModel } from '../../config/models/data/static/zone/zone.types';
 
 export default class ZoneRepository {
   private _monitor = new MonitoringService(this.constructor.name);
-
-  private _model = <IZoneModel>{};
   
-  constructor(private _connection: Connection) {
-    this._monitor.log(logType.pending, 'Initializing zone repo...');
-    this._model = <IZoneModel>this._connection?.model('zone');
-    this._monitor.log(logType.pass, 'Initialized zone repo');
+  constructor(private _model: IZoneModel) {
+    this._monitor.log(logType.pass, 'Initialized zone repository');
   }
 
   async getAll() {

@@ -44,6 +44,12 @@ export default class MasterRouter implements IMonitored {
     this._staticRouter = new StaticRouter(this._controllerService.staticControllerService);
     this._router.use('/static', this._staticRouter.router);
 
+    this._router
+      .stack
+      .forEach(route => {
+        this.monitor.log(logType.pass, `Set up application route ${route.regexp}`);
+      });
+
     this._monitor.log(logType.pass, 'Set up application routes');
   }
 }

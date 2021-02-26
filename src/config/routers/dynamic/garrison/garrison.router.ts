@@ -105,6 +105,12 @@ export default class GarrisonRouter implements IMonitored {
         .catch(error => next(error));
     });
 
+    this._router
+      .stack
+      .forEach(route => {
+        this.monitor.log(logType.pass, `Set up garrison route ${route.regexp}`);
+      });
+
     this._monitor.log(logType.pass, 'Set up garrison routes');
   }
 }

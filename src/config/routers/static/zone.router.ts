@@ -56,6 +56,12 @@ export default class ZoneRouter implements IMonitored {
         .catch(error => next(error));
     });
 
+    this._router
+      .stack
+      .forEach(route => {
+        this.monitor.log(logType.pass, `Set up zone route ${route.regexp}`);
+      });
+
     this._monitor.log(logType.pass, 'Set up zone routes');
   }
 }

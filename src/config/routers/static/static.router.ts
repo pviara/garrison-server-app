@@ -63,6 +63,12 @@ export default class StaticRouter implements IMonitored {
     
     this._zoneRouter = new ZoneRouter(this._staticControllerService.zoneController);
     this._router.use('/zone', this._zoneRouter.router);
+
+    this._router
+      .stack
+      .forEach(route => {
+        this.monitor.log(logType.pass, `Set up static route ${route.regexp}`);
+      });
     
     this._monitor.log(logType.pass, 'Set up static routes');
   }

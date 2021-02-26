@@ -56,6 +56,12 @@ export default class UnitRouter implements IMonitored {
         .catch(error => next(error));
     });
 
+    this._router
+      .stack
+      .forEach(route => {
+        this.monitor.log(logType.pass, `Set up unit route ${route.regexp}`);
+      });
+
     this._monitor.log(logType.pass, 'Set up unit routes');
   }
 }

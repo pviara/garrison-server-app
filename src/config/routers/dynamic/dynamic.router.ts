@@ -39,6 +39,12 @@ export default class DynamicRouter implements IMonitored {
     this._garrisonRouter = new GarrisonRouter(this._dynamicControllerService.garrisonController);
     this._router.use('/garrison', this._garrisonRouter.router);
 
+    this._router
+      .stack
+      .forEach(route => {
+        this.monitor.log(logType.pass, `Set up dynamic route ${route.regexp}`);
+      });
+
     this._monitor.log(logType.pass, 'Set up dynamic routes');
   }
 }

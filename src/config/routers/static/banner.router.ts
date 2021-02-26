@@ -56,6 +56,12 @@ export default class BannerRouter implements IMonitored {
         .catch(error => next(error));
     });
 
+    this._router
+      .stack
+      .forEach(route => {
+        this.monitor.log(logType.pass, `Set up banner route ${route.regexp}`);
+      });
+
     this._monitor.log(logType.pass, 'Set up banner routes');
   }
 }

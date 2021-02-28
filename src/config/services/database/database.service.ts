@@ -1,3 +1,5 @@
+import ErrorHandler from '../../models/error/error-handler.model';
+
 import {
   ELogType as logType
 } from '../../models/log/log.model';
@@ -7,7 +9,8 @@ import MonitoringService from '../monitoring/monitoring.service';
 import {
   DatabaseDynamicType,
   DatabaseStaticType,
-  DatabaseType
+  DatabaseType,
+  DatabaseURIType
 } from '../../models/data/model';
 
 import StaticDatabaseService from './static.database.service';
@@ -53,19 +56,37 @@ export default class DatabaseService implements IMonitored {
     dynamicDbType = this._dynamicDbType
   ) {
     // prepare the function that'll be used by child db services
-    const assembleURI = (dbType: DatabaseType) => {
-      // make sure the environment variables exist
-      if (
-        !process.env.DB_URI ||
-        !process.env[dbType] ||
-        !process.env.DB_USER_NAME ||
-        !process.env.DB_USER_PASSWORD
-      ) throw new Error('Couldn\'t retrieve either database URI or name, user or password from .env file.');
+    const assembleURI = (dbType: DatabaseType, dbURIType: DatabaseURIType = 'cloud') => {
+      switch (dbURIType) {
+        case 'cloud': {
+          // check on environment variables
+          if (
+            !process.env.DB_URI ||
+            !process.env[dbType] ||
+            !process.env.DB_USER_NAME ||
+            !process.env.DB_USER_PASSWORD
+          ) throw new ErrorHandler(500, 'Couldn\'t retrieve either cloud database URI or name, user or password from .env file.');
 
-      return process.env.DB_URI
-        .replace('<username>', process.env.DB_USER_NAME)
-        .replace('<password>', process.env.DB_USER_PASSWORD)
-        .replace('<dbname>', process.env[dbType] as string);
+          return process.env.DB_URI
+            .replace('<username>', process.env.DB_USER_NAME)
+            .replace('<password>', process.env.DB_USER_PASSWORD)
+            .replace('<dbname>', process.env[dbType] as string);
+        }
+
+        case 'local': {
+          // check on environment variables
+          if (
+            !process.env.DB_URI_LOCAL ||
+            !process.env[dbType]
+          ) throw new ErrorHandler(500, 'Couldn\'t retrieve either local database URI or name.');
+
+          return process.env.DB_URI_LOCAL
+            .replace('<dbname>', process.env[dbType] as string);
+        }
+
+        default:
+          throw new ErrorHandler(500, 'No valid database URI type was given during URI assembly.');
+      }
     };
 
     // prepare the databases connection default options

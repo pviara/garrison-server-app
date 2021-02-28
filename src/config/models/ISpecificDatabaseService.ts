@@ -13,7 +13,7 @@ export interface ISpecificDatabaseService<T extends DatabaseType> {
   setupDatabase(): Promise<Connection>;
 }
 
-export type URIAssemblyCallback = (dbType: DatabaseType) => string;
+export type URIAssemblyCallback = (dbType: DatabaseType, dbURIType: 'cloud' | 'local') => string;
 
 export type DatabaseConnectionOptions = {
   useNewUrlParser: boolean;

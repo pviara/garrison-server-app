@@ -52,19 +52,28 @@ export default class StaticDatabaseService implements IMonitored, ISpecificDatab
    * Setup static database.
    * @param staticDbType Static database type.
    * @param assembleURI Given parent's method to assemble the final static database URI.
-   * @param Options Database connection default options.
+   * @param options Database connection default options.
    */
   async setupDatabase(
     staticDbType = this._dbType,
     assembleURI = this._assembleURI,
     options = this._options
   ) {
-    this.monitor.log(logType.pending, `Setting up database ${this._dbType}`);
-    this.monitor.log(logType.pending, `Establishing connection with ${this._dbType}...`);
+    try {
+      this.monitor.log(logType.pending, `Setting up database ${this._dbType}`);
+      this.monitor.log(logType.pending, `Establishing connection with ${this._dbType}...`);
 
-    // assemble static database URI and establish connection
-    const assembledURI = assembleURI(staticDbType);
-    this._connection = await mongoose.createConnection(assembledURI, options);
+      // assemble static database URI and establish cloud connection
+      const assembledURI = assembleURI(staticDbType, 'cloud');
+      this._connection = await mongoose.createConnection(assembledURI, options);
+    } catch (e) {
+      this._monitor.log(logType.fail, 'Failed to create connection with cloud database');
+      this._monitor.log(logType.pending, 'Trying to create connection with local database...');
+      
+      // assemble static database URI and establish local connection
+      const assembledURI = assembleURI(staticDbType, 'local');
+      this._connection = await mongoose.createConnection(assembledURI, options);
+    }
 
     this.monitor.log(logType.pass, `Established connection with database '${this._connection.name}'`);
 

@@ -50,17 +50,28 @@ export default class DynamicDatabaseService implements IMonitored, ISpecificData
    * Setup dynamic database.
    * @param dynamicDbType Dynamic database type.
    * @param assembleURI Given parent's method to assemble the final dynamic database URI.
+   * @param options Database connection default options.
    */
   async setupDatabase(
     dynamicDbType = this._dbType,
-    assembleURI = this._assembleURI
+    assembleURI = this._assembleURI,
+    options = this._options
   ) {
-    this.monitor.log(logType.pending, `Setting up database ${this._dbType}`);
-    this.monitor.log(logType.pending, `Establishing connection with database ${this._dbType}...`);
+    try {
+      this.monitor.log(logType.pending, `Setting up database ${this._dbType}`);
+      this.monitor.log(logType.pending, `Establishing connection with ${this._dbType}...`);
 
-    // assemble dynamic database URI and establish connection
-    const assembledURI = assembleURI(dynamicDbType);
-    this._connection = await mongoose.createConnection(assembledURI, this._options);
+      // assemble static database URI and establish cloud connection
+      const assembledURI = assembleURI(dynamicDbType, 'cloud');
+      this._connection = await mongoose.createConnection(assembledURI, options);
+    } catch (e) {
+      this._monitor.log(logType.fail, `Failed to create connection with cloud database ${this._dbType}`);
+      this._monitor.log(logType.pending, `Trying to create connection with local database ${this._dbType}...`);
+      
+      // assemble static database URI and establish local connection
+      const assembledURI = assembleURI(dynamicDbType, 'local');
+      this._connection = await mongoose.createConnection(assembledURI, options);
+    }
 
     this.monitor.log(logType.pass, `Established connection with database '${this._connection.name}'`);
     

@@ -73,6 +73,7 @@ export default class DynamicDatabaseService implements IMonitored, ISpecificData
         };
       } catch (e) {
         this._monitor.log(logType.fail, `Failed to create connection with ${connectionType} database ${this._dbType}`);
+        this._monitor.log(logType.fail, `  Error: ${e.message}`);
 
         // but if the current connection type is cloud it means that local connection hasn't been tried yet!
         connectionType = 'local';

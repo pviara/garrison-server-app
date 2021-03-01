@@ -4,7 +4,10 @@ import { ELogType as logType } from '../../models/log/log.model';
 import IMonitored from '../../models/IMonitored';
 import MonitoringService from '../monitoring/monitoring.service';
 
-import { DatabaseStaticType } from '../../models/data/model';
+import {
+  DatabaseStaticType,
+  DatabaseURIType
+ } from '../../models/data/model';
 
 import {
   DatabaseConnectionOptions,
@@ -59,23 +62,48 @@ export default class StaticDatabaseService implements IMonitored, ISpecificDatab
     assembleURI = this._assembleURI,
     options = this._options
   ) {
-    try {
-      this.monitor.log(logType.pending, `Setting up database ${this._dbType}`);
-      this.monitor.log(logType.pending, `Establishing connection with ${this._dbType}...`);
+    const createConnection = async (connectionType: DatabaseURIType = 'cloud') => {
+      try {
+        this.monitor.log(logType.pending, `Setting up database ${this._dbType}`);
+        this.monitor.log(logType.pending, `Establishing connection with ${connectionType} database ${this._dbType}...`);
+  
+        // assemble static database URI and establish cloud connection
+        const assembledURI = assembleURI(staticDbType, connectionType);
+        return {
+          connectionType,
+          connection: await mongoose.createConnection(assembledURI, options)
+        };
+      } catch (e) {
+        this._monitor.log(logType.fail, `Failed to create connection with ${connectionType} database ${this._dbType}`);
 
-      // assemble static database URI and establish cloud connection
-      const assembledURI = assembleURI(staticDbType, 'cloud');
-      this._connection = await mongoose.createConnection(assembledURI, options);
-    } catch (e) {
-      this._monitor.log(logType.fail, 'Failed to create connection with cloud database');
-      this._monitor.log(logType.pending, 'Trying to create connection with local database...');
-      
-      // assemble static database URI and establish local connection
-      const assembledURI = assembleURI(staticDbType, 'local');
-      this._connection = await mongoose.createConnection(assembledURI, options);
-    }
+        // but if the current connection type is cloud it means that local connection hasn't been tried yet!
+        connectionType = 'local';
+        
+        this._monitor.log(logType.pending, `Trying to create connection with local database ${this._dbType}...`);
+        
+        try {
+          // assemble static database URI and establish local connection
+          const assembledURI = assembleURI(staticDbType, connectionType);
+          const lastConnectionTry = await mongoose.createConnection(assembledURI, options);
+        
+          return {
+            connectionType,
+            connection: lastConnectionTry
+          };
+        } catch (e) { 
+          this._monitor.log(logType.fail, `Failed to create connection with local database ${this._dbType}`);
+          this._monitor.log(logType.fail, '  This might occurs because your local MongoDB Database Server is inactive');
+          this._monitor.log(logType.fail, '  Aborted process');
 
-    this.monitor.log(logType.pass, `Established connection with database '${this._connection.name}'`);
+          // no need to retry if it's already been tried with local connection : an error is an error...
+          throw e;
+        }
+      }
+    };
+
+    const { connection, connectionType } = await createConnection('cloud');
+    this._connection = connection;
+    this.monitor.log(logType.pass, `Established connection with ${connectionType} database '${this._connection.name}'`);
 
     // init static model service and setup static models
     this._staticModelService = new StaticModelService(this._connection);

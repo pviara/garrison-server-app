@@ -76,7 +76,7 @@ export default class DynamicRepositoryService implements IMonitored {
     private _dynamicModels: Model<Document, {}>[],
     private _staticRepositories: StaticRepositoryService['allRepositories']
   ) {
-    this.setupRepositories();
+    this._setupRepositories();
   }
 
   /**
@@ -85,7 +85,7 @@ export default class DynamicRepositoryService implements IMonitored {
    * @param staticModels Dynamic models.
    * @param staticModels Static repositories.
    */
-  setupRepositories(
+  private _setupRepositories(
     findModelByName = this._findModelByName,
     dynamicModels = this._dynamicModels,
     staticRepositories = this._staticRepositories

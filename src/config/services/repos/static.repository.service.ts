@@ -104,7 +104,7 @@ export default class StaticRepositoryService implements IMonitored {
     private _findModelByName: ModelRetrievingCallback,
     private _staticModels: Model<Document, {}>[]
   ) {
-    this.setupRepositories();
+    this._setupRepositories();
   }
 
   /**
@@ -112,7 +112,7 @@ export default class StaticRepositoryService implements IMonitored {
    * @param findModelByName Retrieve a model by its name from an array of models.
    * @param staticModels Static models.
    */
-  setupRepositories(
+  private _setupRepositories(
     findModelByName = this._findModelByName,
     staticModels = this._staticModels
   ) {

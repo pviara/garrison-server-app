@@ -116,3 +116,13 @@ export interface IOperatedConstruction {
     level: number;
   }
 }
+
+/**
+ * A building inside a Garrison.
+ */
+export type IGarrisonBuilding = IGarrisonDocument['instances']['buildings'][any];
+
+/**
+ * A unit inside a Garrison.
+ */
+export type IGarrisonUnit = IGarrisonDocument['instances']['units'][any];

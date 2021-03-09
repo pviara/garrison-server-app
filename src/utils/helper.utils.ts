@@ -52,6 +52,16 @@ class Helper {
       return objectIds.every(eachObjId => eachObjId.equals(someObjId));
     });
   }
+
+  /**
+   * Check whether all given strings are the same one. ⚠ Case insensitive!
+   * @param strings Given strings.
+   */
+  static areSameString(...strings: string[]) {
+    return strings.some(someString => {
+      return strings.every(eachString => eachString.toLowerCase() === someString.toLowerCase());
+    });
+  }
 }
 
 export default Helper;

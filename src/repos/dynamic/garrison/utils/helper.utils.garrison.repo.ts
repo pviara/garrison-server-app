@@ -19,10 +19,28 @@ import {
   IRequiredBuilding
 } from '../../../../config/models/data/static/building/building.types';
 
+import helper from '../../../../utils/helper.utils';
+
 /**
  * Garrison helper class. Contains static methods garrison repository only can use.
  */
 class Helper {
+  ///////////////////////////////////////
+  // 👨‍💻 LOW-LEVEL
+  ///////////////////////////////////////
+
+  static getFactor(type: 'default' | 'decreased') {
+    switch (type) {
+      case 'default':
+        if (!process.env.DEFAULT_FACTOR) throw new ErrorHandler(500, 'Couldn\'t retrieve DEFAULT_FACTOR from .env file.');
+        return +process.env.DEFAULT_FACTOR;
+
+      case 'decreased':
+        if (!process.env.DECREASED_FACTOR) throw new ErrorHandler(500, 'Couldn\'t retrieve DECREASED_FACTOR from .env file.');
+        return +process.env.DECREASED_FACTOR;
+    }
+  }
+  
   ///////////////////////////////////////
   // 🔍 SEARCHES
   ///////////////////////////////////////
@@ -31,36 +49,77 @@ class Helper {
    * Find a specific building by its id inside a garrison.
    * @param garrison Given garrison document.
    * @param id Given ObjectId.
+   * @param strict Sets whether an error is thrown when no building is found.
    * @returns Either an IGarrisonBuilding or (maybe) null if strict mode is set to false.
    */
-  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict ? : true): IGarrisonBuilding;
-  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict: false): IGarrisonBuilding | null;
-  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict ? : boolean) {
-    const result = garrison
-      .instances
-      .buildings
-      .find(b => b._id?.equals(id));
-    if (!result && strict) throw new ErrorHandler(404, `Building with buildingId '${id}' couldn't be found in garrison '${garrison._id}'.`)
+  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict?: true): { building: IGarrisonBuilding; index: number };
+  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict: false): { building: IGarrisonBuilding; index: number } | null;
+  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict?: boolean) {
+    const { buildings } = garrison.instances;
+    const returnedObj = {} as { building: IGarrisonBuilding; index: number };
 
-    return result as IGarrisonBuilding;
+    for (let index = 0; index < buildings.length; index++) {
+      if (!buildings[index]._id?.equals(id)) continue;
+      returnedObj.building = buildings[index];
+      returnedObj.index = index;
+      break;
+    }
+    
+    if (helper.isObjectEmpty(returnedObj) && strict)
+      throw new ErrorHandler(404, `Building with buildingId '${id}' couldn't be found in garrison '${garrison._id}'.`);
+
+    return returnedObj;
   }
 
   /**
    * Find a specific unit by its id inside a garrison.
    * @param garrison Given garrison document.
    * @param id Given ObjectId.
+   * @param strict Sets whether an error is thrown when no unit is found.
    * @returns Either an IGarrisonUnit or (maybe) null if strict mode is set to false.
    */
-  static findUnit(garrison: IGarrisonDocument, code: string, strict ? : true): IGarrisonUnit;
-  static findUnit(garrison: IGarrisonDocument, code: string, strict: false): IGarrisonUnit | null;
-  static findUnit(garrison: IGarrisonDocument, code: string, strict ? : boolean) {
-    const result = garrison
-      .instances
-      .units
-      .find(u => u.code === code);
-    if (!result && strict) throw new ErrorHandler(404, `Unit with code '${code}' couldn't be found in garrison '${garrison._id}'.`);
+  static findUnit(garrison: IGarrisonDocument, code: string, strict?: true): { unit: IGarrisonUnit; index: number };
+  static findUnit(garrison: IGarrisonDocument, code: string, strict: false): { unit: IGarrisonUnit; index: number } | null;
+  static findUnit(garrison: IGarrisonDocument, code: string, strict?: boolean) {
+    const { units } = garrison.instances;
+    const returnedObj = {} as { unit: IGarrisonUnit; index: number };
 
-    return result as IGarrisonUnit;
+    for (let index = 0; index < units.length; index++) {
+      if (!(units[index].code === code)) continue;
+      returnedObj.unit = units[index];
+      returnedObj.index = index;
+      break;
+    }
+    
+    if (helper.isObjectEmpty(returnedObj) && strict)
+      throw new ErrorHandler(404, `Unit with code '${code}' couldn't be found in garrison '${garrison._id}'.`);
+
+    return returnedObj;
+  }
+
+  /**
+   * Find a specific construction by its id among a garrison building constructions array.
+   * @param building Given garrison building.
+   * @param constructionId Given construction id.
+   * @param strict Sets whether an error is thrown when no construction index is found.
+   */
+  static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict?: true): { construction: IOperatedConstruction; index: number };
+  static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict: false): { construction: IOperatedConstruction; index: number };
+  static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict?: boolean) {
+    const { constructions } = building;
+    const returnedObj = {} as { construction: IOperatedConstruction; index: number };
+
+    for (let index = 0; index < constructions.length; index++) {
+      if (!constructions[index]?._id.equals(id)) continue;
+      returnedObj.construction = constructions[index];
+      returnedObj.index = index;
+      break;
+    }
+    
+    if (helper.isObjectEmpty(returnedObj) && strict)
+      throw new ErrorHandler(404, `Construction with id '${id}' couldn't be found in building '${building._id}'.`);
+
+    return returnedObj;
   }
 
   ///////////////////////////////////////
@@ -112,13 +171,15 @@ class Helper {
     instantiationCost: IBuildingCost,
     improvementLevel = 0
   ) {
-    const getPowerFactor = (factor = 1.6) => {
+    const getPowerFactor = (factor = this.getFactor('default')) => {
       return Math.pow(factor, improvementLevel);
     };
     return {
       gold: instantiationCost.gold * getPowerFactor(),
       wood: instantiationCost.wood * getPowerFactor(),
-      plot: instantiationCost.plot * getPowerFactor(1.3)
+      plot: instantiationCost.plot * getPowerFactor(
+        this.getFactor('decreased')
+      )
     } as IBuildingCost;
   }
 

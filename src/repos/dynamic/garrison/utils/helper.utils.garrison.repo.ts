@@ -122,6 +122,25 @@ class Helper {
     } as IBuildingCost;
   }
 
+  /**
+   * Compute the duration of constructing a building or improving one.
+   * @param workforce Given workforce.
+   * @param building Static building to be instantiate or improved.
+   * @param improvementLevel The level on which to improve the building.
+   */
+  static computeConstructionDuration(
+    workforce: number,
+    building: IBuilding,
+    improvementLevel = 0
+  ) {
+    let { duration, minWorkforce } = building.instantiation;
+    duration = duration * Math.pow(1.3, improvementLevel);
+    minWorkforce = minWorkforce * Math.pow(2, improvementLevel);
+    
+    // apply bonus: each additionnal worker reduces duration by 3%
+    return duration * Math.pow(0.97, workforce - minWorkforce);
+  }
+
   ///////////////////////////////////////
   // ❔ CHECKS
   ///////////////////////////////////////

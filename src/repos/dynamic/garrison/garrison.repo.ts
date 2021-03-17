@@ -148,14 +148,16 @@ export default class GarrisonRepository implements IMonitored {
    * @param payload @see IBuildingCreate
    */
   async addBuilding(payload: IBuildingCreate) {
+    // ⌚ init the moment
     const now = new Date();
 
+    //////////////////////////////////////////////
+
+    // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
     const building = await this._buildingRepo.findByCode(payload.code) as IBuilding;
 
-    let { minWorkforce } = building.instantiation;
     const peasants = garrisonHelper.findUnit(garrison, 'peasant');
-
     garrisonHelper.checkWorkforceCoherence(
       now,
       payload.workforce,
@@ -171,10 +173,15 @@ export default class GarrisonRepository implements IMonitored {
         now
       );
     }
-    
-    // apply bonus: each additionnal worker reduces duration by 3%
-    let { duration } = building.instantiation;
-    duration = duration * Math.pow(0.97, payload.workforce - minWorkforce);
+
+    //////////////////////////////////////////////
+
+    // 🔨 prepare to build! 
+    const duration = garrisonHelper
+      .computeConstructionDuration(
+        payload.workforce,
+        building
+      );
 
     const construction: IOperatedConstruction = {
       _id: new ObjectId(),
@@ -193,6 +200,9 @@ export default class GarrisonRepository implements IMonitored {
       }
     ];
 
+    //////////////////////////////////////////////
+
+    // 💰 update the resources
     garrison.resources = (await this.updateResources(garrison)).resources;
     garrison.resources = garrisonHelper
       .checkConstructionPaymentCapacity(
@@ -200,12 +210,12 @@ export default class GarrisonRepository implements IMonitored {
         garrison.resources,
         building.instantiation.cost
       );
-
-    // if the building is a farm or some same shit
+      
+    // 💰 "gift-harvest" type of buildings directly give their resource here,
     if (building.harvest && !building.harvest.maxWorkforce)
       garrison.resources[building.harvest.resource] += building.harvest.amount;
     
-    // assign rallied workforce to their occupation
+    // 👨‍💼 assign peasants to building-site
     peasants.state.assignments = [
       ...peasants.state.assignments,
       {
@@ -217,7 +227,7 @@ export default class GarrisonRepository implements IMonitored {
       }
     ];
 
-    // mark modified elements then save in database
+    // 💾 save in database
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();

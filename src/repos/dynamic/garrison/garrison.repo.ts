@@ -30,6 +30,8 @@ import ZoneRepository from '../../static/zone.repo';
 import helper from '../../../utils/helper.utils';
 import { IStaticEntityCost } from '../../../config/models/data/static/static.types';
 
+import garrisonHelper from './utils/helper.utils.garrison.repo';
+
 export default class GarrisonRepository implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
   
@@ -98,42 +100,6 @@ export default class GarrisonRepository implements IMonitored {
   }
 
   /**
-   * Find a specific building by its id inside a garrison.
-   * @param garrison Given garrison document.
-   * @param id Given ObjectId.
-   * @returns Either an IGarrisonBuilding or (maybe) null if strict mode is set to false.
-   */
-  private _findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict?: true): IGarrisonBuilding;
-  private _findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict: false): IGarrisonBuilding | null;
-  private _findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict?: boolean) {
-    const result = garrison
-      .instances
-      .buildings
-      .find(b => b._id?.equals(id));
-    if (!result && strict) throw new ErrorHandler(404, `Building with buildingId '${id}' couldn't be found in garrison '${garrison._id}'.`)
-    
-    return result as IGarrisonBuilding;
-  }
-
-  /**
-   * Find a specific unit by its id inside a garrison.
-   * @param garrison Given garrison document.
-   * @param id Given ObjectId.
-   * @returns Either an IGarrisonUnit or (maybe) null if strict mode is set to false.
-   */
-  private _findUnit(garrison: IGarrisonDocument, code: string, strict?: true): IGarrisonUnit;
-  private _findUnit(garrison: IGarrisonDocument, code: string, strict: false): IGarrisonUnit | null;
-  private _findUnit(garrison: IGarrisonDocument, code: string, strict?: boolean) {
-    const result = garrison
-      .instances
-      .units
-      .find(u => u.code === code);
-    if (!result && strict) throw new ErrorHandler(404, `Unit with code '${code}' couldn't be found in garrison '${garrison._id}'.`);
-    
-    return result as IGarrisonUnit;
-  }
-
-  /**
    * Create and save a new garrison in database.
    * @param payload @see IGarrisonCreate
    */
@@ -176,217 +142,6 @@ export default class GarrisonRepository implements IMonitored {
       }
     });
   }
-
-  /**
-   * Compute unavailable peasants among some garrison peasants.
-   * @param peasants Garrison peasants.
-   * @param moment The current moment.
-   */
-  private _computeUnavailablePeasants(peasants: IGarrisonUnit, moment: Date) {
-    return peasants
-      .state
-      .assignments
-      .filter(a => a.endDate.getTime() > moment.getTime())
-      .map(a => Number(a.quantity))
-      .reduce((prev, next) => prev + next, 0);
-  }
-
-  private _computeConstructionCost(
-    instantiationCost: IBuildingCost,
-    improvementLevel = 0
-  ) {
-    const getPowerFactor = (factor = 1.6) => {
-      return Math.pow(factor, improvementLevel);
-    };
-    return {
-      gold: instantiationCost.gold * getPowerFactor(),
-      wood: instantiationCost.wood * getPowerFactor(),
-      plot: instantiationCost.plot * getPowerFactor(1.3)
-    } as IBuildingCost;
-  }
-
-  private _computeTrainingCost(
-    cost: IUnitCost,
-    quantity: number
-  ) {
-    return {
-      gold: cost.gold * quantity,
-      wood: cost.wood * quantity,
-      food: cost.food * quantity
-    };
-  }
-
-  private _checkStaticEntityPaymentCapacity(
-    resources: IGarrisonResources,
-    instantiationCost: IStaticEntityCost
-  ) {
-    if ((resources.gold - instantiationCost.gold < 0) || (resources.wood - instantiationCost.wood < 0))
-      throw new ErrorHandler(412, 'Not enough resources');
-  }
-
-  private _checkConstructionPaymentCapacity(
-    moment: Date,
-    resources: IGarrisonResources,
-    cost: IBuildingCost
-  ): IGarrisonResources
-  private _checkConstructionPaymentCapacity(
-    moment: Date,
-    resources: IGarrisonResources,
-    cost: IBuildingCost,
-    improvementType: IBuildingImprovementType,
-    constructions: IOperatedConstruction[]
-  ): IGarrisonResources
-  private _checkConstructionPaymentCapacity(
-    moment: Date,
-    resources: IGarrisonResources,
-    instantiationCost: IBuildingCost,
-    improvementType?: IBuildingImprovementType,
-    constructions?: IOperatedConstruction[]
-  ) {
-    let nextLevel;
-    if (improvementType && constructions) {
-      nextLevel = this._computeBuildingCurrentLevel(
-        moment,
-        improvementType,
-        constructions
-      ) + 1;
-    } else nextLevel = 0;
-
-    // compute the cost by taking into account the current building upgrade level + 1
-    const cost = this._computeConstructionCost(instantiationCost, nextLevel);
-    if (resources.gold - cost.gold < 0 
-    || cost.wood - cost.wood < 0
-    || resources.plot - cost.plot < 0)
-      throw new ErrorHandler(412, 'Not enough resources.');
-
-    return {
-      ...resources,
-      gold: resources.gold - cost.gold,
-      wood: resources.wood - cost.wood,
-      plot: resources.plot - cost.plot
-    } as IGarrisonResources;
-  }
-
-  private _checkTrainingPaymentCapacity() {
-
-  }
-
-  /**
-   * Compute the quantity of available units on the basis of a given garrison unit.
-   * @param moment The current moment.
-   * @param units Given garrison unit.
-   */
-  private _computeAvailableUnits(moment: Date, units: IGarrisonUnit) {
-    const unavailable = units
-      .state
-      .assignments
-      .filter(a => a.endDate.getTime() > moment.getTime())
-      .map(a => +a.quantity)
-      .reduce((prev, next) => prev + next, 0);
-
-    return units.quantity - unavailable;
-  }
-
-  /**
-   * Compute the current improvement level of a garrison building.
-   * @param moment The current moment.
-   * @param improvementType Building improvement type.
-   * @param constructions Building constructions.
-   */
-  private _computeBuildingCurrentLevel(
-    moment: Date,
-    improvementType: IBuildingImprovementType,
-    constructions: IOperatedConstruction[]
-  ) {
-    return constructions
-      .filter(
-        c => moment.getTime() > c.endDate.getTime()
-        && c.improvement?.type === improvementType
-      )
-      .map(c => <number>c.improvement?.level)
-      .reduce((prev, next) => next > prev ? next : prev, 0);
-  }
-
-  /**
-   * Check whether a garrison meets a specific building instantiation requirements.
-   * @param requirements Building instantiation requirements.
-   * @param buildings Garrison buildings.
-   * @param moment The current moment.
-   */
-  private _checkConstructionRequirements(
-    requirements: IRequiredBuilding[],
-    buildings: IGarrisonBuilding[],
-    moment: Date
-  ) {
-    const fulfilled = requirements
-      .some(building => {
-        // simply look for the required building inside garrison existing buildings
-        const existing = buildings.find(garrBuilding => garrBuilding.code === building.code);
-        if (!existing) return false;
-
-        if (building.upgradeLevel) {
-          // is the building at the required upgrade level ?
-          const upgraded = existing
-            .constructions
-            .find(construction => <number>construction.improvement?.level >= <number>building.upgradeLevel);
-          if (!upgraded) return false;
-
-          // is the building still being processed for this specific upgrade ?
-          if (upgraded.endDate.getTime() > moment.getTime()) return false;
-        }
-        return true;
-      });
-
-    if (!fulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
-  }
-
-  private _checkWorkforceCoherence(
-    moment: Date,
-    workforce: number,
-    peasants: IGarrisonUnit,
-    building: IBuilding
-  ): void
-  private _checkWorkforceCoherence(
-    moment: Date,
-    workforce: number,
-    peasants: IGarrisonUnit,
-    building: IBuilding,
-    improvementType: IBuildingImprovementType,
-    constructions: IOperatedConstruction[],
-  ): void
-  private _checkWorkforceCoherence(
-    moment: Date,
-    workforce: number,
-    peasants: IGarrisonUnit,
-    building: IBuilding,
-    improvementType?: IBuildingImprovementType,
-    constructions?: IOperatedConstruction[],
-  ) {
-    // first checks are made in relation to given garrison peasants
-    if (workforce > peasants.quantity)
-      throw new ErrorHandler(400, `Given workforce (${workforce}) cannot be greater than current peasant quantity (${peasants.quantity}).`);
-    
-    const availablePeasants = this._computeAvailableUnits(moment, peasants);
-    if (workforce > availablePeasants)
-      throw new ErrorHandler(412, `Given workforce (${workforce}) cannot be greater than current available peasants quantity (${availablePeasants}).`);
-
-    // second checks are made in relation to building next construction workforce requirements
-    let { minWorkforce } = building.instantiation;
-
-    if (constructions && improvementType) {
-      const currentLevel = this._computeBuildingCurrentLevel(moment, improvementType, constructions);
-      minWorkforce = minWorkforce * Math.pow(2, currentLevel + 1);
-    }
-
-    if (workforce < minWorkforce)
-      throw new ErrorHandler(400, `Given workforce (${workforce}) cannot be less than minimum required workforce (${minWorkforce}).`);
-
-    if (workforce > minWorkforce * 2)
-      throw new ErrorHandler(
-        400,
-        `Given workforce (${workforce}) cannot be greater than the double of minimum required workforce (${minWorkforce}*2 = ${minWorkforce * 2}).`
-      );
-  }
   
   /**
    * Add and save a new building inside an existing garrison.
@@ -399,9 +154,9 @@ export default class GarrisonRepository implements IMonitored {
     const building = await this._buildingRepo.findByCode(payload.code) as IBuilding;
 
     let { minWorkforce } = building.instantiation;
-    const peasants = this._findUnit(garrison, 'peasant');
+    const peasants = garrisonHelper.findUnit(garrison, 'peasant');
 
-    this._checkWorkforceCoherence(
+    garrisonHelper.checkWorkforceCoherence(
       now,
       payload.workforce,
       peasants,
@@ -410,7 +165,7 @@ export default class GarrisonRepository implements IMonitored {
 
     const { requiredEntities } = building.instantiation;
     if (requiredEntities) {
-      this._checkConstructionRequirements(
+      garrisonHelper.checkConstructionRequirements(
         requiredEntities.buildings,
         garrison.instances.buildings,
         now
@@ -439,11 +194,12 @@ export default class GarrisonRepository implements IMonitored {
     ];
 
     garrison.resources = (await this.updateResources(garrison)).resources;
-    garrison.resources = this._checkConstructionPaymentCapacity(
-      now,
-      garrison.resources,
-      building.instantiation.cost
-    );
+    garrison.resources = garrisonHelper
+      .checkConstructionPaymentCapacity(
+        now,
+        garrison.resources,
+        building.instantiation.cost
+      );
 
     // if the building is a farm or some same shit
     if (building.harvest && !building.harvest.maxWorkforce)
@@ -474,7 +230,7 @@ export default class GarrisonRepository implements IMonitored {
     const garrison = await this.findById(payload.garrisonId);
     if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
-    const garrBuilding = this._findBuilding(garrison, payload.buildingId);
+    const garrBuilding = garrisonHelper.findBuilding(garrison, payload.buildingId);
     if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence
@@ -543,7 +299,7 @@ export default class GarrisonRepository implements IMonitored {
     }
 
     // unassign concerned workers
-    const peasants = this._findUnit(garrison, 'peasant');
+    const peasants = garrisonHelper.findUnit(garrison, 'peasant');
     peasants?.state.assignments.splice(
       peasants.state.assignments.findIndex(a => {
         if (a.endDate.getTime() === garrBuilding.constructions[index]?.endDate.getTime())
@@ -568,7 +324,7 @@ export default class GarrisonRepository implements IMonitored {
     const garrison = await this.findById(payload.garrisonId);
     if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
-    const garrBuilding = this._findBuilding(garrison, payload.buildingId);
+    const garrBuilding = garrisonHelper.findBuilding(garrison, payload.buildingId);
     if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence
@@ -622,7 +378,7 @@ export default class GarrisonRepository implements IMonitored {
     duration = Math.round(duration * Math.pow(1.3, currentLevel + 1));
     minWorkforce = minWorkforce * Math.pow(2, currentLevel + 1);
 
-    const peasants = this._findUnit(garrison, 'peasant');
+    const peasants = garrisonHelper.findUnit(garrison, 'peasant');
     if (!peasants) throw new ErrorHandler(404, 'Not a single peasant could be found.');
     if (payload.workforce > peasants.quantity) throw new ErrorHandler(400, 'Given workforce cannot be greater than current peasant quantity.');
 
@@ -717,7 +473,7 @@ export default class GarrisonRepository implements IMonitored {
     const garrison = await this.findById(payload.garrisonId);
     if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
-    const garrBuilding = this._findBuilding(garrison, payload.buildingId);
+    const garrBuilding = garrisonHelper.findBuilding(garrison, payload.buildingId);
     if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence
@@ -771,7 +527,7 @@ export default class GarrisonRepository implements IMonitored {
     duration = Math.round(duration * Math.pow(1.3, currentLevel + 1));
     minWorkforce = minWorkforce * Math.pow(2, currentLevel + 1);
 
-    const peasants = this._findUnit(garrison, 'peasant');
+    const peasants = garrisonHelper.findUnit(garrison, 'peasant');
     if (!peasants) throw new ErrorHandler(404, 'Not a single peasant could be found.');
     if (payload.workforce > peasants.quantity) throw new ErrorHandler(400, 'Given workforce cannot be greater than current peasant quantity.');
     
@@ -965,7 +721,7 @@ export default class GarrisonRepository implements IMonitored {
     if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
     // check on building existence in dynamic
-    const garrBuilding = this._findBuilding(garrison, payload.buildingId);
+    const garrBuilding = garrisonHelper.findBuilding(garrison, payload.buildingId);
     if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence in statics
@@ -980,7 +736,7 @@ export default class GarrisonRepository implements IMonitored {
     if (!unit) throw new ErrorHandler(404, `Unit ${payload.code} couldn't be found.`);
 
     // check on unit(s) existence in dynamic
-    const garrUnits = this._findUnit(garrison, payload.code);
+    const garrUnits = garrisonHelper.findUnit(garrison, payload.code);
     if (!garrUnits) throw new ErrorHandler(404, `Not a single '${payload.code}' could be found.`);
     if ((payload.quantity || 1) > garrUnits.quantity) throw new ErrorHandler(412, `Given workforce cannot be greater than current '${payload.code}' quantity.`);
 
@@ -1053,7 +809,7 @@ export default class GarrisonRepository implements IMonitored {
     if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
 
     // check on building existence in dynamic
-    const garrBuilding = this._findBuilding(garrison, payload.buildingId);
+    const garrBuilding = garrisonHelper.findBuilding(garrison, payload.buildingId);
     if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
     
     // check on building existence in statics
@@ -1068,7 +824,7 @@ export default class GarrisonRepository implements IMonitored {
     if (!unit) throw new ErrorHandler(404, `Unit ${payload.code} couldn't be found.`);
 
     // check on unit(s) existence in dynamic
-    const garrUnits = this._findUnit(garrison, payload.code);
+    const garrUnits = garrisonHelper.findUnit(garrison, payload.code);
     if (!garrUnits) throw new ErrorHandler(404, `Not a single '${payload.code}' could be found.`);
     
     // check on assignment existence

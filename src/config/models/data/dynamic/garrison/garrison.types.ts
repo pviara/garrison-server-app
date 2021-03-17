@@ -110,12 +110,17 @@ export interface IOperatedConstruction {
   /** Improvement details. */
   improvement?: {
     /** Either 'upgrade' or 'extension'. */
-    type: 'upgrade' | 'extension';
+    type: IBuildingImprovementType;
 
     /** What was the upgrade/extension level to be built ? */
     level: number;
   }
 }
+
+/**
+ * Garrison resources.
+ */
+export type IGarrisonResources = IGarrison['resources'];
 
 /**
  * A building inside a Garrison.
@@ -126,3 +131,8 @@ export type IGarrisonBuilding = IGarrisonDocument['instances']['buildings'][any]
  * A unit inside a Garrison.
  */
 export type IGarrisonUnit = IGarrisonDocument['instances']['units'][any];
+
+/**
+ * A building construction improvement type.
+ */
+export type IBuildingImprovementType = 'upgrade' | 'extension';

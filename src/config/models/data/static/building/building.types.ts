@@ -89,7 +89,7 @@ interface IRequiredBuildingForExtensionLevel extends IRequiredBuilding {
 /**
  * The cost of instantiating, upgrading or extending a building.
  */
-interface IBuildingCost extends IStaticEntityCost {
+export interface IBuildingCost extends IStaticEntityCost {
   /** Cost in plot. */
   plot: number;
 }

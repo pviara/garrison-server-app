@@ -6,15 +6,15 @@ import MonitoringService from '../../../config/services/monitoring/monitoring.se
 
 import { ObjectId } from 'mongodb';
 
-import { IBuilding, IRequiredBuilding } from '../../../config/models/data/static/building/building.types';
+import { IBuilding, IBuildingCost, IRequiredBuilding } from '../../../config/models/data/static/building/building.types';
 import IBuildingConstructionCancel from '../../../config/models/data/dynamic/garrison/payloads/IBuildingConstructionCancel';
 import IBuildingCreate from '../../../config/models/data/dynamic/garrison/payloads/IBuildingCreate';
 import IBuildingUpgradeOrExtend from '../../../config/models/data/dynamic/garrison/payloads/IBuildingUpgradeOrExtend';
 
-import { IGarrison, IGarrisonBuilding, IGarrisonDocument, IGarrisonModel, IGarrisonUnit, IOperatedConstruction } from '../../../config/models/data/dynamic/garrison/garrison.types';
+import { IBuildingImprovementType, IGarrison, IGarrisonBuilding, IGarrisonDocument, IGarrisonModel, IGarrisonResources, IGarrisonUnit, IOperatedConstruction } from '../../../config/models/data/dynamic/garrison/garrison.types';
 import IGarrisonCreate from '../../../config/models/data/dynamic/garrison/payloads/IGarrisonCreate';
 
-import { IUnit } from '../../../config/models/data/static/unit/unit.types';
+import { IUnit, IUnitCost } from '../../../config/models/data/static/unit/unit.types';
 import IUnitAssign from '../../../config/models/data/dynamic/garrison/payloads/IUnitAssign';
 import IUnitCreate from '../../../config/models/data/dynamic/garrison/payloads/IUnitCreate';
 import IUnitUnassign from '../../../config/models/data/dynamic/garrison/payloads/IUnitUnassign';
@@ -28,6 +28,7 @@ import UserRepository from '../user/user.repo';
 import ZoneRepository from '../../static/zone.repo';
 
 import helper from '../../../utils/helper.utils';
+import { IStaticEntityCost } from '../../../config/models/data/static/static.types';
 
 export default class GarrisonRepository implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
@@ -190,6 +191,122 @@ export default class GarrisonRepository implements IMonitored {
       .reduce((prev, next) => prev + next, 0);
   }
 
+  private _computeConstructionCost(
+    instantiationCost: IBuildingCost,
+    improvementLevel = 0
+  ) {
+    const getPowerFactor = (factor = 1.6) => {
+      return Math.pow(factor, improvementLevel);
+    };
+    return {
+      gold: instantiationCost.gold * getPowerFactor(),
+      wood: instantiationCost.wood * getPowerFactor(),
+      plot: instantiationCost.plot * getPowerFactor(1.3)
+    } as IBuildingCost;
+  }
+
+  private _computeTrainingCost(
+    cost: IUnitCost,
+    quantity: number
+  ) {
+    return {
+      gold: cost.gold * quantity,
+      wood: cost.wood * quantity,
+      food: cost.food * quantity
+    };
+  }
+
+  private _checkStaticEntityPaymentCapacity(
+    resources: IGarrisonResources,
+    instantiationCost: IStaticEntityCost
+  ) {
+    if ((resources.gold - instantiationCost.gold < 0) || (resources.wood - instantiationCost.wood < 0))
+      throw new ErrorHandler(412, 'Not enough resources');
+  }
+
+  private _checkConstructionPaymentCapacity(
+    moment: Date,
+    resources: IGarrisonResources,
+    cost: IBuildingCost
+  ): IGarrisonResources
+  private _checkConstructionPaymentCapacity(
+    moment: Date,
+    resources: IGarrisonResources,
+    cost: IBuildingCost,
+    improvementType: IBuildingImprovementType,
+    constructions: IOperatedConstruction[]
+  ): IGarrisonResources
+  private _checkConstructionPaymentCapacity(
+    moment: Date,
+    resources: IGarrisonResources,
+    instantiationCost: IBuildingCost,
+    improvementType?: IBuildingImprovementType,
+    constructions?: IOperatedConstruction[]
+  ) {
+    let nextLevel;
+    if (improvementType && constructions) {
+      nextLevel = this._computeBuildingCurrentLevel(
+        moment,
+        improvementType,
+        constructions
+      ) + 1;
+    } else nextLevel = 0;
+
+    // compute the cost by taking into account the current building upgrade level + 1
+    const cost = this._computeConstructionCost(instantiationCost, nextLevel);
+    if (resources.gold - cost.gold < 0 
+    || cost.wood - cost.wood < 0
+    || resources.plot - cost.plot < 0)
+      throw new ErrorHandler(412, 'Not enough resources.');
+
+    return {
+      ...resources,
+      gold: resources.gold - cost.gold,
+      wood: resources.wood - cost.wood,
+      plot: resources.plot - cost.plot
+    } as IGarrisonResources;
+  }
+
+  private _checkTrainingPaymentCapacity() {
+
+  }
+
+  /**
+   * Compute the quantity of available units on the basis of a given garrison unit.
+   * @param moment The current moment.
+   * @param units Given garrison unit.
+   */
+  private _computeAvailableUnits(moment: Date, units: IGarrisonUnit) {
+    const unavailable = units
+      .state
+      .assignments
+      .filter(a => a.endDate.getTime() > moment.getTime())
+      .map(a => +a.quantity)
+      .reduce((prev, next) => prev + next, 0);
+
+    return units.quantity - unavailable;
+  }
+
+  /**
+   * Compute the current improvement level of a garrison building.
+   * @param moment The current moment.
+   * @param improvementType Building improvement type.
+   * @param constructions Building constructions.
+   */
+  private _computeBuildingCurrentLevel(
+    moment: Date,
+    improvementType: IBuildingImprovementType,
+    constructions: IOperatedConstruction[]
+  ) {
+    return constructions
+      .filter(
+        c => moment.getTime() > c.endDate.getTime()
+        && c.improvement?.type === improvementType
+      )
+      .map(c => <number>c.improvement?.level)
+      .reduce((prev, next) => next > prev ? next : prev, 0);
+  }
+
   /**
    * Check whether a garrison meets a specific building instantiation requirements.
    * @param requirements Building instantiation requirements.
@@ -201,7 +318,7 @@ export default class GarrisonRepository implements IMonitored {
     buildings: IGarrisonBuilding[],
     moment: Date
   ) {
-    return requirements
+    const fulfilled = requirements
       .some(building => {
         // simply look for the required building inside garrison existing buildings
         const existing = buildings.find(garrBuilding => garrBuilding.code === building.code);
@@ -219,6 +336,56 @@ export default class GarrisonRepository implements IMonitored {
         }
         return true;
       });
+
+    if (!fulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
+  }
+
+  private _checkWorkforceCoherence(
+    moment: Date,
+    workforce: number,
+    peasants: IGarrisonUnit,
+    building: IBuilding
+  ): void
+  private _checkWorkforceCoherence(
+    moment: Date,
+    workforce: number,
+    peasants: IGarrisonUnit,
+    building: IBuilding,
+    improvementType: IBuildingImprovementType,
+    constructions: IOperatedConstruction[],
+  ): void
+  private _checkWorkforceCoherence(
+    moment: Date,
+    workforce: number,
+    peasants: IGarrisonUnit,
+    building: IBuilding,
+    improvementType?: IBuildingImprovementType,
+    constructions?: IOperatedConstruction[],
+  ) {
+    // first checks are made in relation to given garrison peasants
+    if (workforce > peasants.quantity)
+      throw new ErrorHandler(400, `Given workforce (${workforce}) cannot be greater than current peasant quantity (${peasants.quantity}).`);
+    
+    const availablePeasants = this._computeAvailableUnits(moment, peasants);
+    if (workforce > availablePeasants)
+      throw new ErrorHandler(412, `Given workforce (${workforce}) cannot be greater than current available peasants quantity (${availablePeasants}).`);
+
+    // second checks are made in relation to building next construction workforce requirements
+    let { minWorkforce } = building.instantiation;
+
+    if (constructions && improvementType) {
+      const currentLevel = this._computeBuildingCurrentLevel(moment, improvementType, constructions);
+      minWorkforce = minWorkforce * Math.pow(2, currentLevel + 1);
+    }
+
+    if (workforce < minWorkforce)
+      throw new ErrorHandler(400, `Given workforce (${workforce}) cannot be less than minimum required workforce (${minWorkforce}).`);
+
+    if (workforce > minWorkforce * 2)
+      throw new ErrorHandler(
+        400,
+        `Given workforce (${workforce}) cannot be greater than the double of minimum required workforce (${minWorkforce}*2 = ${minWorkforce * 2}).`
+      );
   }
   
   /**
@@ -226,55 +393,38 @@ export default class GarrisonRepository implements IMonitored {
    * @param payload @see IBuildingCreate
    */
   async addBuilding(payload: IBuildingCreate) {
-    // init the moment
     const now = new Date();
-    
-    // check on garrison existence
+
     const garrison = await this.findById(payload.garrisonId);
-    
-    // check on both building existence...
     const building = await this._buildingRepo.findByCode(payload.code) as IBuilding;
 
-    // ...and payload compliance with garrison current peasants quantity
-    let { duration, minWorkforce } = building.instantiation;
+    let { minWorkforce } = building.instantiation;
     const peasants = this._findUnit(garrison, 'peasant');
-    if (payload.workforce > peasants.quantity) {
-      throw new ErrorHandler(400, 'Given workforce cannot be greater than current peasant quantity.');
-    }
-    
-    // check on peasants availability
-    const unavailablePeasants = this._computeUnavailablePeasants(peasants, now);
-    if ((payload.workforce > (peasants.quantity - unavailablePeasants))) {
-      throw new ErrorHandler(412, 'Not enough available peasants.');
-    }
 
-    // checks on payload compliance with building instantiation workforce characteristics
-    if (payload.workforce < minWorkforce){
-      throw new ErrorHandler(400, 'Given workforce is not enough.');
-    }
-    if (payload.workforce > minWorkforce * 2)
-      throw new ErrorHandler(400, 'A build-site cannot rally more than the double of minimum required workforce.');
+    this._checkWorkforceCoherence(
+      now,
+      payload.workforce,
+      peasants,
+      building
+    );
 
-    // check on instantiation requirements fulfillment
-    const requiredBuildings = building.instantiation.requiredEntities?.buildings;
-    if (requiredBuildings) {
-      const fulfilled = this._checkConstructionRequirements(
-        requiredBuildings,
+    const { requiredEntities } = building.instantiation;
+    if (requiredEntities) {
+      this._checkConstructionRequirements(
+        requiredEntities.buildings,
         garrison.instances.buildings,
         now
       );
-      if (!fulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
     }
     
     // apply bonus: each additionnal worker reduces duration by 3%
-    const newDuration = duration * Math.pow(0.97, payload.workforce - minWorkforce);
-    duration = Math.floor(newDuration);
+    let { duration } = building.instantiation;
+    duration = duration * Math.pow(0.97, payload.workforce - minWorkforce);
 
-    // operate building construction
-    const constructed: IOperatedConstruction = {
+    const construction: IOperatedConstruction = {
       _id: new ObjectId(),
       beginDate: now,
-      endDate: helper.addTime(now, newDuration * 1000),
+      endDate: helper.addTime(now, duration * 1000),
       workforce: payload.workforce
     };
     
@@ -284,29 +434,16 @@ export default class GarrisonRepository implements IMonitored {
       {
         _id: buildingId,
         code: payload.code,
-        constructions: [constructed]
+        constructions: [construction]
       }
     ];
 
-    // automatically update eligible resources
     garrison.resources = (await this.updateResources(garrison)).resources;
-
-    // compute resource costs and check whether these costs aren't too expensive
-    const goldCost = building.instantiation.cost.gold;
-    const woodCost = building.instantiation.cost.wood;
-    const plotCost = building.instantiation.cost.plot;
-    if (garrison.resources.gold - goldCost < 0
-    || garrison.resources.wood - woodCost < 0
-    || garrison.resources.plot - plotCost < 0)
-      throw new ErrorHandler(412, 'Not enough resources.');
-    
-    // subtract building instantiation cost from current garrison resources
-    garrison.resources = {
-      ...garrison.resources,
-      gold: garrison.resources.gold - goldCost,
-      wood: garrison.resources.wood - woodCost,
-      plot: garrison.resources.plot - plotCost
-    }
+    garrison.resources = this._checkConstructionPaymentCapacity(
+      now,
+      garrison.resources,
+      building.instantiation.cost
+    );
 
     // if the building is a farm or some same shit
     if (building.harvest && !building.harvest.maxWorkforce)
@@ -320,7 +457,7 @@ export default class GarrisonRepository implements IMonitored {
         buildingId,
         quantity: payload.workforce,
         type: 'construction',
-        endDate: helper.addTime(now, newDuration * 1000)
+        endDate: helper.addTime(now, duration * 1000)
       }
     ];
 
@@ -1037,9 +1174,6 @@ export default class GarrisonRepository implements IMonitored {
       let newResources = garrison.resources[matchStatics.harvest?.resource] + Math.floor(
         (matchStatics.harvest.amount * elapsedMinutes) * assignedWorkers
       );
-
-      // limit gained resources to available plots (1 plot = 30 points)
-      if (newResources > garrison.resources.plot * 30) newResources = garrison.resources.plot * 30;
 
       garrison.resources = {
         ...garrison.resources,

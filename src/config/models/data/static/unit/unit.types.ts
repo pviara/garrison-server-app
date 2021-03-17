@@ -53,7 +53,7 @@ export interface IUnit extends IStaticEntity {
 /**
  * The cost of instantiating a unit.
  */
-interface IUnitCost extends IStaticEntityCost {
+export interface IUnitCost extends IStaticEntityCost {
   /** Cost in food. */
   food: number;
 }

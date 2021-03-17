@@ -238,7 +238,7 @@ export default class GarrisonRepository implements IMonitored {
   }
 
   /**
-   * Cancel an ongoing building constructin.
+   * Cancel an ongoing building construction.
    * @param payload @see IBuildingConstructionCancel
    */
   async cancelBuildingConstruction(payload: IBuildingConstructionCancel) {
@@ -306,7 +306,7 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
-    // 👨‍💼 unassign workforce
+    // 👨‍💼 assign peasants from building-site
     const { unit: peasants } = _gH.findUnit(garrison, 'peasant');
     const aIndex = peasants
       .state

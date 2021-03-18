@@ -70,7 +70,7 @@ class Helper {
     if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Building with buildingId '${id}' couldn't be found in garrison '${garrison._id}'.`);
 
-    return returnedObj;
+    return _h.isObjectEmpty(returnedObj) ? null : returnedObj;
   }
 
   /**
@@ -96,7 +96,7 @@ class Helper {
     if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Unit with code '${code}' couldn't be found in garrison '${garrison._id}'.`);
 
-    return returnedObj;
+    return _h.isObjectEmpty(returnedObj) ? null : returnedObj;
   }
 
   /**
@@ -121,7 +121,7 @@ class Helper {
     if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Construction with id '${id}' couldn't be found in building '${building._id}'.`);
 
-    return returnedObj;
+    return _h.isObjectEmpty(returnedObj) ? null : returnedObj;
   }
 
   ///////////////////////////////////////

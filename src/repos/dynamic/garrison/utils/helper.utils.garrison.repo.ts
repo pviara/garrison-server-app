@@ -396,26 +396,26 @@ class Helper {
     requirements: IRequiredBuilding[],
     buildings: IGarrisonBuilding[]
   ) {
-    const fulfilled = requirements
+    const unfulfilled = requirements
       .some(building => {
         // simply look for the required building inside garrison existing buildings
         const existing = buildings.find(garrBuilding => garrBuilding.code === building.code);
-        if (!existing) return false;
+        if (!existing) return true;
 
         if (building.upgradeLevel) {
           // is the building at the required upgrade level ?
           const upgraded = existing
             .constructions
             .find(construction => <number>construction.improvement?.level >= <number>building.upgradeLevel);
-          if (!upgraded) return false;
+          if (!upgraded) return true;
 
           // is the building still being processed for this specific upgrade ?
-          if (upgraded.endDate.getTime() > moment.getTime()) return false;
+          if (upgraded.endDate.getTime() > moment.getTime()) return true;
         }
-        return true;
+        return false;
       });
 
-    if (!fulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
+    if (unfulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
   }
 
   /**
@@ -431,26 +431,26 @@ class Helper {
     buildings: IGarrisonBuilding[],
     nextExtension: number
   ) {
-    const fulfilled = requirements
+    const unfulfilled = requirements
       .some(building => {
         // simply look for the required building inside garrison existing buildings
         const existing = buildings.find(garrBuilding => garrBuilding.code === building.code);
-        if (!existing) return false;
+        if (!existing) return true;
 
         if (building.upgradeLevel && (building.level === nextExtension)) {
           // is the building at the required upgrade level ?
           const upgraded = existing
             .constructions
             .find(construction => <number>construction.improvement?.level >= <number>building.upgradeLevel);
-          if (!upgraded) return false;
+          if (!upgraded) return true;
 
           // is the building still being processed for this specific upgrade ?
-          if (upgraded.endDate.getTime() > moment.getTime()) return false;
+          if (upgraded.endDate.getTime() > moment.getTime()) return true;
         }
-        return true;
+        return false;
       });
 
-    if (!fulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
+    if (unfulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
   }
 
   /**

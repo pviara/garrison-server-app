@@ -228,6 +228,15 @@ class Helper {
   ///////////////////////////////////////
 
   /**
+   * Check whether a building allows peasants to be assigned to it.
+   * @param staticBuilding Static building.
+   */
+  static checkBuildingAllowsAssignment(staticBuilding: IBuilding) {
+    if (!staticBuilding.harvest)
+      throw new ErrorHandler(400, `No peasant can be assigned at building '${staticBuilding.code}'.`);
+  }
+
+  /**
    * Check whether all building constructions are finished.
    * @param moment The current moment
    * @param building Garrison building.
@@ -452,7 +461,7 @@ class Helper {
 
     if (unfulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
   }
-
+  
   /**
    * Check whether a given workforce is coherent with both a building construction pre-requesites and the garrison available workforce.
    * Please note that this construction can either be an instantiation or an improvement such as an upgrade or an extension.
@@ -510,6 +519,22 @@ class Helper {
         400,
         `Given workforce (${workforce}) cannot be greater than the double of minimum required workforce (${minWorkforce}*2 = ${minWorkforce * 2}).`
       );
+  }
+
+  static checkUnitAssignmentCoherence(
+    moment: Date,
+    quantity: number,
+    units: IGarrisonUnit,
+    building: IGarrisonBuilding
+  ) {
+    if (quantity > units.quantity)
+      throw new ErrorHandler(400, `Given quantity (${quantity}) cannot be greather than current unit quantity (${units.quantity}).`);
+
+    const availableUnits = this.computeAvailableUnits(moment, units);
+    if (quantity > availableUnits)
+      throw new ErrorHandler(400, `Given quantity (${quantity}) cannot be greather than current available unit quantity (${units.quantity}).`);
+
+    this.checkBuildingAvailability(moment, building);
   }
 }
 

@@ -41,7 +41,7 @@ export interface IGarrison {
     /** Instantiated buildings. */
     buildings: {
       /** Building unique id. */
-      _id?: ObjectId;
+      _id: ObjectId;
 
       /** Building unique identifier. */
       code: string;

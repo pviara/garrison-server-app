@@ -51,7 +51,9 @@ export interface IBuilding extends IStaticEntity {
     maxLevel?: number;
   };
   
-  /** Building type(s) characteristics. */
+  /** A harvest building is a either a place where peasants
+   * can be assigned to harvest some gold or wood, or a place
+   * that directly gives access to gifted resources such as food. */
   harvest?: {
     /** Which resource is this building harvesting (gold, wood, food) ? */
     resource: 'gold' | 'wood' | 'plot' | 'food';

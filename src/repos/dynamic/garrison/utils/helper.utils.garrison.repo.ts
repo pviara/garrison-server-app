@@ -19,7 +19,7 @@ import {
   IRequiredBuilding
 } from '../../../../config/models/data/static/building/building.types';
 
-import helper from '../../../../utils/helper.utils';
+import _h from '../../../../utils/helper.utils';
 
 /**
  * Garrison helper class. Contains static methods garrison repository only can use.
@@ -65,7 +65,7 @@ class Helper {
       break;
     }
     
-    if (helper.isObjectEmpty(returnedObj) && strict)
+    if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Building with buildingId '${id}' couldn't be found in garrison '${garrison._id}'.`);
 
     return returnedObj;
@@ -91,7 +91,7 @@ class Helper {
       break;
     }
     
-    if (helper.isObjectEmpty(returnedObj) && strict)
+    if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Unit with code '${code}' couldn't be found in garrison '${garrison._id}'.`);
 
     return returnedObj;
@@ -116,7 +116,7 @@ class Helper {
       break;
     }
     
-    if (helper.isObjectEmpty(returnedObj) && strict)
+    if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Construction with id '${id}' couldn't be found in building '${building._id}'.`);
 
     return returnedObj;
@@ -184,28 +184,108 @@ class Helper {
   }
 
   /**
-   * Compute the duration of constructing a building or improving one.
+   * Compute both the duration and the minimum required workforce to construct a building or to improve one.
    * @param workforce Given workforce.
    * @param building Static building to be instantiate or improved.
    * @param improvementLevel The level on which to improve the building.
    */
-  static computeConstructionDuration(
+  static computeConstructionDurationAndWorkforce(
     workforce: number,
     building: IBuilding,
     improvementLevel = 0
   ) {
     let { duration, minWorkforce } = building.instantiation;
-    duration = duration * Math.pow(1.3, improvementLevel);
+    duration = duration * Math.pow(this.getFactor('decreased'), improvementLevel);
     minWorkforce = minWorkforce * Math.pow(2, improvementLevel);
     
     // apply bonus: each additionnal worker reduces duration by 3%
-    return duration * Math.pow(0.97, workforce - minWorkforce);
+    return {
+      duration: duration * Math.pow(0.97, workforce - minWorkforce),
+      minWorkforce
+    };
   }
 
   ///////////////////////////////////////
   // ❔ CHECKS
   ///////////////////////////////////////
 
+  /**
+   * Check whether all building constructions are finished.
+   * @param moment The current moment
+   * @param building Garrison building.
+   */
+  static checkBuildingAvailability(moment: Date, building: IGarrisonBuilding) {
+    const available = building
+    .constructions
+    .every(c => moment.getTime() > c.endDate.getTime());
+
+    if (!available) throw new ErrorHandler(412, `Building '${building._id}' is already being processed.`);
+  }
+
+  /**
+   * Check whether a building can be improved.
+   * @param building Garrison building.
+   * @param staticBuilding Static building.
+   * @param improvementType Building improvement type.
+   */
+  // static checkBuildingImprovable(moment: Date, building: IGarrisonBuilding, staticBuilding: IBuilding, improvementType: 'extension'): NonNullable<IBuilding['extension']>;
+  static checkBuildingImprovable(
+    moment: Date,
+    building: IGarrisonBuilding,
+    staticBuilding: IBuilding,
+    improvementType: 'upgrade'): { currentLevel: number; nextUpgrade: NonNullable<IBuilding['upgrades']>[any]; };
+  static checkBuildingImprovable(
+    moment: Date,
+    building: IGarrisonBuilding,
+    staticBuilding: IBuilding,
+    improvementType: IBuildingImprovementType
+  ) {
+    
+    switch (improvementType) {
+      case 'upgrade': {
+        if (!staticBuilding.upgrades || staticBuilding.upgrades.length === 0)
+          throw new ErrorHandler(412, `Building '${staticBuilding.code}' cannot be upgraded.`);
+        
+        const currentLevel = this
+          .computeBuildingCurrentLevel(
+            moment,
+            improvementType,
+            building.constructions
+          );
+        const nextUpgrades = staticBuilding
+            .upgrades
+            .filter(u => u.level >= currentLevel + 1);
+        if (_h.isArrayEmpty(nextUpgrades))
+            throw new ErrorHandler(400, `No upgrade is available at this level (${currentLevel}).`)
+
+        return {
+          currentLevel,
+          nextUpgrade: nextUpgrades[0]
+        }
+      }
+
+      case 'extension':
+        if (!staticBuilding.extension)
+          throw new ErrorHandler(412, `Building '${staticBuilding.code}' cannot be extended.`);
+        
+        const currentLevel = this
+          .computeBuildingCurrentLevel(
+            moment,
+            improvementType,
+            building.constructions
+          );
+        const extensionMax = staticBuilding.extension.maxLevel as number;
+        if (currentLevel + 1 > extensionMax)
+          throw new ErrorHandler(400, `No extension is available at this level (${currentLevel}).`);
+
+        // return currentLevel + 1 maybe ?
+        break;
+
+      default:
+        break;
+    }
+  }
+  
   /**
    * Check whether a garrison is eligible to construct a building, or improve one.
    * @param moment The current moment.
@@ -257,14 +337,14 @@ class Helper {
 
   /**
    * Check whether a garrison meets a specific building instantiation requirements.
+   * @param moment The current moment.
    * @param requirements Building instantiation requirements.
    * @param buildings Garrison buildings.
-   * @param moment The current moment.
    */
   static checkConstructionRequirements(
+    moment: Date,
     requirements: IRequiredBuilding[],
-    buildings: IGarrisonBuilding[],
-    moment: Date
+    buildings: IGarrisonBuilding[]
   ) {
     const fulfilled = requirements
       .some(building => {
@@ -276,7 +356,7 @@ class Helper {
           // is the building at the required upgrade level ?
           const upgraded = existing
             .constructions
-            .find(construction => <number> construction.improvement?.level >= < number > building.upgradeLevel);
+            .find(construction => <number>construction.improvement?.level >= <number>building.upgradeLevel);
           if (!upgraded) return false;
 
           // is the building still being processed for this specific upgrade ?
@@ -295,6 +375,7 @@ class Helper {
    * @param workforce The given workforce.
    * @param peasants Garrison peasants.
    * @param building Static building to be instantiate or improved.
+   * @param improvementType Building improvement type.
    */
   static checkWorkforceCoherence(
     moment: Date,

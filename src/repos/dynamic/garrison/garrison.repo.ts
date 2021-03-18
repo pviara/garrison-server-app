@@ -144,7 +144,7 @@ export default class GarrisonRepository implements IMonitored {
   }
   
   /**
-   * Add and save a new building inside an existing garrison.
+   * Add and save a new building.
    * @param payload @see IBuildingCreate
    */
   async addBuilding(payload: IBuildingCreate) {
@@ -155,32 +155,32 @@ export default class GarrisonRepository implements IMonitored {
 
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const building = await this._buildingRepo.findByCode(payload.code) as IBuilding;
+    const staticBuilding = await this._buildingRepo.findByCode(payload.code) as IBuilding;
 
     const { unit: peasants } = _gH.findUnit(garrison, 'peasant');
     _gH.checkWorkforceCoherence(
       now,
       payload.workforce,
       peasants,
-      building
+      staticBuilding
     );
 
-    const { requiredEntities } = building.instantiation;
+    const { requiredEntities } = staticBuilding.instantiation;
     if (requiredEntities) {
       _gH.checkConstructionRequirements(
+        now,
         requiredEntities.buildings,
-        garrison.instances.buildings,
-        now
+        garrison.instances.buildings
       );
     }
 
     //////////////////////////////////////////////
 
     // 🔨 prepare to build! 
-    const duration = _gH
-      .computeConstructionDuration(
+    const { duration } = _gH
+      .computeConstructionDurationAndWorkforce(
         payload.workforce,
-        building
+        staticBuilding
       );
 
     const construction: IOperatedConstruction = {
@@ -208,12 +208,12 @@ export default class GarrisonRepository implements IMonitored {
       .checkConstructionPaymentCapacity(
         now,
         garrison.resources,
-        building.instantiation.cost
+        staticBuilding.instantiation.cost
       );
       
     // 💰 "gift-harvest" type of buildings directly give their resource here,
-    if (building.harvest && !building.harvest.maxWorkforce)
-      garrison.resources[building.harvest.resource] += building.harvest.amount;
+    if (staticBuilding.harvest && !staticBuilding.harvest.maxWorkforce)
+      garrison.resources[staticBuilding.harvest.resource] += staticBuilding.harvest.amount;
     
     // 👨‍💼 assign peasants to building-site
     peasants.state.assignments = [
@@ -306,7 +306,7 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
-    // 👨‍💼 assign peasants from building-site
+    // 👨‍💼 unassign peasants from building-site
     const { unit: peasants } = _gH.findUnit(garrison, 'peasant');
     const aIndex = peasants
       .state
@@ -328,148 +328,112 @@ export default class GarrisonRepository implements IMonitored {
     return await this.findById(garrison._id);
   }
 
+  /**
+   * Upgrade and save an existing building.
+   * @param payload @see IBuildingUpgradeOrExtend
+   */
   async upgradeBuilding(payload: IBuildingUpgradeOrExtend) {
-    // init the moment
+    // ⌚ init the moment
     const now = new Date();
-    
-    // check on garrison existence
+
+    //////////////////////////////////////////////
+
+    // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
+    const { building } = _gH.findBuilding(garrison, payload.buildingId);
+    const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
-    const { building: garrBuilding } = _gH.findBuilding(garrison, payload.buildingId);
-    if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
-    
-    // check on building existence
-    const building = await this._buildingRepo.findByCode(garrBuilding.code) as IBuilding;
-    if (!building) throw new ErrorHandler(404, 'Building couldn\'t be found.');
+    _gH.checkBuildingAvailability(now, building);
 
-    // check on building upgrade existence
-    if (!building.upgrades || building.upgrades.length === 0)
-      throw new ErrorHandler(412, `Building '${building.code}' cannot be upgraded.`);
+    const { nextUpgrade } = _gH
+      .checkBuildingImprovable(
+        now,
+        building,
+        staticBuilding,
+        'upgrade'
+      );
 
-    // check on building availability
-    const unavailableBuilding = garrBuilding
-      .constructions
-      .some(c => c.endDate.getTime() > now.getTime());
-    if (unavailableBuilding) throw new ErrorHandler(412, `Building '${payload.buildingId}' is already being processed.`);
-
-    // check on current building upgrade level
-    const currentLevel = garrBuilding
-      .constructions
-      .filter(c => c.improvement?.type === 'upgrade')
-      .map(c => <number>c.improvement?.level)
-      .reduce((prev, next) => next > prev ? next : prev, 0);
-
-    // check on upgrade possibility
-    const nextUpgrade = building.upgrades.find(u => u.level >= currentLevel + 1);
-    if (!nextUpgrade) throw new ErrorHandler(400, `No upgrade is available at this level (${currentLevel}).`);
-
-    // check on upgrade requirements
-    const unfulfilled = nextUpgrade.requiredEntities?.buildings.some(b => {
-      // look for the building in garrison
-      const existing = garrison.instances.buildings.find(gB => gB.code === b.code);
-      if (!existing) return true;
-
-      if (b.upgradeLevel) {
-        // is the building at the required upgrade level ?
-        const upgraded = existing.constructions.find(c => <number>c.improvement?.level >= <number>b.upgradeLevel);
-        if (!upgraded) return true;
-
-        // is the building still being processed for this specific upgrade ?
-        if (upgraded.endDate.getTime() > now.getTime()) return true;
-      }
-
-      // is the building still being processed for its instantiation ?
-      const unavailable = existing.constructions.some(c => !c.improvement && (c.endDate.getTime() > now.getTime()));
-      if (unavailable) return true;
-    });
-    if (unfulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
+    const { requiredEntities } = nextUpgrade;
+    if (requiredEntities) {
+      _gH.checkConstructionRequirements(
+        now,
+        requiredEntities.buildings,
+        garrison.instances.buildings
+      );
+    }
       
-    // retrieve and increase both duration and minWorkforce according to current upgrade level
-    let { duration, minWorkforce } = building.instantiation;
-    duration = Math.round(duration * Math.pow(1.3, currentLevel + 1));
-    minWorkforce = minWorkforce * Math.pow(2, currentLevel + 1);
+    const { duration } = _gH
+      .computeConstructionDurationAndWorkforce(
+        payload.workforce,
+        staticBuilding,
+        nextUpgrade.level
+      );
 
     const { unit: peasants } = _gH.findUnit(garrison, 'peasant');
-    if (!peasants) throw new ErrorHandler(404, 'Not a single peasant could be found.');
-    if (payload.workforce > peasants.quantity) throw new ErrorHandler(400, 'Given workforce cannot be greater than current peasant quantity.');
+    _gH.checkWorkforceCoherence(
+      now,
+      payload.workforce,
+      peasants,
+      staticBuilding,
+      'upgrade',
+      building.constructions
+    );
 
-    // check on peasants availability
-    const unavailablePeasants = peasants
-      .state
-      .assignments
-      .filter(a => a.endDate.getTime() > now.getTime())
-      .map(a => a.quantity)
-      .reduce((prev, next) => prev + next, 0);
-    if ((payload.workforce > (peasants.quantity - unavailablePeasants))) throw new ErrorHandler(412, 'Not enough available peasants.');
-
-    if (payload.workforce < minWorkforce) throw new ErrorHandler(400, 'Given workforce is not enough.');
-
-    if (payload.workforce > minWorkforce * 2)
-      throw new ErrorHandler(400, 'A build-site cannot rally more than the double of minimum required workforce.');
+    //////////////////////////////////////////////
     
-    // apply bonus: each additionnal worker reduces duration by 3%
-    const newDuration = duration * Math.pow(0.97, payload.workforce - minWorkforce);
-    duration = Math.floor(newDuration);
-
-    // operate building upgrade
-    const constructed: IOperatedConstruction = {
+    // 🔨 prepare to build! 
+    const construction: IOperatedConstruction = {
       _id: new ObjectId(),
       beginDate: now,
-      endDate: _h.addTime(now, newDuration * 1000),
+      endDate: _h.addTime(now, duration * 1000),
       workforce: payload.workforce,
       improvement: {
         type: 'upgrade',
-        level: currentLevel + 1
+        level: nextUpgrade.level
       }
     };
 
-    garrison.instances.buildings = garrison
-      .instances
-      .buildings
-      .map(b => {
-        if (b.code === building.code) {
-          b.constructions = [
-            ...b.constructions,
-            constructed
-          ]
-        }
-        return b;
-      });
+    building.constructions = [
+      ...building.constructions,
+      construction
+    ];
 
-    const goldCost = Math.round(building.instantiation.cost.gold * Math.pow(1.6, currentLevel + 1));
-    const woodCost = Math.round(building.instantiation.cost.wood * Math.pow(1.6, currentLevel + 1));
-    const plotCost =  Math.round((building.instantiation.cost.plot / 2) * Math.pow(1.3, currentLevel + 1));
-    if (garrison.resources.gold - goldCost < 0
-    || garrison.resources.wood - woodCost < 0
-    || garrison.resources.plot - plotCost < 0)
-      throw new ErrorHandler(412, 'Not enough resources.');
-    
-    garrison.resources = {
-      ...garrison.resources,
-      gold: garrison.resources.gold - goldCost,
-      wood: garrison.resources.wood - woodCost,
-      plot: garrison.resources.plot - plotCost
-    }
+    //////////////////////////////////////////////
 
-    if (building.harvest && !building.harvest.maxWorkforce)
-      garrison.resources[building.harvest.resource] += Math.floor(
-        building.harvest.amount * Math.pow(1.2, currentLevel + 1)
+    // 💰 update the resources
+    garrison.resources = (await this.updateResources(garrison)).resources;
+    garrison.resources = _gH
+      .checkConstructionPaymentCapacity(
+        now,
+        garrison.resources,
+        staticBuilding.instantiation.cost,
+        'upgrade',
+        building.constructions
       );
-    
-    // assign rallied workforce to their occupation
+      
+    // 💰 "gift-harvest" type of buildings directly give their resource here,
+    if (staticBuilding.harvest && !staticBuilding.harvest.maxWorkforce)
+      garrison.resources[staticBuilding.harvest.resource] += Math.floor(
+        staticBuilding.harvest.amount * Math.pow(1.2, nextUpgrade.level)
+      );
+
+    //////////////////////////////////////////////
+  
+    // 👨‍💼 assign peasants to building-site
     peasants.state.assignments = [
       ...peasants.state.assignments,
       {
         _id: new ObjectId(),
-        buildingId: <ObjectId>garrBuilding._id,
+        buildingId: <ObjectId>building._id,
         quantity: payload.workforce,
         type: 'construction',
-        endDate: _h.addTime(now, newDuration * 1000)
+        endDate: _h.addTime(now, duration * 1000)
       }
     ];
 
-    // mark modified elements then save in database
+    //////////////////////////////////////////////
+
+    // 💾 save in database
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();

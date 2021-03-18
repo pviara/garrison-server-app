@@ -44,6 +44,14 @@ class Helper {
   }
 
   /**
+   * Check whether the given array is empty or not.
+   * @param arr Given array.
+   */
+  static isArrayEmpty(arr: any[]) {
+    return arr.length === 0;
+  }
+
+  /**
    * Check whether all given object ids are the same one.
    * @param objectIds Given object ids.
    */

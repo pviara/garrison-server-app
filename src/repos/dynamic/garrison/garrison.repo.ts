@@ -261,8 +261,8 @@ export default class GarrisonRepository implements IMonitored {
     const { improvement } = building.constructions[cIndex];
     if (improvement) {
       gold = gold * Math.pow(_gH.getFactor('default'), improvement.level);
-      gold = wood * Math.pow(_gH.getFactor('default'), improvement.level);
-      gold = plot * Math.pow(_gH.getFactor('decreased'), improvement.level);
+      wood = wood * Math.pow(_gH.getFactor('default'), improvement.level);
+      plot = plot * Math.pow(_gH.getFactor('decreased'), improvement.level);
 
       building
         .constructions

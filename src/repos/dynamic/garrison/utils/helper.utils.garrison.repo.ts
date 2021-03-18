@@ -16,10 +16,12 @@ import {
 import {
   IBuilding,
   IBuildingCost,
-  IRequiredBuilding
+  IRequiredBuilding,
+  IRequiredBuildingForExtensionLevel
 } from '../../../../config/models/data/static/building/building.types';
 
 import _h from '../../../../utils/helper.utils';
+import { IUnit, IUnitCost } from '../../../../config/models/data/static/unit/unit.types';
 
 /**
  * Garrison helper class. Contains static methods garrison repository only can use.
@@ -205,6 +207,22 @@ class Helper {
     };
   }
 
+  /**
+   * Compute the cost of training one or more units.
+   * @param instantiationCost Unit basic instantiation cost.
+   * @param quantity The quantity of units to instantiate.
+   */
+  static computeTrainingCost(
+    instantiationCost: IUnitCost,
+    quantity: number
+  ) {
+    return {
+      gold: instantiationCost.gold * quantity,
+      wood: instantiationCost.wood * quantity,
+      food: instantiationCost.food * quantity
+    } as IUnitCost;
+  }
+
   ///////////////////////////////////////
   // ❔ CHECKS
   ///////////////////////////////////////
@@ -228,7 +246,11 @@ class Helper {
    * @param staticBuilding Static building.
    * @param improvementType Building improvement type.
    */
-  // static checkBuildingImprovable(moment: Date, building: IGarrisonBuilding, staticBuilding: IBuilding, improvementType: 'extension'): NonNullable<IBuilding['extension']>;
+  static checkBuildingImprovable(
+    moment: Date,
+    building: IGarrisonBuilding,
+    staticBuilding: IBuilding,
+    improvementType: 'extension'): { extension: NonNullable<IBuilding['extension']>; currentLevel: number; nextExtension: number; };
   static checkBuildingImprovable(
     moment: Date,
     building: IGarrisonBuilding,
@@ -240,7 +262,6 @@ class Helper {
     staticBuilding: IBuilding,
     improvementType: IBuildingImprovementType
   ) {
-    
     switch (improvementType) {
       case 'upgrade': {
         if (!staticBuilding.upgrades || staticBuilding.upgrades.length === 0)
@@ -256,7 +277,7 @@ class Helper {
             .upgrades
             .filter(u => u.level >= currentLevel + 1);
         if (_h.isArrayEmpty(nextUpgrades))
-            throw new ErrorHandler(400, `No upgrade is available at this level (${currentLevel}).`)
+            throw new ErrorHandler(400, `No upgrade is available at this level (${currentLevel}).`);
 
         return {
           currentLevel,
@@ -264,7 +285,7 @@ class Helper {
         }
       }
 
-      case 'extension':
+      case 'extension': {
         if (!staticBuilding.extension)
           throw new ErrorHandler(412, `Building '${staticBuilding.code}' cannot be extended.`);
         
@@ -278,8 +299,12 @@ class Helper {
         if (currentLevel + 1 > extensionMax)
           throw new ErrorHandler(400, `No extension is available at this level (${currentLevel}).`);
 
-        // return currentLevel + 1 maybe ?
-        break;
+        return {
+          extension: staticBuilding.extension as IBuilding['extension'],
+          currentLevel,
+          nextExtension: currentLevel + 1
+        };
+      }
 
       default:
         break;
@@ -308,8 +333,8 @@ class Helper {
     moment: Date,
     resources: IGarrisonResources,
     instantiationCost: IBuildingCost,
-    improvementType ? : IBuildingImprovementType,
-    constructions ? : IOperatedConstruction[]
+    improvementType?: IBuildingImprovementType,
+    constructions?: IOperatedConstruction[]
   ) {
     let nextLevel;
     if (improvementType && constructions) {
@@ -336,12 +361,37 @@ class Helper {
   }
 
   /**
-   * Check whether a garrison meets a specific building instantiation requirements.
+   * Check whether a garrison is eligible to train one or more units.
+   * @param resources Garrison current resources.
+   * @param instantiationCost The unit basic instantiation cost.
+   * @param quantity The quantity of units to train.
+   */
+  static checkTrainingPaymentCapacity(
+    resources: IGarrisonResources,
+    instantiationCost: IUnitCost,
+    quantity: number
+  ) {
+    const cost = this.computeTrainingCost(instantiationCost, quantity);
+    if (resources.gold - cost.gold < 0 ||
+      cost.wood - cost.wood < 0 ||
+      resources.food - cost.food < 0)
+      throw new ErrorHandler(412, 'Not enough resources.');
+
+    return {
+      ...resources,
+      gold: resources.gold - cost.gold,
+      wood: resources.wood - cost.wood,
+      food: resources.food - cost.food
+    } as IGarrisonResources;
+  }
+
+  /**
+   * Check whether a garrison meets a building instantiation/upgrade requirements.
    * @param moment The current moment.
-   * @param requirements Building instantiation requirements.
+   * @param requirements Building instantiation/upgrade construction requirements.
    * @param buildings Garrison buildings.
    */
-  static checkConstructionRequirements(
+  static checkStandardRequirements(
     moment: Date,
     requirements: IRequiredBuilding[],
     buildings: IGarrisonBuilding[]
@@ -353,6 +403,41 @@ class Helper {
         if (!existing) return false;
 
         if (building.upgradeLevel) {
+          // is the building at the required upgrade level ?
+          const upgraded = existing
+            .constructions
+            .find(construction => <number>construction.improvement?.level >= <number>building.upgradeLevel);
+          if (!upgraded) return false;
+
+          // is the building still being processed for this specific upgrade ?
+          if (upgraded.endDate.getTime() > moment.getTime()) return false;
+        }
+        return true;
+      });
+
+    if (!fulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
+  }
+
+  /**
+   * Check whether a garrison meets a building extension requirements.
+   * @param moment The current moment.
+   * @param requirements Building extension construction requirements.
+   * @param buildings Garrison buildings.
+   * @param nextExtension Next extension level to reach.
+   */
+  static checkExtensionConstructionRequirements(
+    moment: Date,
+    requirements: IRequiredBuildingForExtensionLevel[],
+    buildings: IGarrisonBuilding[],
+    nextExtension: number
+  ) {
+    const fulfilled = requirements
+      .some(building => {
+        // simply look for the required building inside garrison existing buildings
+        const existing = buildings.find(garrBuilding => garrBuilding.code === building.code);
+        if (!existing) return false;
+
+        if (building.upgradeLevel && (building.level === nextExtension)) {
           // is the building at the required upgrade level ?
           const upgraded = existing
             .constructions

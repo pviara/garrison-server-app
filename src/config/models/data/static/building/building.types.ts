@@ -81,7 +81,7 @@ export interface IRequiredBuilding {
 /** 
  * The extension level at which it is required to build the much-vauted required buildings.
  * */
-interface IRequiredBuildingForExtensionLevel extends IRequiredBuilding {
+export interface IRequiredBuildingForExtensionLevel extends IRequiredBuilding {
   /** The extension level at which the building(s) is/are required. */
   level: number;
 }

@@ -118,6 +118,11 @@ export interface IOperatedConstruction {
 }
 
 /**
+ * A unit assignment.
+ */
+export type IUnitAssignment = IGarrison['instances']['units'][any]['state']['assignments'][any];
+
+/**
  * Garrison resources.
  */
 export type IGarrisonResources = IGarrison['resources'];

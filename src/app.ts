@@ -71,12 +71,25 @@ import MasterRouter from './config/routers/master.router';
     server.app.listen(
       port,
       async () => {
+        console.log('  _____.__        _____   .___                 ');
+        console.log('_/ ____\\__| _____/ ____\\__| _/____   _____     ');
+        console.log('\\   __\\|  |/ __ \\   __\\/ __ |/  _ \\ /     \'   ');
+        console.log(' |  |  |  \\  ___/|  | / /_/ (  <_> )  Y Y  \\   ');
+        console.log(' |__|  |__|\\___  >__| \\____ |\\____/|__|_|  /   ');
+        console.log('               \\/          \\/            \\/    ');
+        console.log('                        .__  .__               ');
+        console.log('            ____   ____ |  | |__| ____   ____  ');
+        console.log('  ______   /  _ \\ /    \\|  | |  |/    \\_/ __ \\ ');
+        console.log(' /_____/  (  <_> )   |  \\  |_|  |   |  \\  ___/ ');
+        console.log('           \\____/|___|  /____/__|___|  /\\___  >');
+        console.log('                      \\/             \\/     \\/');
+
         // here we go baby, let them now!!
-        console.log(' ▄▄ •  ▄▄▄· ▄▄▄  ▄▄▄  ▪  .▄▄ ·        ▐ ▄ ');
-        console.log('▐█ ▀ ▪▐█ ▀█ ▀▄ █·▀▄ █·██ ▐█ ▀. ▪     •█▌▐█');
-        console.log('▄█ ▀█▄▄█▀▀█ ▐▀▀▄ ▐▀▀▄ ▐█·▄▀▀▀█▄ ▄█▀▄ ▐█▐▐▌');
-        console.log('▐█▄▪▐█▐█ ▪▐▌▐█•█▌▐█•█▌▐█▌▐█▄▪▐█▐█▌.▐▌██▐█▌');
-        console.log('·▀▀▀▀  ▀  ▀ .▀  ▀.▀  ▀▀▀▀ ▀▀▀▀  ▀█▄▀▪▀▀ █▪');
+        // console.log(' ▄▄ •  ▄▄▄· ▄▄▄  ▄▄▄  ▪  .▄▄ ·        ▐ ▄ ');
+        // console.log('▐█ ▀ ▪▐█ ▀█ ▀▄ █·▀▄ █·██ ▐█ ▀. ▪     •█▌▐█');
+        // console.log('▄█ ▀█▄▄█▀▀█ ▐▀▀▄ ▐▀▀▄ ▐█·▄▀▀▀█▄ ▄█▀▄ ▐█▐▐▌');
+        // console.log('▐█▄▪▐█▐█ ▪▐▌▐█•█▌▐█•█▌▐█▌▐█▄▪▐█▐█▌.▐▌██▐█▌');
+        // console.log('·▀▀▀▀  ▀  ▀ .▀  ▀.▀  ▀▀▀▀ ▀▀▀▀  ▀█▄▀▪▀▀ █▪');
         console.log(`> Version: v${require('../package')?.version}`);
         console.log(`> Port: ${port}`);
         console.log('> Ready to handle requests!');

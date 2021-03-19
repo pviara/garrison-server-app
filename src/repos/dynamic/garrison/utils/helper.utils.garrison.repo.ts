@@ -173,6 +173,35 @@ class Helper {
   ///////////////////////////////////////
   // 🧮 COMPUTATIONS
   ///////////////////////////////////////
+
+  /**
+   * Compute the amount of available food based on available farms.
+   * @param moment The current moment.
+   * @param buildings Garrison buildings.
+   */
+  static computeAvailableFood(moment: Date, buildings: IGarrisonBuilding[], harvestAmount: number) {
+    const farms = buildings.filter(building => building.code === 'farm');
+    if (farms.length === 0) return 0;
+
+    let total = 0;
+
+    for (const farm of farms) {
+      const currentLevel = this
+        .computeBuildingCurrentLevel(
+          moment,
+          'extension',
+          farm.constructions
+        );
+
+      let factor = 0;
+      if (currentLevel === 0) factor = 1;
+      else if (currentLevel > 0)
+        factor = Math.pow(this.getFactor('decreased'), currentLevel);
+      
+      total += harvestAmount * factor;
+    }
+    return total;
+  }
   
   /**
    * Compute the quantity of available units on the basis of a given garrison unit.
@@ -201,11 +230,17 @@ class Helper {
     improvementType: IBuildingImprovementType,
     constructions: IOperatedConstruction[]
   ) {
-    return constructions
+    const improvements = constructions
       .filter(
         c => moment.getTime() > c.endDate.getTime() &&
         c.improvement?.type === improvementType
-      )
+      );
+    if (improvements.length === 0) {
+      // no improvement was found, but is the building at least been instantiated ?
+      if (constructions.length > 1) return -1;
+    }
+
+    return improvements
       .map(c => <number>c.improvement?.level)
       .reduce((prev, next) => next > prev ? next : prev, 0);
   }
@@ -450,19 +485,32 @@ class Helper {
 
   /**
    * Check whether a garrison is eligible to train one or more units.
+   * @param moment The current moment.
    * @param resources Garrison current resources.
+   * @param buildings Garrison buildings.
    * @param instantiationCost The unit basic instantiation cost.
    * @param quantity The quantity of units to train.
+   * @param harvestAmount The amount of resource a farm is giving when it gets constructed.
    */
   static checkTrainingPaymentCapacity(
+    moment: Date,
     resources: IGarrisonResources,
+    buildings: IGarrisonBuilding[],
     instantiationCost: IUnitCost,
-    quantity: number
+    quantity: number,
+    harvestAmount: number
   ) {
+    const availableFood = this
+      .computeAvailableFood(
+        moment,
+        buildings,
+        harvestAmount
+      );
+    
     const cost = this.computeTrainingCost(instantiationCost, quantity);
     if (resources.gold - cost.gold < 0 ||
       cost.wood - cost.wood < 0 ||
-      resources.food - cost.food < 0)
+      availableFood - cost.food < 0)
       throw new ErrorHandler(412, 'Not enough resources.');
 
     return {

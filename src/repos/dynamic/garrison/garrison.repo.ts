@@ -140,7 +140,7 @@ export default class GarrisonRepository implements IMonitored {
       resources: {
         gold: 625,
         wood: 320,
-        food: 3,
+        food: 0,
         plot: 32
       },
       instances: {
@@ -323,17 +323,23 @@ export default class GarrisonRepository implements IMonitored {
       };
 
       switch (typeof harvest.maxWorkforce) {
-        case 'number':
+        case 'number': {
           if (checkBuildingStillExists(garrison.instances.buildings, code))
             delete garrison.resources[`${harvest.resource}LastUpdate` as 'goldLastUpdate' | 'woodLastUpdate'];
           break;
+        }
 
-        case 'undefined':
-          const factor = improvement?.level ? Math.pow(_gH.getFactor('decreased'), improvement.level) : 1;
+        case 'undefined': {
+          const factor = improvement?.level
+            ? Math.pow(_gH.getFactor('decreased'), improvement.level)
+            : 1;
+          
           const owed = Math.floor(harvest.amount * factor);
           const rest = garrison.resources[harvest.resource] - owed;
+
           garrison.resources[harvest.resource] = rest >= 0 ? rest : 0;
           break;
+        }
       }
     }
 
@@ -685,12 +691,16 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 💰 update the resources
+    const farm = await this._buildingRepo.findByCode('farm') as Required<IBuilding>;
     garrison.resources = (await this._updateResources(garrison)).resources;
     garrison.resources = _gH
       .checkTrainingPaymentCapacity(
+        now,
         garrison.resources,
+        garrison.instances.buildings,
         staticUnit.instantiation.cost,
-        payload.quantity || 1
+        payload.quantity || 1,
+        farm.harvest.amount
       );
 
     //////////////////////////////////////////////

@@ -328,10 +328,9 @@ export default class GarrisonRepository implements IMonitored {
             delete garrison.resources[`${harvest.resource}LastUpdate` as 'goldLastUpdate' | 'woodLastUpdate'];
           break;
 
-        case undefined:
-          const owed = Math.floor(
-            harvest.amount * Math.pow(_gH.getFactor('decreased'), improvement?.level || 1)
-          );
+        case 'undefined':
+          const factor = improvement?.level ? Math.pow(_gH.getFactor('decreased'), improvement.level) : 1;
+          const owed = Math.floor(harvest.amount * factor);
           const rest = garrison.resources[harvest.resource] - owed;
           garrison.resources[harvest.resource] = rest >= 0 ? rest : 0;
           break;
@@ -897,7 +896,7 @@ export default class GarrisonRepository implements IMonitored {
       const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
       const harvest = _gH.checkBuildingAllowsHarvest(staticBuilding);
-      if (!harvest) continue;
+      if (!harvest || !harvest.maxWorkforce) continue;
 
       _gH.checkBuildingAvailability(now, building);
 

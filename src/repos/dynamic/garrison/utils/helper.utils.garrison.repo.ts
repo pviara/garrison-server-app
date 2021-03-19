@@ -430,15 +430,21 @@ class Helper {
   static checkHarvestingPeasants(
     peasants: IGarrisonUnit,
     buildings: IGarrisonBuilding[],
-    buildingCode: 'goldmine' | 'sawmill'
+    buildingCode: string
   ) {
     return peasants
       .state
       .assignments
       .some(assignment => {
         return assignment.type === 'harvest'
-        && buildings
-          .find(building => building.code === buildingCode);
+        && buildings.find(building => {
+            if (!assignment.buildingId) return;
+
+            if (
+              building._id.equals(assignment.buildingId)
+              && building.code === buildingCode
+            ) return building;
+          });
       });
   }
 

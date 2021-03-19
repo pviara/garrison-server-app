@@ -662,7 +662,7 @@ export default class GarrisonRepository implements IMonitored {
     
     _gH.checkUnitAssignmentCoherence(
       now,
-      unit.quantity,
+      payload.quantity || 1,
       unit,
       building
     );
@@ -695,14 +695,14 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 👨‍💼 prepare to assign!
-    const { index: aIndex } = _gH.findAssignment(
-      unit,
-      building._id,
-      'harvest',
-      false
-    );
-    
     for (let i = 0; i < (payload.quantity || 1); i++) {
+      const { index: aIndex } = _gH.findAssignment(
+        unit,
+        building._id,
+        'harvest',
+        false
+      );
+
       if (aIndex < 0) {
         unit
           .state
@@ -763,7 +763,7 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
       
-    // 💰 update the resources
+    // 💰 update the resources (first checkpoint)
     if (staticUnit.code === 'peasant')
       garrison.resources = (await this.updateResources(garrison)).resources;
 
@@ -773,33 +773,17 @@ export default class GarrisonRepository implements IMonitored {
     assignment.quantity = assignment.quantity - (payload.quantity || 1);
     if (assignment.quantity === 0) unit.state.assignments.splice(aIndex, 1);
 
-    switch (staticBuilding.code) {
-      case 'goldmine': {
-        const activePeasants = _gH
-          .checkHarvestingPeasants(
-            unit,
-            garrison.instances.buildings,
-            staticBuilding.code
-          );
-        if (!activePeasants) delete garrison.resources.goldLastUpdate;
-        break;
-      }
-      case 'sawmill': {
-        const activePeasants = _gH
-          .checkHarvestingPeasants(
-            unit,
-            garrison.instances.buildings,
-            staticBuilding.code
-          );
-        if (!activePeasants) delete garrison.resources.woodLastUpdate;
-        break;
-      }
-    }
+    //////////////////////////////////////////////
+      
+    // 💰 update the resources (second checkpoint)
+    if (staticUnit.code === 'peasant')
+      garrison.resources = (await this.updateResources(garrison)).resources;
 
     //////////////////////////////////////////////
-
+    
     // 💾 save in database
     garrison.markModified('instances.units');
+    garrison.markModified('resources');
     await garrison.save();
     
     return await this.findById(garrison._id);
@@ -839,7 +823,18 @@ export default class GarrisonRepository implements IMonitored {
           'harvest',
           false
         );
-      if (aIndex < 0) continue;
+      if (aIndex < 0) {
+        const activePeasants = _gH
+            .checkHarvestingPeasants(
+              unit,
+              garrison.instances.buildings,
+              staticBuilding.code
+            );
+        if (!activePeasants)
+          delete garrison.resources[`${harvest.resource}LastUpdate` as 'goldLastUpdate' | 'woodLastUpdate'];
+
+        continue;
+      }
       const assignment = unit.state.assignments[aIndex];
 
       let elapsedMinutes = 0;

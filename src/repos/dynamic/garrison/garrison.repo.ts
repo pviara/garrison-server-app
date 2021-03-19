@@ -1,25 +1,41 @@
 import ErrorHandler from '../../../config/models/error/error-handler.model';
 
-import { ELogType as logType } from '../../../config/models/log/log.model';
+import {
+  ELogType as logType
+} from '../../../config/models/log/log.model';
 import IMonitored from '../../../config/models/IMonitored';
 import MonitoringService from '../../../config/services/monitoring/monitoring.service'
 
-import { ObjectId } from 'mongodb';
+import {
+  ObjectId
+} from 'mongodb';
 
-import { IBuilding, IBuildingCost, IRequiredBuilding } from '../../../config/models/data/static/building/building.types';
+import {
+  IBuilding
+} from '../../../config/models/data/static/building/building.types';
 import IBuildingConstructionCancel from '../../../config/models/data/dynamic/garrison/payloads/IBuildingConstructionCancel';
 import IBuildingCreate from '../../../config/models/data/dynamic/garrison/payloads/IBuildingCreate';
 import IBuildingUpgradeOrExtend from '../../../config/models/data/dynamic/garrison/payloads/IBuildingUpgradeOrExtend';
 
-import { IBuildingImprovementType, IGarrison, IGarrisonBuilding, IGarrisonDocument, IGarrisonModel, IGarrisonResources, IGarrisonUnit, IOperatedConstruction, IUnitAssignment } from '../../../config/models/data/dynamic/garrison/garrison.types';
+import {
+  IGarrisonBuilding,
+  IGarrisonDocument,
+  IGarrisonModel,
+  IOperatedConstruction,
+  IUnitAssignment
+} from '../../../config/models/data/dynamic/garrison/garrison.types';
 import IGarrisonCreate from '../../../config/models/data/dynamic/garrison/payloads/IGarrisonCreate';
 
-import { IUnit, IUnitCost } from '../../../config/models/data/static/unit/unit.types';
+import {
+  IUnit
+} from '../../../config/models/data/static/unit/unit.types';
 import IUnitAssign from '../../../config/models/data/dynamic/garrison/payloads/IUnitAssign';
 import IUnitCreate from '../../../config/models/data/dynamic/garrison/payloads/IUnitCreate';
 import IUnitUnassign from '../../../config/models/data/dynamic/garrison/payloads/IUnitUnassign';
 
-import { IZone } from '../../../config/models/data/static/zone/zone.types'
+import {
+  IZone
+} from '../../../config/models/data/static/zone/zone.types'
 
 import BuildingRepository from '../../static/building.repo';
 import CharacterRepository from '../character/character.repo';
@@ -28,13 +44,11 @@ import UserRepository from '../user/user.repo';
 import ZoneRepository from '../../static/zone.repo';
 
 import _h from '../../../utils/helper.utils';
-import { IStaticEntityCost } from '../../../config/models/data/static/static.types';
-
 import _gH from './utils/helper.utils.garrison.repo';
 
 export default class GarrisonRepository implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
-  
+
   /** Retrieve class monitoring service. */
   get monitor() {
     return this._monitor;
@@ -57,9 +71,9 @@ export default class GarrisonRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no garrison is found.
    * @returns Either an IGarrisonDocument or (maybe) null if strict mode is set to false.
    */
-  async findById(id: ObjectId, strict?: true): Promise<IGarrisonDocument>;
-  async findById(id: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
-  async findById(id: ObjectId, strict?: boolean) {
+  async findById(id: ObjectId, strict ? : true): Promise < IGarrisonDocument > ;
+  async findById(id: ObjectId, strict: false): Promise < IGarrisonDocument | null > ;
+  async findById(id: ObjectId, strict ? : boolean) {
     const result = await this._model.findById(id);
     if (!result && strict) throw new ErrorHandler(404, `Garrison with garrisonId '${id}' couldn't be found.`);
 
@@ -72,9 +86,9 @@ export default class GarrisonRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no garrison is found.
    * @returns Either an IGarrisonDocument or (maybe) null if strict mode is set to false.
    */
-  async getFromUser(userId: ObjectId, strict?: true): Promise<IGarrisonDocument>;
-  async getFromUser(userId: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
-  async getFromUser(userId: ObjectId, strict?: boolean) {
+  async getFromUser(userId: ObjectId, strict ? : true): Promise < IGarrisonDocument > ;
+  async getFromUser(userId: ObjectId, strict: false): Promise < IGarrisonDocument | null > ;
+  async getFromUser(userId: ObjectId, strict ? : boolean) {
     const user = await this._userRepo.findById(userId);
     const character = await this._characterRepo.getFromUser(user?._id);
 
@@ -90,10 +104,12 @@ export default class GarrisonRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no garrison is found.
    * @returns Either an IGarrisonDocument or (maybe) null if strict mode is set to false.
    */
-  async getFromCharacter(characterId: ObjectId, strict?: true): Promise<IGarrisonDocument>;
-  async getFromCharacter(characterId: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
-  async getFromCharacter(characterId: ObjectId, strict?: boolean) {
-    const result = await this._model.findOne({ characterId });
+  async getFromCharacter(characterId: ObjectId, strict ? : true): Promise < IGarrisonDocument > ;
+  async getFromCharacter(characterId: ObjectId, strict: false): Promise < IGarrisonDocument | null > ;
+  async getFromCharacter(characterId: ObjectId, strict ? : boolean) {
+    const result = await this._model.findOne({
+      characterId
+    });
     if (!result && strict) throw new ErrorHandler(404, `Garrison from characterId '${characterId}' couldn't be found.`);
 
     return result;
@@ -130,19 +146,17 @@ export default class GarrisonRepository implements IMonitored {
       instances: {
         buildings: [],
         researches: [],
-        units: [
-          {
-            code: 'peasant',
-            quantity: 3,
-            state: {
-              assignments: []
-            }
+        units: [{
+          code: 'peasant',
+          quantity: 3,
+          state: {
+            assignments: []
           }
-        ]
+        }]
       }
     });
   }
-  
+
   /**
    * Add and save a new building.
    * @param payload @see IBuildingCreate
@@ -157,7 +171,9 @@ export default class GarrisonRepository implements IMonitored {
     const garrison = await this.findById(payload.garrisonId);
     const staticBuilding = await this._buildingRepo.findByCode(payload.code) as IBuilding;
 
-    const { unit: peasants } = _gH.findUnit(garrison, 'peasant');
+    const {
+      unit: peasants
+    } = _gH.findUnit(garrison, 'peasant');
     _gH.checkWorkforceCoherence(
       now,
       payload.workforce,
@@ -165,7 +181,9 @@ export default class GarrisonRepository implements IMonitored {
       staticBuilding
     );
 
-    const { requiredEntities } = staticBuilding.instantiation;
+    const {
+      requiredEntities
+    } = staticBuilding.instantiation;
     if (requiredEntities) {
       _gH.checkStandardRequirements(
         now,
@@ -177,7 +195,9 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 🔨 prepare to build! 
-    const { duration } = _gH
+    const {
+      duration
+    } = _gH
       .computeConstructionDurationAndWorkforce(
         payload.workforce,
         staticBuilding
@@ -189,7 +209,7 @@ export default class GarrisonRepository implements IMonitored {
       endDate: _h.addTime(now, duration * 1000),
       workforce: payload.workforce
     };
-    
+
     const buildingId = new ObjectId();
     garrison.instances.buildings = [
       ...garrison.instances.buildings,
@@ -203,18 +223,18 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 💰 update the resources
-    garrison.resources = (await this.updateResources(garrison)).resources;
+    garrison.resources = (await this._updateResources(garrison)).resources;
     garrison.resources = _gH
       .checkConstructionPaymentCapacity(
         now,
         garrison.resources,
         staticBuilding.instantiation.cost
       );
-      
+
     // 💰 "gift-harvest" type of buildings directly give their resource here,
     if (staticBuilding.harvest && !staticBuilding.harvest.maxWorkforce)
       garrison.resources[staticBuilding.harvest.resource] += staticBuilding.harvest.amount;
-    
+
     // 👨‍💼 assign peasants to building-site
     peasants.state.assignments = [
       ...peasants.state.assignments,
@@ -233,7 +253,7 @@ export default class GarrisonRepository implements IMonitored {
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();
-    
+
     return await this.findById(garrison._id);
   }
 
@@ -244,10 +264,15 @@ export default class GarrisonRepository implements IMonitored {
   async cancelBuildingConstruction(payload: IBuildingConstructionCancel) {
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const { building, index: bIndex } = _gH.findBuilding(garrison, payload.buildingId);
+    const {
+      building,
+      index: bIndex
+    } = _gH.findBuilding(garrison, payload.buildingId);
     const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
-    const { index: cIndex } = _gH
+    const {
+      index: cIndex
+    } = _gH
       .findBuildingConstruction(
         building,
         payload.constructionId
@@ -256,9 +281,15 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 💰 prepare to refund!
-    let { gold, wood, plot } = staticBuilding.instantiation.cost;
-    
-    const { improvement } = building.constructions[cIndex];
+    let {
+      gold,
+      wood,
+      plot
+    } = staticBuilding.instantiation.cost;
+
+    const {
+      improvement
+    } = building.constructions[cIndex];
     if (improvement) {
       gold = gold * Math.pow(_gH.getFactor('default'), improvement.level);
       wood = wood * Math.pow(_gH.getFactor('default'), improvement.level);
@@ -281,13 +312,16 @@ export default class GarrisonRepository implements IMonitored {
       plot: garrison.resources.plot + plot,
     };
 
-    const { harvest, code } = staticBuilding;
+    const {
+      harvest,
+      code
+    } = staticBuilding;
     if (harvest) {
       const checkBuildingStillExists = (buildings: IGarrisonBuilding[], code: string) => {
         return buildings
           .some(b => b.code === code);
       };
-      
+
       switch (typeof harvest.maxWorkforce) {
         case 'number':
           if (checkBuildingStillExists(garrison.instances.buildings, code))
@@ -307,7 +341,9 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 👨‍💼 unassign peasants from building-site
-    const { unit: peasants } = _gH.findUnit(garrison, 'peasant');
+    const {
+      unit: peasants
+    } = _gH.findUnit(garrison, 'peasant');
     const aIndex = peasants
       .state
       .assignments
@@ -340,12 +376,16 @@ export default class GarrisonRepository implements IMonitored {
 
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const { building } = _gH.findBuilding(garrison, payload.buildingId);
+    const {
+      building
+    } = _gH.findBuilding(garrison, payload.buildingId);
     const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
     _gH.checkBuildingAvailability(now, building);
 
-    const { nextUpgrade } = _gH
+    const {
+      nextUpgrade
+    } = _gH
       .checkBuildingImprovable(
         now,
         building,
@@ -353,7 +393,9 @@ export default class GarrisonRepository implements IMonitored {
         'upgrade'
       );
 
-    const { requiredEntities } = nextUpgrade;
+    const {
+      requiredEntities
+    } = nextUpgrade;
     if (requiredEntities) {
       _gH.checkStandardRequirements(
         now,
@@ -361,15 +403,19 @@ export default class GarrisonRepository implements IMonitored {
         garrison.instances.buildings
       );
     }
-      
-    const { duration } = _gH
+
+    const {
+      duration
+    } = _gH
       .computeConstructionDurationAndWorkforce(
         payload.workforce,
         staticBuilding,
         nextUpgrade.level
       );
 
-    const { unit: peasants } = _gH.findUnit(garrison, 'peasant');
+    const {
+      unit: peasants
+    } = _gH.findUnit(garrison, 'peasant');
     _gH.checkWorkforceCoherence(
       now,
       payload.workforce,
@@ -380,7 +426,7 @@ export default class GarrisonRepository implements IMonitored {
     );
 
     //////////////////////////////////////////////
-    
+
     // 🔨 prepare to build! 
     const construction: IOperatedConstruction = {
       _id: new ObjectId(),
@@ -401,7 +447,7 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 💰 update the resources
-    garrison.resources = (await this.updateResources(garrison)).resources;
+    garrison.resources = (await this._updateResources(garrison)).resources;
     garrison.resources = _gH
       .checkConstructionPaymentCapacity(
         now,
@@ -410,7 +456,7 @@ export default class GarrisonRepository implements IMonitored {
         'upgrade',
         building.constructions
       );
-      
+
     // 💰 "gift-harvest" type of buildings directly give their resource here,
     if (staticBuilding.harvest && !staticBuilding.harvest.maxWorkforce)
       garrison.resources[staticBuilding.harvest.resource] += Math.floor(
@@ -418,13 +464,13 @@ export default class GarrisonRepository implements IMonitored {
       );
 
     //////////////////////////////////////////////
-  
+
     // 👨‍💼 assign peasants to building-site
     peasants.state.assignments = [
       ...peasants.state.assignments,
       {
         _id: new ObjectId(),
-        buildingId: <ObjectId>building._id,
+        buildingId: < ObjectId > building._id,
         quantity: payload.workforce,
         type: 'construction',
         endDate: _h.addTime(now, duration * 1000)
@@ -437,7 +483,7 @@ export default class GarrisonRepository implements IMonitored {
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();
-    
+
     return await this.findById(garrison._id);
   }
 
@@ -450,15 +496,20 @@ export default class GarrisonRepository implements IMonitored {
     const now = new Date();
 
     //////////////////////////////////////////////
-    
+
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const { building } = _gH.findBuilding(garrison, payload.buildingId);
+    const {
+      building
+    } = _gH.findBuilding(garrison, payload.buildingId);
     const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
     _gH.checkBuildingAvailability(now, building);
 
-    const { extension, nextExtension } = _gH
+    const {
+      extension,
+      nextExtension
+    } = _gH
       .checkBuildingImprovable(
         now,
         building,
@@ -466,7 +517,9 @@ export default class GarrisonRepository implements IMonitored {
         'extension'
       );
 
-    const { requiredEntities } = extension;
+    const {
+      requiredEntities
+    } = extension;
     if (requiredEntities) {
       _gH.checkExtensionConstructionRequirements(
         now,
@@ -475,15 +528,19 @@ export default class GarrisonRepository implements IMonitored {
         nextExtension
       );
     }
-      
-    const { duration } = _gH
+
+    const {
+      duration
+    } = _gH
       .computeConstructionDurationAndWorkforce(
         payload.workforce,
         staticBuilding,
         nextExtension
       );
 
-    const { unit: peasants } = _gH.findUnit(garrison, 'peasant');
+    const {
+      unit: peasants
+    } = _gH.findUnit(garrison, 'peasant');
     _gH.checkWorkforceCoherence(
       now,
       payload.workforce,
@@ -492,9 +549,9 @@ export default class GarrisonRepository implements IMonitored {
       'upgrade',
       building.constructions
     );
-    
+
     //////////////////////////////////////////////
-    
+
     // 🔨 prepare to build!
     const construction: IOperatedConstruction = {
       _id: new ObjectId(),
@@ -515,7 +572,7 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 💰 update the resources
-    garrison.resources = (await this.updateResources(garrison)).resources;
+    garrison.resources = (await this._updateResources(garrison)).resources;
     garrison.resources = _gH
       .checkConstructionPaymentCapacity(
         now,
@@ -524,13 +581,13 @@ export default class GarrisonRepository implements IMonitored {
         'extension',
         building.constructions
       );
-      
+
     // 💰 "gift-harvest" type of buildings directly give their resource here,
     if (staticBuilding.harvest && !staticBuilding.harvest.maxWorkforce)
       garrison.resources[staticBuilding.harvest.resource] += Math.floor(
         staticBuilding.harvest.amount * Math.pow(1.2, nextExtension)
       );
-     
+
     //////////////////////////////////////////////
 
     // 👨‍💼 assign peasants to building-site
@@ -538,7 +595,7 @@ export default class GarrisonRepository implements IMonitored {
       ...peasants.state.assignments,
       {
         _id: new ObjectId(),
-        buildingId: <ObjectId>building._id,
+        buildingId: < ObjectId > building._id,
         quantity: payload.workforce,
         type: 'construction',
         endDate: _h.addTime(now, duration * 1000)
@@ -551,10 +608,10 @@ export default class GarrisonRepository implements IMonitored {
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();
-    
+
     return await this.findById(garrison._id);
   }
-  
+
   /**
    * Add and save a new unit.
    * @param payload @see IUnitCreate
@@ -564,17 +621,19 @@ export default class GarrisonRepository implements IMonitored {
     const now = new Date();
 
     //////////////////////////////////////////////
-    
+
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
     const staticUnit = await this._unitRepo.findByCode(payload.code) as IUnit;
 
-    const { requiredEntities } = staticUnit.instantiation;
+    const {
+      requiredEntities
+    } = staticUnit.instantiation;
     if (requiredEntities) {
       _gH.checkStandardRequirements(
         now,
         requiredEntities.buildings,
-        garrison.instances.buildings  
+        garrison.instances.buildings
       );
     }
 
@@ -595,7 +654,9 @@ export default class GarrisonRepository implements IMonitored {
     const newUnit = {
       code: staticUnit.code,
       quantity: payload.quantity || 1,
-      state: { assignments }
+      state: {
+        assignments
+      }
     };
 
     const unit = _gH.findUnit(garrison, newUnit.code, false);
@@ -605,11 +666,13 @@ export default class GarrisonRepository implements IMonitored {
         newUnit
       ];
     } else {
-      const { index } = unit;
+      const {
+        index
+      } = unit;
       garrison.instances.units[index] = {
         code: garrison.instances.units[index].code,
         quantity: garrison.instances.units[index].quantity + newUnit.quantity,
-        state: { 
+        state: {
           assignments: garrison
             .instances
             .units[index]
@@ -621,9 +684,9 @@ export default class GarrisonRepository implements IMonitored {
     }
 
     //////////////////////////////////////////////
-    
+
     // 💰 update the resources
-    garrison.resources = (await this.updateResources(garrison)).resources;
+    garrison.resources = (await this._updateResources(garrison)).resources;
     garrison.resources = _gH
       .checkTrainingPaymentCapacity(
         garrison.resources,
@@ -636,7 +699,7 @@ export default class GarrisonRepository implements IMonitored {
     // 💾 save in database
     garrison.markModified('instances.units');
     await garrison.save();
-    
+
     return await this.findById(garrison._id);
   }
 
@@ -649,17 +712,21 @@ export default class GarrisonRepository implements IMonitored {
     const now = new Date();
 
     //////////////////////////////////////////////
-    
+
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const { building } = _gH.findBuilding(garrison, payload.buildingId);
+    const {
+      building
+    } = _gH.findBuilding(garrison, payload.buildingId);
     const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
     _gH.checkBuildingAllowsHarvest(staticBuilding);
 
     const staticUnit = await this._unitRepo.findByCode(payload.code) as IUnit;
-    const { unit } = _gH.findUnit(garrison, staticUnit.code);
-    
+    const {
+      unit
+    } = _gH.findUnit(garrison, staticUnit.code);
+
     _gH.checkUnitAssignmentCoherence(
       now,
       payload.quantity || 1,
@@ -671,7 +738,7 @@ export default class GarrisonRepository implements IMonitored {
 
     // 💰 update the resources
     if (staticUnit.code === 'peasant')
-      garrison.resources = (await this.updateResources(garrison)).resources;
+      garrison.resources = (await this._updateResources(garrison)).resources;
 
     switch (staticBuilding.code) {
       case 'goldmine': {
@@ -696,7 +763,9 @@ export default class GarrisonRepository implements IMonitored {
 
     // 👨‍💼 prepare to assign!
     for (let i = 0; i < (payload.quantity || 1); i++) {
-      const { index: aIndex } = _gH.findAssignment(
+      const {
+        index: aIndex
+      } = _gH.findAssignment(
         unit,
         building._id,
         'harvest',
@@ -719,12 +788,12 @@ export default class GarrisonRepository implements IMonitored {
       unit
         .state
         .assignments[aIndex] = {
-        ...unit.state.assignments[aIndex],
-        quantity: unit
-          .state
-          .assignments[aIndex]
-          .quantity + 1
-      };
+          ...unit.state.assignments[aIndex],
+          quantity: unit
+            .state
+            .assignments[aIndex]
+            .quantity + 1
+        };
     }
 
     //////////////////////////////////////////////
@@ -732,22 +801,32 @@ export default class GarrisonRepository implements IMonitored {
     // 💾 save in database
     garrison.markModified('instances.units');
     await garrison.save();
-    
+
     return await this.findById(garrison._id);
   }
 
+  /**
+   * Unassign a unit (peasant) from a (harvest) building.
+   * @param payload @see IUnitUnassign
+   */
   async unassignUnit(payload: IUnitUnassign) {
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const { building } = _gH.findBuilding(garrison, payload.buildingId);
+    const {
+      building
+    } = _gH.findBuilding(garrison, payload.buildingId);
     const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
     _gH.checkBuildingAllowsHarvest(staticBuilding);
 
     const staticUnit = await this._unitRepo.findByCode(payload.code) as IUnit;
-    const { unit } = _gH.findUnit(garrison, payload.code);
-    
-    const { index: aIndex } = _gH
+    const {
+      unit
+    } = _gH.findUnit(garrison, payload.code);
+
+    const {
+      index: aIndex
+    } = _gH
       .findAssignment(
         unit,
         building._id,
@@ -762,41 +841,47 @@ export default class GarrisonRepository implements IMonitored {
       );
 
     //////////////////////////////////////////////
-      
+
     // 💰 update the resources (first checkpoint)
     if (staticUnit.code === 'peasant')
-      garrison.resources = (await this.updateResources(garrison)).resources;
+      garrison.resources = (await this._updateResources(garrison)).resources;
 
     //////////////////////////////////////////////
-      
+
     // 👨‍💼 unassign units from the building
     assignment.quantity = assignment.quantity - (payload.quantity || 1);
     if (assignment.quantity === 0) unit.state.assignments.splice(aIndex, 1);
 
     //////////////////////////////////////////////
-      
+
     // 💰 update the resources (second checkpoint)
     if (staticUnit.code === 'peasant')
-      garrison.resources = (await this.updateResources(garrison)).resources;
+      garrison.resources = (await this._updateResources(garrison)).resources;
 
     //////////////////////////////////////////////
-    
+
     // 💾 save in database
     garrison.markModified('instances.units');
     garrison.markModified('resources');
     await garrison.save();
-    
+
     return await this.findById(garrison._id);
   }
 
-  private async updateResources(garrison: IGarrisonDocument) {
+  /**
+   * Dynamically update garrison resources.
+   * @param garrison Given garrison.
+   */
+  private async _updateResources(garrison: IGarrisonDocument) {
     // ⌚ init the moment
     const now = new Date();
 
     //////////////////////////////////////////////
-    
+
     // ❔ make the checks
-    const { index: uIndex } = _gH
+    const {
+      index: uIndex
+    } = _gH
       .findUnit(
         garrison,
         'peasant',
@@ -804,7 +889,7 @@ export default class GarrisonRepository implements IMonitored {
       );
     if (uIndex < 0) return garrison;
     const unit = garrison.instances.units[uIndex];
-    
+
     //////////////////////////////////////////////
 
     // 💰 update resource for each harvest
@@ -816,7 +901,9 @@ export default class GarrisonRepository implements IMonitored {
 
       _gH.checkBuildingAvailability(now, building);
 
-      const { index: aIndex } = _gH
+      const {
+        index: aIndex
+      } = _gH
         .findAssignment(
           unit,
           building._id,
@@ -825,11 +912,11 @@ export default class GarrisonRepository implements IMonitored {
         );
       if (aIndex < 0) {
         const activePeasants = _gH
-            .checkHarvestingPeasants(
-              unit,
-              garrison.instances.buildings,
-              staticBuilding.code
-            );
+          .checkHarvestingPeasants(
+            unit,
+            garrison.instances.buildings,
+            staticBuilding.code
+          );
         if (!activePeasants)
           delete garrison.resources[`${harvest.resource}LastUpdate` as 'goldLastUpdate' | 'woodLastUpdate'];
 

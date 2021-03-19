@@ -79,7 +79,7 @@ class Helper {
       const assignment = assignments[index];
       if (
         assignment.type !== type
-        && !assignment.buildingId?.equals(buildingId)
+        || !assignment.buildingId?.equals(buildingId)
       ) continue;
 
       returnedObj.assignment = assignment;
@@ -101,7 +101,7 @@ class Helper {
    * @returns Either an IGarrisonBuilding or (maybe) null if strict mode is set to false.
    */
   static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict?: true): { building: IGarrisonBuilding; index: number };
-  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict: false): { building: IGarrisonBuilding; index: number } | null;
+  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict: false): { building: IGarrisonBuilding; index: number } | { index: -1 };
   static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict?: boolean) {
     const { buildings } = garrison.instances;
     const returnedObj = {} as { building: IGarrisonBuilding; index: number };
@@ -116,7 +116,7 @@ class Helper {
     if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Building with buildingId '${id}' couldn't be found in garrison '${garrison._id}'.`);
 
-    return _h.isObjectEmpty(returnedObj) ? null : returnedObj;
+    return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
   }
 
   /**
@@ -127,7 +127,7 @@ class Helper {
    * @returns Either an IGarrisonUnit or (maybe) null if strict mode is set to false.
    */
   static findUnit(garrison: IGarrisonDocument, code: string, strict?: true): { unit: IGarrisonUnit; index: number };
-  static findUnit(garrison: IGarrisonDocument, code: string, strict: false): { unit: IGarrisonUnit; index: number } | null;
+  static findUnit(garrison: IGarrisonDocument, code: string, strict: false): { unit: IGarrisonUnit; index: number } | { index: - 1 };
   static findUnit(garrison: IGarrisonDocument, code: string, strict?: boolean) {
     const { units } = garrison.instances;
     const returnedObj = {} as { unit: IGarrisonUnit; index: number };
@@ -142,7 +142,7 @@ class Helper {
     if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Unit with code '${code}' couldn't be found in garrison '${garrison._id}'.`);
 
-    return _h.isObjectEmpty(returnedObj) ? null : returnedObj;
+    return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
   }
 
   /**
@@ -152,7 +152,7 @@ class Helper {
    * @param strict Sets whether an error is thrown when no construction index is found.
    */
   static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict?: true): { construction: IOperatedConstruction; index: number };
-  static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict: false): { construction: IOperatedConstruction; index: number };
+  static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict: false): { construction: IOperatedConstruction; index: number } | { index: - 1 };
   static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict?: boolean) {
     const { constructions } = building;
     const returnedObj = {} as { construction: IOperatedConstruction; index: number };
@@ -167,13 +167,13 @@ class Helper {
     if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Construction with id '${id}' couldn't be found in building '${building._id}'.`);
 
-    return _h.isObjectEmpty(returnedObj) ? null : returnedObj;
+    return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
   }
 
   ///////////////////////////////////////
   // 🧮 COMPUTATIONS
   ///////////////////////////////////////
-
+  
   /**
    * Compute the quantity of available units on the basis of a given garrison unit.
    * @param moment The current moment.
@@ -277,9 +277,15 @@ class Helper {
    * Check whether a building allows peasants to be assigned to it.
    * @param staticBuilding Static building.
    */
-  static checkBuildingAllowsAssignment(staticBuilding: IBuilding) {
-    if (!staticBuilding.harvest)
+  static checkBuildingAllowsHarvest(staticBuilding: IBuilding, strict?: true): NonNullable<IBuilding['harvest']>;
+  static checkBuildingAllowsHarvest(staticBuilding: IBuilding, strict: false): NonNullable<IBuilding['harvest']> | null;
+  static checkBuildingAllowsHarvest(staticBuilding: IBuilding, strict?: boolean) {
+    if (!staticBuilding.harvest && strict)
       throw new ErrorHandler(400, `No peasant can be assigned at building '${staticBuilding.code}'.`);
+    
+    return staticBuilding.harvest ? 
+      staticBuilding.harvest as NonNullable<IBuilding['harvest']>
+      : null;
   }
 
   /**

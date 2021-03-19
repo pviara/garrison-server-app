@@ -655,7 +655,7 @@ export default class GarrisonRepository implements IMonitored {
     const { building } = _gH.findBuilding(garrison, payload.buildingId);
     const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
-    _gH.checkBuildingAllowsAssignment(staticBuilding);
+    _gH.checkBuildingAllowsHarvest(staticBuilding);
 
     const staticUnit = await this._unitRepo.findByCode(payload.code) as IUnit;
     const { unit } = _gH.findUnit(garrison, staticUnit.code);
@@ -708,6 +708,7 @@ export default class GarrisonRepository implements IMonitored {
           .state
           .assignments
           .push({
+            _id: new ObjectId(),
             buildingId: building._id,
             quantity: 1,
             type: 'harvest',
@@ -741,7 +742,7 @@ export default class GarrisonRepository implements IMonitored {
     const { building } = _gH.findBuilding(garrison, payload.buildingId);
     const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
-    _gH.checkBuildingAllowsAssignment(staticBuilding);
+    _gH.checkBuildingAllowsHarvest(staticBuilding);
 
     const staticUnit = await this._unitRepo.findByCode(payload.code) as IUnit;
     const { unit } = _gH.findUnit(garrison, payload.code);
@@ -804,62 +805,84 @@ export default class GarrisonRepository implements IMonitored {
     return await this.findById(garrison._id);
   }
 
-  private async updateResources(garrison: IGarrison) {
-    // init the moment
+  private async updateResources(garrison: IGarrisonDocument) {
+    // ⌚ init the moment
     const now = new Date();
 
-    for (const building of garrison.instances.buildings) {
-      // retrieve matching building from database static
-      const matchStatics = await this._buildingRepo.findByCode(building.code) as IBuilding;
-      if (!matchStatics.harvest) continue;
-
-      // check on building availability
-      const unavailable = building
-        .constructions
-        .some(c => c.endDate.getTime() > now.getTime());
-      if (unavailable) continue;
-
-      // calculate assigned workers
-      const assignedWorkers = garrison
-        .instances
-        .units
-        .find(unit => unit.code === 'peasant')
-        ?.state
-        .assignments
-        .find(assignment => {
-          if (assignment.type !== 'harvest' || !assignment.buildingId || !building._id) return;
-
-          const buildingId = new ObjectId(assignment.buildingId);
-          if (buildingId.equals(building._id)) return assignment;
-        })
-        ?.quantity;
-      if (!assignedWorkers || assignedWorkers == 0) continue;
-
-      // calculate elapsed time since last resource automatic update
-      let elapsedMinutes = 0;
-      let goldNewLastUpdate;
-      let woodNewLastUpdate;
-      if (building.code === 'goldmine') {
-        if (!garrison.resources.goldLastUpdate) continue;
-        elapsedMinutes = (now.getTime() - garrison.resources.goldLastUpdate.getTime()) / 1000 / 60;
-        goldNewLastUpdate = now;
-      } else if (building.code === 'sawmill') {
-        if (!garrison.resources.woodLastUpdate) continue;
-        elapsedMinutes = (now.getTime() - garrison.resources.woodLastUpdate.getTime()) / 1000 / 60;
-        woodNewLastUpdate = now;
-      }
-      if (elapsedMinutes === 0) continue;
-
-      // calculate gained resource according to elapsed minutes
-      let newResources = garrison.resources[matchStatics.harvest?.resource] + Math.floor(
-        (matchStatics.harvest.amount * elapsedMinutes) * assignedWorkers
+    //////////////////////////////////////////////
+    
+    // ❔ make the checks
+    const { index: uIndex } = _gH
+      .findUnit(
+        garrison,
+        'peasant',
+        false
       );
+    if (uIndex < 0) return garrison;
+    const unit = garrison.instances.units[uIndex];
+    
+    //////////////////////////////////////////////
+
+    // 💰 update resource for each harvest
+    for (const building of garrison.instances.buildings) {
+      const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
+
+      const harvest = _gH.checkBuildingAllowsHarvest(staticBuilding);
+      if (!harvest) continue;
+
+      _gH.checkBuildingAvailability(now, building);
+
+      const { index: aIndex } = _gH
+        .findAssignment(
+          unit,
+          building._id,
+          'harvest',
+          false
+        );
+      if (aIndex < 0) continue;
+      const assignment = unit.state.assignments[aIndex];
+
+      let elapsedMinutes = 0;
+      switch (staticBuilding.code) {
+        case 'goldmine': {
+          if (!garrison.resources.goldLastUpdate) continue;
+
+          elapsedMinutes = _h
+            .computeElapsedMinutes(
+              garrison.resources.goldLastUpdate,
+              now
+            );
+          if (elapsedMinutes === 0) continue;
+
+          garrison.resources.goldLastUpdate = now;
+          break;
+        }
+
+        case 'sawmill': {
+          if (!garrison.resources.woodLastUpdate) continue;
+
+          elapsedMinutes = _h
+            .computeElapsedMinutes(
+              garrison.resources.woodLastUpdate,
+              now
+            );
+          if (elapsedMinutes === 0) continue;
+
+          garrison.resources.woodLastUpdate = now;
+          break;
+        }
+
+        default: {
+          continue;
+        }
+      }
+
+      const owned = garrison.resources[harvest.resource];
+      const earned = Math.floor(harvest.amount * elapsedMinutes) * assignment.quantity;
 
       garrison.resources = {
         ...garrison.resources,
-        [matchStatics.harvest?.resource]: newResources,
-        goldLastUpdate: goldNewLastUpdate || garrison.resources.goldLastUpdate,
-        woodLastUpdate: woodNewLastUpdate || garrison.resources.woodLastUpdate
+        [harvest.resource]: owned + earned
       };
     }
     return garrison;

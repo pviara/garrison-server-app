@@ -10,7 +10,8 @@ import {
   IGarrisonDocument,
   IGarrisonResources,
   IGarrisonUnit,
-  IOperatedConstruction
+  IOperatedConstruction,
+  IUnitAssignment
 } from '../../../../config/models/data/dynamic/garrison/garrison.types';
 
 import {
@@ -47,6 +48,51 @@ class Helper {
   // 🔍 SEARCHES
   ///////////////////////////////////////
 
+  /**
+   * Find a specific assignment by both its type and buildingId inside a garrison unit.
+   * @param unit Given garrison unit.
+   * @param buildingId Given assignement building id.
+   * @param type Given assignment type.
+   */
+  static findAssignment(
+    unit: IGarrisonUnit,
+    buildingId: ObjectId,
+    type: IUnitAssignment['type'],
+    strict?: true
+  ): { assignment: IUnitAssignment; index: number }
+  static findAssignment(
+    unit: IGarrisonUnit,
+    buildingId: ObjectId,
+    type: IUnitAssignment['type'],
+    strict: false
+  ): { assignment: IUnitAssignment; index: number } | { index: -1 }
+  static findAssignment(
+    unit: IGarrisonUnit,
+    buildingId: ObjectId,
+    type: IUnitAssignment['type'],
+    strict?: boolean
+  ) {
+    const { assignments } = unit.state;
+    const returnedObj = {} as { assignment: IUnitAssignment; index: number };
+
+    for (let index = 0; index < assignments.length; index++) {
+      const assignment = assignments[index];
+      if (
+        assignment.type !== type
+        && !assignment.buildingId?.equals(buildingId)
+      ) continue;
+
+      returnedObj.assignment = assignment;
+      returnedObj.index = index;
+      break;
+    }
+    
+    if (_h.isObjectEmpty(returnedObj) && strict)
+      throw new ErrorHandler(404, `Assignment of type '${type}' couldn't be found in building '${buildingId}'.`);
+
+    return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
+  }
+  
   /**
    * Find a specific building by its id inside a garrison.
    * @param garrison Given garrison document.
@@ -367,6 +413,27 @@ class Helper {
       wood: resources.wood - cost.wood,
       plot: resources.plot - cost.plot
     } as IGarrisonResources;
+  }
+
+  /**
+   * Check whether at least one peasant is harvesting some resource.
+   * @param peasants Given garrison peasants.
+   * @param buildings Given garrison buildings.
+   * @param buildingCode Type of harvest building.
+   */
+  static checkHarvestingPeasants(
+    peasants: IGarrisonUnit,
+    buildings: IGarrisonBuilding[],
+    buildingCode: 'goldmine' | 'sawmill'
+  ) {
+    return peasants
+      .state
+      .assignments
+      .some(assignment => {
+        return assignment.type === 'harvest'
+        && buildings
+          .find(building => building.code === buildingCode);
+      });
   }
 
   /**

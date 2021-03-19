@@ -693,12 +693,14 @@ export default class GarrisonRepository implements IMonitored {
     }
 
     //////////////////////////////////////////////
-      
+
     // 👨‍💼 prepare to assign!
-    const aIndex = unit
-      .state
-      .assignments
-      .findIndex(a => a.type === 'harvest' && a.buildingId?.equals(building._id));
+    const { index: aIndex } = _gH.findAssignment(
+      unit,
+      building._id,
+      'harvest',
+      false
+    );
     
     for (let i = 0; i < (payload.quantity || 1); i++) {
       if (aIndex < 0) {
@@ -734,79 +736,68 @@ export default class GarrisonRepository implements IMonitored {
   }
 
   async unassignUnit(payload: IUnitUnassign) {
-    // init the moment
-    const now = new Date();
-    
-    // check on garrison existence
+    // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    if (!garrison) throw new ErrorHandler(404, `Garrison '${payload.garrisonId}' couldn\'t be found.`);
+    const { building } = _gH.findBuilding(garrison, payload.buildingId);
+    const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
-    // check on building existence in dynamic
-    const { building: garrBuilding } = _gH.findBuilding(garrison, payload.buildingId);
-    if (!garrBuilding) throw new ErrorHandler(404, `Building '${payload.buildingId}' couldn't be found in garrison.`);
+    _gH.checkBuildingAllowsAssignment(staticBuilding);
+
+    const staticUnit = await this._unitRepo.findByCode(payload.code) as IUnit;
+    const { unit } = _gH.findUnit(garrison, payload.code);
     
-    // check on building existence in statics
-    const building = await this._buildingRepo.findByCode(garrBuilding.code) as IBuilding;
-    if (!building) throw new ErrorHandler(404, `Building '${garrBuilding.code}' couldn't be found.`);
+    const { index: aIndex } = _gH
+      .findAssignment(
+        unit,
+        building._id,
+        'harvest'
+      );
+    const assignment = unit.state.assignments[aIndex];
 
-    // handle only harvest building for now...
-    if (!building.harvest) throw new ErrorHandler(400, `No peasant can be assigned at building '${building.code}'.`);
+    if (assignment.quantity < (payload.quantity || 1))
+      throw new ErrorHandler(
+        412,
+        `Given quantity (${payload.quantity}) cannot be greather than current assigned peasants (${assignment.quantity}).`
+      );
 
-    // check on unit(s) existence in statics
-    const unit = await this._unitRepo.findByCode(payload.code) as IUnit;
-    if (!unit) throw new ErrorHandler(404, `Unit ${payload.code} couldn't be found.`);
-
-    // check on unit(s) existence in dynamic
-    const { unit: garrUnits } = _gH.findUnit(garrison, payload.code);
-    if (!garrUnits) throw new ErrorHandler(404, `Not a single '${payload.code}' could be found.`);
-    
-    // check on assignment existence
-    const index = garrUnits
-      .state
-      .assignments
-      .findIndex(a => {
-        if (garrBuilding._id && a.buildingId) {
-          const areSame = _h.areSameObjectId(garrBuilding._id, a.buildingId);
-          if (areSame && a.type === 'harvest') return a;
-        }
-      });
-    if (index < 0) throw new ErrorHandler(404, 'No assignment could be found.');
-    if (garrUnits.state.assignments[index].quantity < (payload.quantity || 1))
-      throw new ErrorHandler(412, 'Given quantity cannot be greather than current assigned peasants.');
-
-    // update garrison resources if unassigning one or more peasants
-    if (unit.code === 'peasant') {
+    //////////////////////////////////////////////
+      
+    // 💰 update the resources
+    if (staticUnit.code === 'peasant')
       garrison.resources = (await this.updateResources(garrison)).resources;
-    }
 
-    // unassigning units from the building
-    garrUnits.state.assignments[index].quantity = garrUnits.state.assignments[index].quantity - (payload.quantity || 1);
-    if (garrUnits.state.assignments[index].quantity === 0) garrUnits.state.assignments.splice(index, 1);
+    //////////////////////////////////////////////
+      
+    // 👨‍💼 unassign units from the building
+    assignment.quantity = assignment.quantity - (payload.quantity || 1);
+    if (assignment.quantity === 0) unit.state.assignments.splice(aIndex, 1);
 
-    // update resource last update
-    if (building.harvest) {
-      if (building.code === 'goldmine') {
-        // check if at least 1 worker is assigned to some harvest building
-        const noActiveworker = !garrUnits.state.assignments.some(a => {
-          return a.type === 'harvest' && garrison
-            .instances
-            .buildings
-            .find(b => b?._id?.equals(a.buildingId || "") && b.code === building.code);
-        });
-        if (noActiveworker) delete garrison.resources.goldLastUpdate;
-      } else if (building.code === 'sawmill') {
-        // check if at least 1 worker is assigned to some harvest building
-        const noActiveworker = !garrUnits.state.assignments.some(a => {
-          return a.type === 'harvest' && garrison
-            .instances
-            .buildings
-            .find(b => b?._id?.equals(a.buildingId || "") && b.code === building.code);
-        });
-        if (noActiveworker) delete garrison.resources.woodLastUpdate;
+    switch (staticBuilding.code) {
+      case 'goldmine': {
+        const activePeasants = _gH
+          .checkHarvestingPeasants(
+            unit,
+            garrison.instances.buildings,
+            staticBuilding.code
+          );
+        if (!activePeasants) delete garrison.resources.goldLastUpdate;
+        break;
+      }
+      case 'sawmill': {
+        const activePeasants = _gH
+          .checkHarvestingPeasants(
+            unit,
+            garrison.instances.buildings,
+            staticBuilding.code
+          );
+        if (!activePeasants) delete garrison.resources.woodLastUpdate;
+        break;
       }
     }
 
-    // mark modified elements then save in database
+    //////////////////////////////////////////////
+
+    // 💾 save in database
     garrison.markModified('instances.units');
     await garrison.save();
     

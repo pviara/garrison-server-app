@@ -328,12 +328,16 @@ class Helper {
    * @param moment The current moment
    * @param building Garrison building.
    */
-  static checkBuildingAvailability(moment: Date, building: IGarrisonBuilding) {
+  static checkBuildingAvailability(moment: Date, building: IGarrisonBuilding, strict?: true): boolean;
+  static checkBuildingAvailability(moment: Date, building: IGarrisonBuilding, strict: false): boolean;
+  static checkBuildingAvailability(moment: Date, building: IGarrisonBuilding, strict?: boolean) {
     const available = building
-    .constructions
-    .every(c => moment.getTime() > c.endDate.getTime());
+      .constructions
+      .every(c => moment.getTime() > c.endDate.getTime());
 
-    if (!available) throw new ErrorHandler(412, `Building '${building._id}' is already being processed.`);
+    if (!available && strict) throw new ErrorHandler(412, `Building '${building._id}' is already being processed.`);
+
+    return available;
   }
 
   /**

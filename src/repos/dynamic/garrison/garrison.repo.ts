@@ -18,6 +18,7 @@ import IBuildingCreate from '../../../config/models/data/dynamic/garrison/payloa
 import IBuildingUpgradeOrExtend from '../../../config/models/data/dynamic/garrison/payloads/IBuildingUpgradeOrExtend';
 
 import {
+  IGarrison,
   IGarrisonBuilding,
   IGarrisonDocument,
   IGarrisonModel,
@@ -881,7 +882,7 @@ export default class GarrisonRepository implements IMonitored {
    * Dynamically update garrison resources.
    * @param garrison Given garrison.
    */
-  private async _updateResources(garrison: IGarrisonDocument) {
+  private async _updateResources(garrison: IGarrison) {
     // ⌚ init the moment
     const now = new Date();
 
@@ -892,7 +893,7 @@ export default class GarrisonRepository implements IMonitored {
       index: uIndex
     } = _gH
       .findUnit(
-        garrison,
+        garrison as IGarrisonDocument,
         'peasant',
         false
       );
@@ -908,7 +909,8 @@ export default class GarrisonRepository implements IMonitored {
       const harvest = _gH.checkBuildingAllowsHarvest(staticBuilding);
       if (!harvest || !harvest.maxWorkforce) continue;
 
-      _gH.checkBuildingAvailability(now, building);
+      const available = _gH.checkBuildingAvailability(now, building, false);
+      if (!available) continue;
 
       const {
         index: aIndex

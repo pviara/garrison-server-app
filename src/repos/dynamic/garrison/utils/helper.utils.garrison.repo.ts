@@ -200,7 +200,7 @@ class Helper {
       
       total += harvestAmount * factor;
     }
-    return total;
+    return Math.floor(total);
   }
   
   /**
@@ -258,10 +258,12 @@ class Helper {
       return Math.pow(factor, improvementLevel);
     };
     return {
-      gold: instantiationCost.gold * getPowerFactor(),
-      wood: instantiationCost.wood * getPowerFactor(),
-      plot: instantiationCost.plot * getPowerFactor(
-        this.getFactor('decreased')
+      gold: Math.floor(instantiationCost.gold * getPowerFactor()),
+      wood: Math.floor(instantiationCost.wood * getPowerFactor()),
+      plot: Math.floor(
+        instantiationCost.plot * getPowerFactor(
+          this.getFactor('decreased')
+        )
       )
     } as IBuildingCost;
   }

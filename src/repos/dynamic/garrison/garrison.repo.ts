@@ -292,9 +292,9 @@ export default class GarrisonRepository implements IMonitored {
       improvement
     } = building.constructions[cIndex];
     if (improvement) {
-      gold = gold * Math.pow(_gH.getFactor('default'), improvement.level);
-      wood = wood * Math.pow(_gH.getFactor('default'), improvement.level);
-      plot = plot * Math.pow(_gH.getFactor('decreased'), improvement.level);
+      gold = Math.floor(gold * Math.pow(1.6, improvement.level));
+      wood = Math.floor(wood * Math.pow(1.6, improvement.level));
+      plot = Math.floor(plot * Math.pow(1.3, improvement.level));
 
       building
         .constructions
@@ -558,25 +558,6 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
-    // 🔨 prepare to build!
-    const construction: IOperatedConstruction = {
-      _id: new ObjectId(),
-      beginDate: now,
-      endDate: _h.addTime(now, duration * 1000),
-      workforce: payload.workforce,
-      improvement: {
-        type: 'extension',
-        level: nextExtension
-      }
-    };
-
-    building.constructions = [
-      ...building.constructions,
-      construction
-    ];
-
-    //////////////////////////////////////////////
-
     // 💰 update the resources
     garrison.resources = (await this._updateResources(garrison)).resources;
     garrison.resources = _gH
@@ -593,6 +574,25 @@ export default class GarrisonRepository implements IMonitored {
       garrison.resources[staticBuilding.harvest.resource] += Math.floor(
         staticBuilding.harvest.amount * Math.pow(1.2, nextExtension)
       );
+
+    //////////////////////////////////////////////
+
+    // 🔨 prepare to build!
+    const construction: IOperatedConstruction = {
+      _id: new ObjectId(),
+      beginDate: now,
+      endDate: _h.addTime(now, duration * 1000),
+      workforce: payload.workforce,
+      improvement: {
+        type: 'extension',
+        level: nextExtension
+      }
+    };
+
+    building.constructions = [
+      ...building.constructions,
+      construction
+    ];
 
     //////////////////////////////////////////////
 

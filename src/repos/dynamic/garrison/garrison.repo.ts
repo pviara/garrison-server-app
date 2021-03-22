@@ -325,7 +325,7 @@ export default class GarrisonRepository implements IMonitored {
 
       switch (typeof harvest.maxWorkforce) {
         case 'number': {
-          if (checkBuildingStillExists(garrison.instances.buildings, code))
+          if (!checkBuildingStillExists(garrison.instances.buildings, code))
             delete garrison.resources[`${harvest.resource}LastUpdate` as 'goldLastUpdate' | 'woodLastUpdate'];
           break;
         }
@@ -970,12 +970,27 @@ export default class GarrisonRepository implements IMonitored {
         }
       }
 
+      // compute total current resource 
       const owned = garrison.resources[harvest.resource];
       const earned = Math.floor(harvest.amount * elapsedMinutes) * assignment.quantity;
+      let total = owned + earned;
+
+      // compute resource profit limit
+      const currentLevel = _gH
+        .computeBuildingCurrentLevel(
+          now,
+          'extension',
+          building.constructions
+        );
+      const factor = currentLevel > 0 ? currentLevel : 1;
+      const profitLimit = 180 * factor;
+
+      // make sure total isn't greater than limit
+      if (total > profitLimit) total = profitLimit;
 
       garrison.resources = {
         ...garrison.resources,
-        [harvest.resource]: owned + earned
+        [harvest.resource]: total
       };
     }
     return garrison;

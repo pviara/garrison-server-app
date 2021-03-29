@@ -59,7 +59,8 @@ class Helper {
    * Check whether the given object is empty or not.
    * @param obj Given object.
    */
-  static isObjectEmpty(obj: object) {
+  static isObjectEmpty(obj?: object) {
+    if (!obj) return true;
     return (Object.keys(obj).length === 0) ? true : false;
   }
 

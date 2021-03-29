@@ -48,7 +48,7 @@ export interface IBuilding extends IStaticEntity {
     }
     
     /** Maximum extension level. */
-    maxLevel?: number;
+    maxLevel: number;
   };
   
   /** A harvest building is a either a place where peasants

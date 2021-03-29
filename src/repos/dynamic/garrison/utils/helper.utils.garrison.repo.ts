@@ -414,6 +414,67 @@ class Helper {
   }
   
   /**
+   * Check whether the number of built buildings with the given type does not exceed the limitation of still improvable buildings.
+   * @param moment The current moment.
+   * @param staticBuilding Static building.
+   * @param buildings Garrison buildings.
+   */
+  static checkConstructionLimit(
+    moment: Date,
+    staticBuilding: IBuilding,
+    buildings: IGarrisonBuilding[]
+  ) {
+    const builtBuildings = buildings
+      .filter(building => building.code === staticBuilding.code);
+
+    let improvable = 0;
+    for (const built of builtBuildings) {
+      if (
+        staticBuilding.upgrades?.length === 0
+        && !staticBuilding.extension
+      ) continue;
+      
+      const improvementType: IBuildingImprovementType = !_h
+        .isObjectEmpty(staticBuilding.extension)
+          ? 'extension'
+          : 'upgrade';
+
+      const currentLevel = this
+        .computeBuildingCurrentLevel(
+          moment,
+          improvementType,
+          built.constructions
+        );
+      
+      switch (improvementType) {
+        case 'extension': {
+          if (!staticBuilding.extension) throw new Error(); // this is *never* supposed to happen
+
+          const { maxLevel } = staticBuilding.extension;
+          if (currentLevel < maxLevel) improvable++;
+          break;
+        }
+
+        case 'upgrade': {
+          if (!staticBuilding.upgrades) throw new Error(); // this is *never* supposed to happen
+
+          const maxLevel = staticBuilding
+            .upgrades
+            .map(u => <number>u.level)
+            .reduce((prev, next) => next > prev ? next : prev, 0);
+
+          if (currentLevel < maxLevel) improvable++;
+          break;
+        }
+      }
+    }
+
+    // "+1" or the building that's about to be instantiated
+    if (improvable + 1 >= 5)
+      throw new ErrorHandler(412, `The building '${staticBuilding.code}' cannot be instantiated since other buildings need to be improved first.`);
+  }
+  
+  /**
    * Check whether a garrison is eligible to construct a building, or improve one.
    * @param moment The current moment.
    * @param resources Garrison current resources.

@@ -141,7 +141,7 @@ export default class GarrisonRepository implements IMonitored {
       resources: {
         gold: 625,
         wood: 320,
-        food: 0,
+        food: 3,
         plot: 32
       },
       instances: {
@@ -172,6 +172,12 @@ export default class GarrisonRepository implements IMonitored {
     const garrison = await this.findById(payload.garrisonId);
     const staticBuilding = await this._buildingRepo.findByCode(payload.code) as IBuilding;
 
+    _gH.checkConstructionLimit(
+      now,
+      staticBuilding,
+      garrison.instances.buildings
+    );
+    
     const {
       unit: peasants
     } = _gH.findUnit(garrison, 'peasant');

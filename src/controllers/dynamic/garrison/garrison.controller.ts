@@ -210,26 +210,25 @@ export default class GarrisonController {
     });
   }
 
-  async assignUnit(req: Request, res: Response, next: NextFunction) {
+  async assignUnitRandomly(req: Request, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
-      || !req.body.buildingId
-      || !req.body.code)
+      || !req.body.code
+      || !req.body.quantity
+      || !req.body.harvestCode)
         throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
       
-    // check on both garrisonId and buildingId cast possibility
+    // check on garrisonId cast possibility
     const isValidGarrisonId = isValidObjectId(req.body.garrisonId);
-    const isValidBuildingId = isValidObjectId(req.body.buildingId);
-    if (!isValidBuildingId || !isValidGarrisonId)
-      throw new ErrorHandler(400, `Unable to cast either '${req.body.garrisonId}' or '${req.body.buildingId}' to ObjectId.`);
+    if (!isValidGarrisonId)
+      throw new ErrorHandler(400, `Unable to cast '${req.body.garrisonId}' to ObjectId.`);
 
     // launch adding process
-    return await this._repo.assignUnit(
+    return await this._repo.assignUnitRandomly(
       <IUnitAssign>{
         ...req.body,
-        garrisonId: new ObjectId(req.body.garrisonId),
-        buildingId: new ObjectId(req.body.buildingId)
+        garrisonId: new ObjectId(req.body.garrisonId)
     });
   }
 
@@ -237,22 +236,21 @@ export default class GarrisonController {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
-      || !req.body.buildingId
-      || !req.body.code)
+      || !req.body.code
+      || !req.body.quantity
+      || !req.body.harvestCode)
         throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
       
-    // check on both garrisonId and buildingId cast possibility
+    // check on garrisonId cast possibility
     const isValidGarrisonId = isValidObjectId(req.body.garrisonId);
-    const isValidBuildingId = isValidObjectId(req.body.buildingId);
-    if (!isValidBuildingId || !isValidGarrisonId)
-      throw new ErrorHandler(400, `Unable to cast either '${req.body.garrisonId}' or '${req.body.buildingId}' to ObjectId.`);
+    if (!isValidGarrisonId)
+      throw new ErrorHandler(400, `Unable to cast '${req.body.garrisonId}' to ObjectId.`);
 
     // launch adding process
-    return await this._repo.unassignUnit(
+    return await this._repo.unassignUnitRandomly(
       <IUnitAssign>{
         ...req.body,
-        garrisonId: new ObjectId(req.body.garrisonId),
-        buildingId: new ObjectId(req.body.buildingId)
+        garrisonId: new ObjectId(req.body.garrisonId)
     });
   }
 }

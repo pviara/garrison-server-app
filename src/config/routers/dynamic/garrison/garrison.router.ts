@@ -90,7 +90,7 @@ export default class GarrisonRouter implements IMonitored {
     });
 
     this._router.put('/unit/assign', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.assignUnit(req, res, next)
+      this._controller.assignUnitRandomly(req, res, next)
         .then(result => {
           res.status(200).json(result)
         })

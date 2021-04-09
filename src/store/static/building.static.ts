@@ -86,7 +86,7 @@ export const buildingList: IBuilding[] = [{
     harvest: {
       resource: 'gold',
       amount: 3,
-      maxWorkforce: 7
+      maxWorkforce: 3
     }
   },
   {
@@ -126,7 +126,7 @@ export const buildingList: IBuilding[] = [{
     harvest: {
       resource: 'wood',
       amount: 2,
-      maxWorkforce: 7
+      maxWorkforce: 3
     }
   },
   {

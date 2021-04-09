@@ -720,10 +720,10 @@ export default class GarrisonRepository implements IMonitored {
   }
 
   /**
-   * Assign a unit (peasant) at a (harvest) building.
+   * Randomly assign a unit (peasant) at a (harvest) building.
    * @param payload @see IUnitAssign
    */
-  async assignUnit(payload: IUnitAssign) {
+  async assignUnitRandomly(payload: IUnitAssign) {
     // ⌚ init the moment
     const now = new Date();
 
@@ -731,86 +731,132 @@ export default class GarrisonRepository implements IMonitored {
 
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const {
-      building
-    } = _gH.findBuilding(garrison, payload.buildingId);
-    const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
+    const harvestBuildings = garrison
+      .instances
+      .buildings
+      .filter(building => {
+        const available = _gH
+          .checkBuildingAvailability(
+            now, 
+            building,
+            false
+          );
 
-    _gH.checkBuildingAllowsHarvest(staticBuilding);
+        if (building.code === payload.harvestCode && available)
+          return building; 
+      });
+    if (harvestBuildings.length === 0)
+      throw new ErrorHandler(404, `Couldn't find any available '${payload.harvestCode}'.`);
 
-    const staticUnit = await this._unitRepo.findByCode(payload.code) as IUnit;
-    const {
-      unit
-    } = _gH.findUnit(garrison, staticUnit.code);
+    const { unit } = _gH.findUnit(garrison, 'peasant');
 
-    _gH.checkUnitAssignmentCoherence(
-      now,
-      payload.quantity || 1,
-      unit,
-      building
-    );
-
-    //////////////////////////////////////////////
-
-    // 💰 update the resources
-    if (staticUnit.code === 'peasant')
-      garrison.resources = (await this._updateResources(garrison)).resources;
-
-    switch (staticBuilding.code) {
-      case 'goldmine': {
-        if (!garrison.resources.goldLastUpdate)
-          garrison.resources = {
-            ...garrison.resources,
-            goldLastUpdate: now
-          };
-        break;
-      }
-      case 'sawmill': {
-        if (!garrison.resources.woodLastUpdate)
-          garrison.resources = {
-            ...garrison.resources,
-            woodLastUpdate: now
-          };
-        break;
-      }
-    }
-
-    //////////////////////////////////////////////
-
-    // 👨‍💼 prepare to assign!
-    for (let i = 0; i < (payload.quantity || 1); i++) {
-      const {
-        index: aIndex
-      } = _gH.findAssignment(
-        unit,
-        building._id,
-        'harvest',
-        false
+    const staticBuilding = await this._buildingRepo.findByCode(payload.harvestCode);
+    const harvest = _gH.checkBuildingAllowsHarvest(staticBuilding);
+    if (!harvest.maxWorkforce)
+      throw new ErrorHandler(
+        500,
+        `Missing property 'maxWorkforce' in harvest building of type '${payload.harvestCode}'.`
       );
 
-      if (aIndex < 0) {
-        unit
-          .state
-          .assignments
-          .push({
-            _id: new ObjectId(),
-            buildingId: building._id,
-            quantity: 1,
-            type: 'harvest',
-            endDate: new Date('2099-01-01')
-          });
-        continue;
+    //////////////////////////////////////////////
+    
+    // 👨‍💼 prepare to assign!
+    let assigned = 0;
+    for (const harvestBuilding of harvestBuildings) {
+      if (assigned === payload.quantity) break;
+      
+      // ❔ make the checks
+      _gH.checkUnitAssignmentCoherence(
+        now,
+        (payload.quantity - assigned),
+        unit,
+        harvestBuilding
+      );
+
+      //////////////////////////////////////////////
+
+      // 💰 update the resources
+      garrison.resources = (await this._updateResources(garrison)).resources;
+  
+      switch (harvestBuilding.code) {
+        case 'goldmine': {
+          if (!garrison.resources.goldLastUpdate)
+            garrison.resources = {
+              ...garrison.resources,
+              goldLastUpdate: now
+            };
+          break;
+        }
+        case 'sawmill': {
+          if (!garrison.resources.woodLastUpdate)
+            garrison.resources = {
+              ...garrison.resources,
+              woodLastUpdate: now
+            };
+          break;
+        }
       }
-      unit
-        .state
-        .assignments[aIndex] = {
-          ...unit.state.assignments[aIndex],
-          quantity: unit
-            .state
-            .assignments[aIndex]
-            .quantity + 1
+
+      //////////////////////////////////////////////
+      
+      // 👨‍💼 make assignments!
+      const currentLevel = _gH
+        .computeBuildingCurrentLevel(
+          now,
+          'extension',
+          harvestBuilding.constructions
+        );
+      const maxWorkforce = Math.floor(
+        harvest.maxWorkforce * Math.pow(1.3, currentLevel)
+      );
+
+      while (assigned < payload.quantity) {
+        const { index: aIndex } = _gH
+        .findAssignment(
+          unit,
+          harvestBuilding._id,
+          'harvest',
+          false
+        );
+        if (
+          unit
+          .state
+          .assignments[aIndex]
+          ?.quantity === maxWorkforce
+        ) break;
+
+        const assignment: IUnitAssignment = {
+          _id: new ObjectId(),
+          buildingId: harvestBuilding._id,
+          endDate: new Date('2099-01-01'),
+          type: 'harvest',
+          quantity: 1
         };
+        
+        if (aIndex < 0) {
+          unit
+            .state
+            .assignments
+            .push(assignment);
+        } else {
+          unit
+            .state
+            .assignments[aIndex] = {
+              ...unit.state.assignments[aIndex],
+              quantity: unit
+                .state
+                .assignments[aIndex]
+                .quantity + 1
+            }
+        }
+        assigned++;
+      }
     }
+    if (assigned < payload.quantity)
+      throw new ErrorHandler(
+        412,
+        `Couldn't assign as much peasants as requested (only ${assigned} out of ${payload.quantity}).`
+      );
 
     //////////////////////////////////////////////
 
@@ -822,57 +868,77 @@ export default class GarrisonRepository implements IMonitored {
   }
 
   /**
-   * Unassign a unit (peasant) from a (harvest) building.
+   * Randomly unassign a unit (peasant) from a (harvest) building.
    * @param payload @see IUnitUnassign
    */
-  async unassignUnit(payload: IUnitUnassign) {
+  async unassignUnitRandomly(payload: IUnitAssign) {
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const {
-      building
-    } = _gH.findBuilding(garrison, payload.buildingId);
-    const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
+    const harvestBuildings = garrison
+      .instances
+      .buildings
+      .filter(building => building.code === payload.harvestCode);
+    if (harvestBuildings.length === 0)
+      throw new ErrorHandler(404, `Couldn't find any available '${payload.harvestCode}'.`);
 
-    _gH.checkBuildingAllowsHarvest(staticBuilding);
+    const { unit } = _gH.findUnit(garrison, 'peasant');
 
-    const staticUnit = await this._unitRepo.findByCode(payload.code) as IUnit;
-    const {
-      unit
-    } = _gH.findUnit(garrison, payload.code);
-
-    const {
-      index: aIndex
-    } = _gH
-      .findAssignment(
-        unit,
-        building._id,
-        'harvest'
-      );
-    const assignment = unit.state.assignments[aIndex];
-
-    if (assignment.quantity < (payload.quantity || 1))
+    const staticBuilding = await this._buildingRepo.findByCode(payload.harvestCode);
+    const harvest = _gH.checkBuildingAllowsHarvest(staticBuilding);
+    if (!harvest.maxWorkforce)
       throw new ErrorHandler(
-        412,
-        `Given quantity (${payload.quantity}) cannot be greather than current assigned peasants (${assignment.quantity}).`
+        500,
+        `Missing property 'maxWorkforce' in harvest building of type '${payload.harvestCode}'.`
       );
-
+    
     //////////////////////////////////////////////
 
     // 💰 update the resources (first checkpoint)
-    if (staticUnit.code === 'peasant')
-      garrison.resources = (await this._updateResources(garrison)).resources;
-
+    garrison.resources = (await this._updateResources(garrison)).resources;
+    
     //////////////////////////////////////////////
+    
+    // 👨‍💼 prepare the unassignment!
+    let unassigned = 0;
+    for (const harvestBuilding of harvestBuildings) {
+      while (unassigned < payload.quantity) {
+        const {
+          index: aIndex
+        } = _gH
+          .findAssignment(
+            unit,
+            harvestBuilding._id,
+            'harvest',
+            false
+          );
+        if (aIndex < 0) break;
 
-    // 👨‍💼 unassign units from the building
-    assignment.quantity = assignment.quantity - (payload.quantity || 1);
-    if (assignment.quantity === 0) unit.state.assignments.splice(aIndex, 1);
-
+        const assignment = {
+            ...unit.state.assignments[aIndex],
+            quantity: unit
+              .state
+              .assignments[aIndex]
+              .quantity - 1
+          };
+        unit.state.assignments[aIndex] = assignment;
+        unassigned++;
+        
+        if (assignment.quantity === 0) {
+          unit.state.assignments.splice(aIndex, 1);
+          break;
+        };
+      }
+    }
+    if (unassigned < payload.quantity)
+      throw new ErrorHandler(
+        412,
+        `Couldn't unassign as much peasants as requested (only ${unassigned} out of ${payload.quantity}).`
+      );
+    
     //////////////////////////////////////////////
 
     // 💰 update the resources (second checkpoint)
-    if (staticUnit.code === 'peasant')
-      garrison.resources = (await this._updateResources(garrison)).resources;
+    garrison.resources = (await this._updateResources(garrison)).resources;
 
     //////////////////////////////////////////////
 

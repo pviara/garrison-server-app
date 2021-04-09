@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
  */
 export default interface IUnitAssign {
   garrisonId: ObjectId;
-  buildingId: ObjectId;
   code: string;
-  quantity?: number;
+  quantity: number;
+  harvestCode: 'goldmine' | 'sawmill';
 }

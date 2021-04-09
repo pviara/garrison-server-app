@@ -91,7 +91,7 @@ export default class DynamicDatabaseService implements IMonitored, ISpecificData
           };
         } catch (e) { 
           this._monitor.log(logType.fail, `Failed to create connection with local database ${this._dbType}`);
-          this._monitor.log(logType.fail, '  This might occurs because your local MongoDB Database Server is inactive');
+          this._monitor.log(logType.fail, '  This might occurs either because your local MongoDB Database Server is inactive or local database URI or name can\'t be found');
           this._monitor.log(logType.fail, '  Aborted process');
 
           // no need to retry if it's already been tried with local connection : an error is an error...

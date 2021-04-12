@@ -291,6 +291,43 @@ class Helper {
   }
 
   /**
+   * Compute the global limit of a specific type of resource (either gold or wood).
+   * @param moment The current moment.
+   * @param harvestCode Type of harvest building.
+   * @param buildings Garrison buildings.
+   */
+  static computeGlobalProfitLimit(
+    moment: Date,
+    harvestCode: 'goldmine' | 'sawmill',
+    buildings: IGarrisonBuilding[]
+  ) {
+    const harvestBuildings = buildings
+      .filter(building => {
+        const available = this.checkBuildingAvailability(
+          moment,
+          building,
+          false
+        );
+        if (available && building.code === harvestCode)
+          return building;
+      });
+
+    let profitLimit = 0;
+    for (const harvestBuilding of harvestBuildings) {
+      const currentLevel = this
+        .computeBuildingCurrentLevel(
+          moment,
+          'extension',
+          harvestBuilding.constructions
+        );
+      const factor = currentLevel > 0 ? currentLevel : 1;
+      profitLimit += 180 * factor;
+    }
+
+    return profitLimit;
+  }
+
+  /**
    * Compute the cost of training one or more units.
    * @param instantiationCost Unit basic instantiation cost.
    * @param quantity The quantity of units to instantiate.

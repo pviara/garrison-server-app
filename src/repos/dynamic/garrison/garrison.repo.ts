@@ -973,6 +973,22 @@ export default class GarrisonRepository implements IMonitored {
     const unit = garrison.instances.units[uIndex];
 
     //////////////////////////////////////////////
+    
+    // 🛑 get the profit limits
+    const goldLimit = _gH
+      .computeGlobalProfitLimit(
+        now,
+        'goldmine',
+        garrison.instances.buildings
+      );
+    const woodLimit = _gH
+      .computeGlobalProfitLimit(
+        now,
+        'sawmill',
+        garrison.instances.buildings
+      );
+    
+    //////////////////////////////////////////////
 
     // 💰 update resource for each harvest
     for (const building of garrison.instances.buildings) {
@@ -1047,18 +1063,22 @@ export default class GarrisonRepository implements IMonitored {
       const earned = Math.floor(harvest.amount * elapsedMinutes) * assignment.quantity;
       let total = owned + earned;
 
-      // compute resource profit limit
-      const currentLevel = _gH
-        .computeBuildingCurrentLevel(
-          now,
-          'extension',
-          building.constructions
-        );
-      const factor = currentLevel > 0 ? currentLevel : 1;
-      const profitLimit = 180 * factor;
-
       // make sure total isn't greater than limit
-      if (total > profitLimit) total = profitLimit;
+      switch (staticBuilding.code) {
+        case 'goldmine': {
+          if (total > goldLimit) total = goldLimit;
+          break;
+        }
+
+        case 'sawmill': {
+          if (total > woodLimit) total = woodLimit;
+          break;
+        }
+
+        default: {
+          continue;
+        }
+      }
 
       garrison.resources = {
         ...garrison.resources,

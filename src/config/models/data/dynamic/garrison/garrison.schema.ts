@@ -70,7 +70,10 @@ const garrisonSchema = new Schema({
 
 // 🧹 clean it up before saving it !
 garrisonSchema.pre('save', function (next) {
-  if (process.env.APP_ENV === 'dev') next();
+  if (process.env.APP_ENV === 'dev') {
+    next();
+    return;
+  }
 
   const now = new Date();
   const garrison = this as IGarrisonDocument;
@@ -78,7 +81,10 @@ garrisonSchema.pre('save', function (next) {
   for (const building of garrison.instances.buildings) {
     building.constructions = building
       .constructions
-      .filter(c => c.endDate.getTime() > now.getTime());
+      .filter(
+        c => c.endDate.getTime() > now.getTime()
+        || building.constructions.length === 1
+      );
   }
   for (const unit of garrison.instances.units) {
     unit.state.assignments = unit

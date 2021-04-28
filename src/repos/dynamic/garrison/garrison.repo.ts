@@ -672,15 +672,16 @@ export default class GarrisonRepository implements IMonitored {
     };
 
     const unit = _gH.findUnit(garrison, newUnit.code, false);
-    if (!unit) {
+    const {
+      index
+    } = unit;
+    
+    if (index < 0) {
       garrison.instances.units = [
         ...garrison.instances.units,
         newUnit
       ];
     } else {
-      const {
-        index
-      } = unit;
       garrison.instances.units[index] = {
         code: garrison.instances.units[index].code,
         quantity: garrison.instances.units[index].quantity + newUnit.quantity,

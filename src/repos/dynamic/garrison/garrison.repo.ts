@@ -16,6 +16,7 @@ import {
 import IBuildingConstructionCancel from '../../../config/models/data/dynamic/garrison/payloads/IBuildingConstructionCancel';
 import IBuildingCreate from '../../../config/models/data/dynamic/garrison/payloads/IBuildingCreate';
 import IBuildingUpgradeOrExtend from '../../../config/models/data/dynamic/garrison/payloads/IBuildingUpgradeOrExtend';
+import IUnitTrainingCancel from '../../../config/models/data/dynamic/garrison/payloads/IUnitTrainingCancel';
 
 import {
   IGarrison,
@@ -32,7 +33,6 @@ import {
 } from '../../../config/models/data/static/unit/unit.types';
 import IUnitAssign from '../../../config/models/data/dynamic/garrison/payloads/IUnitAssign';
 import IUnitCreate from '../../../config/models/data/dynamic/garrison/payloads/IUnitCreate';
-import IUnitUnassign from '../../../config/models/data/dynamic/garrison/payloads/IUnitUnassign';
 
 import {
   IZone
@@ -370,6 +370,53 @@ export default class GarrisonRepository implements IMonitored {
 
     // 💾 save in database
     garrison.markModified('instances.buildings');
+    garrison.markModified('instances.units');
+    await garrison.save();
+
+    return await this.findById(garrison._id);
+  }
+
+  async cancelUnitTraining(payload: IUnitTrainingCancel) {
+    // ❔ make the checks
+    const garrison = await this.findById(payload.garrisonId);
+    const {
+      unit
+    } = _gH.findUnit(garrison, payload.code);
+    const staticUnit = await this._unitRepo.findByCode(unit.code);
+    
+    const {
+      index
+    } = _gH.findUnitAssignment(unit, payload.instantiationId);
+    
+    //////////////////////////////////////////////
+
+    // 💰 prepare to refund!
+    let {
+      gold,
+      wood,
+      food
+    } = staticUnit.instantiation.cost;
+
+    garrison.resources = {
+      ...garrison.resources,
+      gold: garrison.resources.gold + gold,
+      wood: garrison.resources.wood + wood,
+      food: garrison.resources.food + food,
+    };
+    
+    //////////////////////////////////////////////
+
+    // 👨‍💼 unassign peasant from its own instantiation
+    unit
+      .state
+      .assignments
+      .splice(index, 1);
+
+    unit.quantity -= 1;
+
+    //////////////////////////////////////////////
+
+    // 💾 save in database
     garrison.markModified('instances.units');
     await garrison.save();
 
@@ -813,7 +860,7 @@ export default class GarrisonRepository implements IMonitored {
 
       while (assigned < payload.quantity) {
         const { index: aIndex } = _gH
-        .findAssignment(
+        .findBuildingAssignment(
           unit,
           harvestBuilding._id,
           'harvest',
@@ -906,7 +953,7 @@ export default class GarrisonRepository implements IMonitored {
         const {
           index: aIndex
         } = _gH
-          .findAssignment(
+          .findBuildingAssignment(
             unit,
             harvestBuilding._id,
             'harvest',
@@ -1004,7 +1051,7 @@ export default class GarrisonRepository implements IMonitored {
       const {
         index: aIndex
       } = _gH
-        .findAssignment(
+        .findBuildingAssignment(
           unit,
           building._id,
           'harvest',

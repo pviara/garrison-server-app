@@ -14,6 +14,7 @@ import helper from '../../../utils/helper.utils';
 
 import ErrorHandler from '../../../config/models/error/error-handler.model';
 import IUnitAssign from '../../../config/models/data/dynamic/garrison/payloads/IUnitAssign';
+import IUnitTrainingCancel from '../../../config/models/data/dynamic/garrison/payloads/IUnitTrainingCancel';
 
 export default class GarrisonController {
   constructor(private _repo: GarrisonRepository) {}
@@ -252,5 +253,38 @@ export default class GarrisonController {
         ...req.body,
         garrisonId: new ObjectId(req.body.garrisonId)
     });
+  }
+
+  /**
+   * Cancel a unit training.
+   * @param req Recevied client request.
+   * @param res Response to send.
+   * @param next Next express function (lifecycle).
+   */
+  async cancelUnitTraining(req: Request, res: Response, next: NextFunction) {
+    if (!req.body
+      || helper.isObjectEmpty(req.body)
+      || !req.body.garrisonId
+      || !req.body.code
+      || !req.body.instantiationId)
+        throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
+
+    // check on both garrisonId and assignmentId cast possibility
+    const isValidGarrisonId = isValidObjectId(req.body.garrisonId);
+    const isValidAssignmentId = isValidObjectId(req.body.instantiationId);
+    if (!isValidGarrisonId || !isValidAssignmentId)
+      throw new ErrorHandler(
+        400,
+        `Unable to cast either '${req.body.garrisonId}' or '${req.body.instantiationId}' to ObjectId.`
+      );
+
+    // launch extension process
+    return await this._repo.cancelUnitTraining(
+      <IUnitTrainingCancel>{
+        ...req.body,
+        garrisonId: new ObjectId(req.body.garrisonId),
+        instantiationId: new ObjectId(req.body.instantiationId)
+      }
+    );
   }
 }

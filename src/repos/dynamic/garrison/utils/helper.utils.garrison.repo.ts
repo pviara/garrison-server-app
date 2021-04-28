@@ -53,20 +53,22 @@ class Helper {
    * @param unit Given garrison unit.
    * @param buildingId Given assignement building id.
    * @param type Given assignment type.
+   * @param strict Sets whether an error is thrown when no building is found.
+   * @returns Either an IUnitAssignment or (maybe) null if strict mode is set to false.
    */
-  static findAssignment(
+  static findBuildingAssignment(
     unit: IGarrisonUnit,
     buildingId: ObjectId,
     type: IUnitAssignment['type'],
     strict?: true
   ): { assignment: IUnitAssignment; index: number }
-  static findAssignment(
+  static findBuildingAssignment(
     unit: IGarrisonUnit,
     buildingId: ObjectId,
     type: IUnitAssignment['type'],
     strict: false
   ): { assignment: IUnitAssignment; index: number } | { index: -1 }
-  static findAssignment(
+  static findBuildingAssignment(
     unit: IGarrisonUnit,
     buildingId: ObjectId,
     type: IUnitAssignment['type'],
@@ -89,6 +91,45 @@ class Helper {
     
     if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Assignment of type '${type}' couldn't be found in building '${buildingId}'.`);
+
+    return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
+  }
+
+  /**
+   * Find a specific assignment inside a garrison unit.
+   * @param unit Given garrison unit.
+   * @param assignmentId Given assignment id.
+   * @param strict Sets whether an error is thrown when no building is found.
+   * @returns Either an IUnitAssignment or (maybe) null if strict mode is set to false.
+   */
+  static findUnitAssignment(
+    unit: IGarrisonUnit,
+    assignmentId: ObjectId,
+    strict?: true
+  ): { assignment: IUnitAssignment; index: number }
+  static findUnitAssignment(
+    unit: IGarrisonUnit,
+    assignmentId: ObjectId,
+    strict: false
+  ): { assignment: IUnitAssignment; index: number } | { index: -1 }
+  static findUnitAssignment(
+    unit: IGarrisonUnit,
+    assignmentId: ObjectId,
+    strict?: boolean
+  ) {
+    const { assignments } = unit.state;
+    const returnedObj = {} as { assignment: IUnitAssignment; index: number };
+
+    for (let index = 0; index < assignments.length; index++) {
+      const assignment = assignments[index];
+      if (!assignment._id?.equals(assignmentId)) continue;
+
+      returnedObj.assignment = assignment;
+      returnedObj.index = index;
+    }
+    
+    if (_h.isObjectEmpty(returnedObj) && strict)
+      throw new ErrorHandler(404, `Assignment with id '${assignmentId}' couldn't be found in '${unit.code}' assignments.`);
 
     return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
   }

@@ -10,7 +10,7 @@ export const unitList: IUnit[] = [{
       side: 'horde',
       jargon: 'peon'
     }],
-    description: 'The most basic unit. Surely dumb, but essential to build your basement.',
+    description: 'The most basic unit but also the most important one. Surely dumb, but essential to construct the buildings of your basement or even harvest some resources.',
     instantiation: {
       cost: {
         gold: 60,
@@ -32,6 +32,43 @@ export const unitList: IUnit[] = [{
     }
   },
   {
+    code: 'researcher',
+    word: [{
+      side: 'alliance',
+      jargon: 'erudite'
+    },
+    {
+      side: 'horde',
+      jargon: 'egghead'
+    }],
+    description: 'Intelligence is always necessary to optimize things such as your productivity, or even the rapidity of your soldiers. You will need this unit to launch researches.',
+    instantiation: {
+      cost: {
+        gold: 100,
+        wood: 10,
+        food: 2
+      },
+      duration: 70,
+      requiredEntities: {
+        buildings: [{
+          code: 'town-hall'
+        },
+        {
+          code: 'goldmine'
+        },
+        {
+          code: 'sawmill'
+        }]
+      }
+    },
+    statistics: {
+      types: {
+        main: 'researcher'
+      },
+      health: 60
+    }
+  },
+  {
     code: 'militia',
     word: [{
       side: 'alliance',
@@ -45,7 +82,7 @@ export const unitList: IUnit[] = [{
     instantiation: {
       cost: {
         gold: 95,
-        wood: 0,
+        wood: 15,
         food: 2
       },
       duration: 60,

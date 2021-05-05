@@ -216,15 +216,24 @@ class Helper {
   ///////////////////////////////////////
 
   /**
-   * Compute the amount of available food based on available farms.
+   * Compute the amount of available food.
    * @param moment The current moment.
    * @param buildings Garrison buildings.
+   * @param harvestAmount The amount of resource a farm is giving when it gets constructed.
+   * @param staticUnits Static units from store.
    */
-  static computeAvailableFood(moment: Date, buildings: IGarrisonBuilding[], harvestAmount: number) {
+  static computeAvailableFood(
+    moment: Date,
+    buildings: IGarrisonBuilding[],
+    harvestAmount: number,
+    units: IGarrisonUnit[],
+    staticUnits: IUnit[]
+  ) {
     const farms = buildings.filter(building => building.code === 'farm');
     if (farms.length === 0) return 0;
 
-    let total = 0;
+    // by default garrisons are created with 3 foods
+    let totalFood = 3;
 
     for (const farm of farms) {
       const currentLevel = this
@@ -239,9 +248,69 @@ class Helper {
       else if (currentLevel > 0)
         factor = Math.pow(this.getFactor('decreased'), currentLevel);
       
-      total += harvestAmount * factor;
+      totalFood += harvestAmount * factor;
     }
-    return Math.floor(total);
+
+    for (const unit of units) {
+      const staticUnit = staticUnits.find(sU => sU.code === unit.code);
+      if (!staticUnit) continue;
+
+      const { food: cost } = staticUnit
+        .instantiation
+        .cost;
+
+      totalFood -= unit.quantity * cost;
+    }
+    
+    return Math.floor(totalFood);
+  }
+
+  /**
+   * Compute the amount of available plots.
+   * @param moment The current moment.
+   * @param buildings Garrison buildings.
+   * @param staticBuildings Static buildings from store.
+   */
+  static computeAvailablePlots(
+    moment: Date,
+    buildings: IGarrisonBuilding[],
+    staticBuildings: IBuilding[]
+  ) {
+    let totalPlots = 32;
+    
+    for (const building of buildings) {
+      const staticBuilding = staticBuildings.find(sB => sB.code === building.code);
+      if (!staticBuilding) continue;
+
+      let improvementType: IBuildingImprovementType | null = null;
+      if (staticBuilding.upgrades && staticBuilding.upgrades.length > 0)
+        improvementType = 'upgrade';
+      else if (staticBuilding.extension)
+        improvementType = 'extension';
+        
+      if (!improvementType) {
+        totalPlots -= staticBuilding.instantiation.cost.plot;
+        continue;
+      }
+
+      const currentLevel = this
+        .computeBuildingCurrentLevel(
+          moment,
+          improvementType,
+          building.constructions
+        );
+
+      for (let i = 0; i < currentLevel + 1; i++) {
+        const cost = this
+          .computeConstructionCost(
+            staticBuilding.instantiation.cost,
+            i
+          );
+        totalPlots -= cost.plot;
+      }
+    }
+
+    return Math.floor(totalPlots);
   }
   
   /**
@@ -560,11 +629,15 @@ class Helper {
    */
   static checkConstructionPaymentCapacity(
     moment: Date,
+    buildings: IGarrisonBuilding[],
+    staticBuildings: IBuilding[],
     resources: IGarrisonResources,
     instantiationCost: IBuildingCost
   ): IGarrisonResources
   static checkConstructionPaymentCapacity(
     moment: Date,
+    buildings: IGarrisonBuilding[],
+    staticBuildings: IBuilding[],
     resources: IGarrisonResources,
     instantiationCost: IBuildingCost,
     improvementType: IBuildingImprovementType,
@@ -572,11 +645,20 @@ class Helper {
   ): IGarrisonResources
   static checkConstructionPaymentCapacity(
     moment: Date,
+    buildings: IGarrisonBuilding[],
+    staticBuildings: IBuilding[],
     resources: IGarrisonResources,
     instantiationCost: IBuildingCost,
     improvementType?: IBuildingImprovementType,
     constructions?: IOperatedConstruction[]
   ) {
+    const availablePlots = this
+      .computeAvailablePlots(
+        moment,
+        buildings,
+        staticBuildings
+      );
+    
     let nextLevel;
     if (improvementType && constructions) {
       nextLevel = this.computeBuildingCurrentLevel(
@@ -590,14 +672,13 @@ class Helper {
     const cost = this.computeConstructionCost(instantiationCost, nextLevel);
     if (resources.gold - cost.gold < 0 ||
       cost.wood - cost.wood < 0 ||
-      resources.plot - cost.plot < 0)
+      availablePlots - cost.plot < 0)
       throw new ErrorHandler(412, 'Not enough resources.');
-
+      
     return {
       ...resources,
       gold: resources.gold - cost.gold,
-      wood: resources.wood - cost.wood,
-      plot: resources.plot - cost.plot
+      wood: resources.wood - cost.wood
     } as IGarrisonResources;
   }
 
@@ -632,24 +713,30 @@ class Helper {
    * Check whether a garrison is eligible to train one or more units.
    * @param moment The current moment.
    * @param resources Garrison current resources.
+   * @param units Garrison units.
    * @param buildings Garrison buildings.
    * @param instantiationCost The unit basic instantiation cost.
    * @param quantity The quantity of units to train.
    * @param harvestAmount The amount of resource a farm is giving when it gets constructed.
+   * @param staticUnits Static units from store.
    */
   static checkTrainingPaymentCapacity(
     moment: Date,
     resources: IGarrisonResources,
     buildings: IGarrisonBuilding[],
+    units: IGarrisonUnit[],
     instantiationCost: IUnitCost,
     quantity: number,
-    harvestAmount: number
+    harvestAmount: number,
+    staticUnits: IUnit[]
   ) {
     const availableFood = this
       .computeAvailableFood(
         moment,
         buildings,
-        harvestAmount
+        harvestAmount,
+        units,
+        staticUnits
       );
     
     const cost = this.computeTrainingCost(instantiationCost, quantity);
@@ -661,8 +748,7 @@ class Helper {
     return {
       ...resources,
       gold: resources.gold - cost.gold,
-      wood: resources.wood - cost.wood,
-      food: resources.food - cost.food
+      wood: resources.wood - cost.wood
     } as IGarrisonResources;
   }
 

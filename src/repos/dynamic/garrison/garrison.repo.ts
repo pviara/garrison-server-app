@@ -170,7 +170,9 @@ export default class GarrisonRepository implements IMonitored {
 
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const staticBuilding = await this._buildingRepo.findByCode(payload.code) as IBuilding;
+
+    const staticBuildings = await this._buildingRepo.getAll();
+    const staticBuilding = staticBuildings.find(building => building.code === payload.code) as IBuilding;
 
     _gH.checkConstructionLimit(
       now,
@@ -201,6 +203,23 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
+    // 💰 update the resources
+    garrison.resources = (await this._updateResources(garrison)).resources;
+    garrison.resources = _gH
+      .checkConstructionPaymentCapacity(
+        now,
+        garrison.instances.buildings,
+        staticBuildings,
+        garrison.resources,
+        staticBuilding.instantiation.cost
+      );
+
+    // 💰 "gift-harvest" type of buildings directly give their resource here,
+    if (staticBuilding.harvest && !staticBuilding.harvest.maxWorkforce)
+      garrison.resources[staticBuilding.harvest.resource] += staticBuilding.harvest.amount;
+
+    //////////////////////////////////////////////
+
     // 🔨 prepare to build! 
     const {
       duration
@@ -228,19 +247,6 @@ export default class GarrisonRepository implements IMonitored {
     ];
 
     //////////////////////////////////////////////
-
-    // 💰 update the resources
-    garrison.resources = (await this._updateResources(garrison)).resources;
-    garrison.resources = _gH
-      .checkConstructionPaymentCapacity(
-        now,
-        garrison.resources,
-        staticBuilding.instantiation.cost
-      );
-
-    // 💰 "gift-harvest" type of buildings directly give their resource here,
-    if (staticBuilding.harvest && !staticBuilding.harvest.maxWorkforce)
-      garrison.resources[staticBuilding.harvest.resource] += staticBuilding.harvest.amount;
 
     // 👨‍💼 assign peasants to building-site
     peasants.state.assignments = [
@@ -290,8 +296,7 @@ export default class GarrisonRepository implements IMonitored {
     // 💰 prepare to refund!
     let {
       gold,
-      wood,
-      plot
+      wood
     } = staticBuilding.instantiation.cost;
 
     const {
@@ -300,7 +305,6 @@ export default class GarrisonRepository implements IMonitored {
     if (improvement) {
       gold = Math.floor(gold * Math.pow(1.6, improvement.level));
       wood = Math.floor(wood * Math.pow(1.6, improvement.level));
-      plot = Math.floor(plot * Math.pow(1.3, improvement.level));
 
       building
         .constructions
@@ -315,8 +319,7 @@ export default class GarrisonRepository implements IMonitored {
     garrison.resources = {
       ...garrison.resources,
       gold: garrison.resources.gold + gold,
-      wood: garrison.resources.wood + wood,
-      plot: garrison.resources.plot + plot,
+      wood: garrison.resources.wood + wood
     };
 
     const {
@@ -393,15 +396,13 @@ export default class GarrisonRepository implements IMonitored {
     // 💰 prepare to refund!
     let {
       gold,
-      wood,
-      food
+      wood
     } = staticUnit.instantiation.cost;
 
     garrison.resources = {
       ...garrison.resources,
       gold: garrison.resources.gold + gold,
-      wood: garrison.resources.wood + wood,
-      food: garrison.resources.food + food,
+      wood: garrison.resources.wood + wood
     };
     
     //////////////////////////////////////////////
@@ -438,7 +439,9 @@ export default class GarrisonRepository implements IMonitored {
     const {
       building
     } = _gH.findBuilding(garrison, payload.buildingId);
-    const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
+
+    const staticBuildings = await this._buildingRepo.getAll();
+    const staticBuilding = staticBuildings.find(sB => sB.code === building.code) as IBuilding;
 
     _gH.checkBuildingAvailability(now, building);
 
@@ -510,6 +513,8 @@ export default class GarrisonRepository implements IMonitored {
     garrison.resources = _gH
       .checkConstructionPaymentCapacity(
         now,
+        garrison.instances.buildings,
+        staticBuildings,
         garrison.resources,
         staticBuilding.instantiation.cost,
         'upgrade',
@@ -561,7 +566,9 @@ export default class GarrisonRepository implements IMonitored {
     const {
       building
     } = _gH.findBuilding(garrison, payload.buildingId);
-    const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
+
+    const staticBuildings = await this._buildingRepo.getAll();
+    const staticBuilding = staticBuildings.find(sB => sB.code === building.code) as IBuilding;
 
     _gH.checkBuildingAvailability(now, building);
 
@@ -616,9 +623,11 @@ export default class GarrisonRepository implements IMonitored {
     garrison.resources = _gH
       .checkConstructionPaymentCapacity(
         now,
+        garrison.instances.buildings,
+        staticBuildings,
         garrison.resources,
         staticBuilding.instantiation.cost,
-        'extension',
+        'upgrade',
         building.constructions
       );
 
@@ -683,7 +692,9 @@ export default class GarrisonRepository implements IMonitored {
 
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
-    const staticUnit = await this._unitRepo.findByCode(payload.code) as IUnit;
+
+    const staticUnits = await this._unitRepo.getAll();
+    const staticUnit = staticUnits.find(unit => unit.code === payload.code) as IUnit;
 
     const {
       requiredEntities
@@ -696,6 +707,25 @@ export default class GarrisonRepository implements IMonitored {
       );
     }
 
+    //////////////////////////////////////////////
+
+    // 💰 update the resources
+    const farm = await this._buildingRepo.findByCode('farm') as Required<IBuilding>;
+    garrison.resources = (await this._updateResources(garrison)).resources;
+    garrison.resources = _gH
+      .checkTrainingPaymentCapacity(
+        now,
+        garrison.resources,
+        garrison.instances.buildings,
+        garrison.instances.units,
+        staticUnit.instantiation.cost,
+        payload.quantity || 1,
+        farm.harvest.amount,
+        staticUnits
+      );
+
+    //////////////////////////////////////////////
+  
     // 👨‍💼 prepare to train!
     const assignments: IUnitAssignment[] = [];
     for (let i = 0; i < (payload.quantity || 1); i++) {
@@ -742,21 +772,6 @@ export default class GarrisonRepository implements IMonitored {
         }
       };
     }
-
-    //////////////////////////////////////////////
-
-    // 💰 update the resources
-    const farm = await this._buildingRepo.findByCode('farm') as Required<IBuilding>;
-    garrison.resources = (await this._updateResources(garrison)).resources;
-    garrison.resources = _gH
-      .checkTrainingPaymentCapacity(
-        now,
-        garrison.resources,
-        garrison.instances.buildings,
-        staticUnit.instantiation.cost,
-        payload.quantity || 1,
-        farm.harvest.amount
-      );
 
     //////////////////////////////////////////////
 

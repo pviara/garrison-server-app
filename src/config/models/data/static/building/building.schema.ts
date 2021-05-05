@@ -66,6 +66,13 @@ const buildingSchema = new Schema({
     },
     required: false
   },
+  trainLimits: {
+    type: [{
+      unitType: String,
+      quantity: Number
+    }],
+    required: false
+  }
 });
 
 buildingSchema.statics.findByCode = findByCode;

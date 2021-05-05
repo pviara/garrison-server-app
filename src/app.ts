@@ -34,8 +34,8 @@ import MasterRouter from './config/routers/master.router';
   const server = new Server();
 
   // configurate server app body parser
-  server.app.use(bodyParser.json());
-  server.app.use(bodyParser.urlencoded({
+  server.app.use(express.json());
+  server.app.use(express.urlencoded({
     extended: true
   }));
 

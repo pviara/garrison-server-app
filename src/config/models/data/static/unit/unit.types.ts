@@ -33,10 +33,10 @@ export interface IUnit extends IStaticEntity {
   statistics: {
     types: {
       /** Unit type(s) : worker, explorer, fighter. */
-      main: string | string[];
+      main: string[];
 
       /** How does the unit fight ? Melee ? Distance ? */
-      fight?: string | string[];
+      fight?: string[];
     };
     
     /** Health points. */

@@ -706,6 +706,17 @@ export default class GarrisonRepository implements IMonitored {
         garrison.instances.buildings
       );
     }
+    
+    // TODO check whether training limit has been reached for this type of unit
+    _gH.checkTrainingLimit(
+      now,
+      staticUnit.code,
+      payload.quantity || 1,
+      garrison.instances.units,
+      staticUnits,
+      garrison.instances.buildings,
+      await this._buildingRepo.getAll()
+    );
 
     //////////////////////////////////////////////
 

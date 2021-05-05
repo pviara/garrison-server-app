@@ -51,7 +51,7 @@ export interface IBuilding extends IStaticEntity {
     maxLevel: number;
   };
   
-  /** A harvest building is a either a place where peasants
+  /** A harvest building is either a place where peasants
    * can be assigned to harvest some gold or wood, or a place
    * that directly gives access to gifted resources such as food. */
   harvest?: {
@@ -69,6 +69,15 @@ export interface IBuilding extends IStaticEntity {
     maxWorkforce?: number;
   }
   // ... implement other types: production, research, military
+
+  /**
+   * Some buildings allow certain types of units to be trained (see units required entites).
+   * If so, they only allow a certain quantity of units to be trained.
+   */
+  trainLimits?: {
+    unitType: string;
+    quantity: number;
+  }[];
 }
 
 /** A building that can be required to build, extend or upgrade another building, or train a unit. */

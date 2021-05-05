@@ -785,6 +785,81 @@ class Helper {
     if (unfulfilled) throw new ErrorHandler(412, 'Garrison does not fulfill upgrade requirements.');
   }
 
+  static checkTrainingLimit(
+    moment: Date,
+    code: string,
+    desiredQuantity: number,
+    units: IGarrisonUnit[],
+    staticUnits: IUnit[],
+    buildings: IGarrisonBuilding[],
+    staticBuildings: IBuilding[],
+  ) {
+    // TODO #1. get unit's main types from staticUnits
+    const staticUnit = staticUnits
+      .find(sU => sU.code === code) as IUnit;
+    const { main: mainTypes } = staticUnit
+      .statistics
+      .types;
+
+    // TODO #2. filter static buildings that enables to train these types of unit
+    const concernedStaticBuildings = [] as {
+      building: IBuilding;
+      trainLimit: {
+        unitType: string;
+        quantity: number;
+      };
+    }[];
+    for (const staticBuilding of staticBuildings) {
+      if (!staticBuilding.trainLimits) continue;
+
+      const concerned = staticBuilding
+        .trainLimits
+        .find(trainLimit => {
+          return mainTypes.find(type => type === trainLimit.unitType);
+        });
+      if (concerned) concernedStaticBuildings.push({
+        building: staticBuilding,
+        trainLimit: concerned
+      });
+    }
+    if (concernedStaticBuildings.length === 0) return;
+
+    // TODO #3. compute the current training limit inside garrison
+    let trainLimit = 0;
+    for (const staticBuilding of concernedStaticBuildings) {
+      const dynamicBuildings = buildings.filter(dB => dB.code === staticBuilding.building.code);
+
+      let improvementType: IBuildingImprovementType | null = null;
+      if (staticBuilding.building.upgrades && staticBuilding.building.upgrades.length > 0)
+        improvementType = 'upgrade'
+      else if (staticBuilding.building.extension)
+        improvementType = 'extension';
+      
+      for (const dynamicBuilding of dynamicBuildings) {
+        let factor = 1;
+        if (improvementType) {
+          const currentLevel = this
+            .computeBuildingCurrentLevel(
+              moment,
+              improvementType,
+              dynamicBuilding.constructions
+            );
+          if (currentLevel > 0) factor = Math.pow(2, currentLevel);
+
+          trainLimit += staticBuilding
+            .trainLimit
+            .quantity * factor;
+          continue;
+        }
+      }
+    }
+
+    // TODO #4. proceed to check
+    const unit = units.find(unit => unit.code === code);
+    if ((unit?.quantity || 0) + desiredQuantity > trainLimit)
+      throw new ErrorHandler(412, `Reached limit of trainable '${code}'.`);
+  }
+
   /**
    * Check whether a garrison meets a building extension requirements.
    * @param moment The current moment.

@@ -26,7 +26,7 @@ export const unitList: IUnit[] = [{
     },
     statistics: {
       types: {
-        main: 'worker'
+        main: ['worker']
       },
       health: 70
     }
@@ -63,7 +63,7 @@ export const unitList: IUnit[] = [{
     },
     statistics: {
       types: {
-        main: 'researcher'
+        main: ['researcher']
       },
       health: 60
     }
@@ -94,8 +94,8 @@ export const unitList: IUnit[] = [{
     },
     statistics: {
       types: {
-        main: ['explorer', 'fighter'],
-        fight: 'melee'
+        main: ['intermediate-fighter'],
+        fight: ['melee']
       },
       health: 120,
       attack: {
@@ -142,8 +142,8 @@ export const unitList: IUnit[] = [{
     },
     statistics: {
       types: {
-        main: 'fighter',
-        fight: 'melee'
+        main: ['fighter'],
+        fight: ['melle']
       },
       health: 200,
       attack: {
@@ -193,8 +193,8 @@ export const unitList: IUnit[] = [{
     },
     statistics: {
       types: {
-        main: ['explorer', 'fighter'],
-        fight: 'distance'
+        main: ['fighter'],
+        fight: ['distance']
       },
       health: 200,
       attack: {
@@ -245,8 +245,8 @@ export const unitList: IUnit[] = [{
     },
     statistics: {
       types: {
-        main: 'fighter',
-        fight: 'melee'
+        main: ['fighter'],
+        fight: ['melee']
       },
       health: 260,
       attack: {

@@ -47,7 +47,15 @@ export const buildingList: IBuilding[] = [{
           }
         ]
       }
-    ]
+    ],
+    trainLimits: [{
+      unitType: 'worker',
+      quantity: 5
+    },
+    {
+      unitType: 'intermediate-fighter',
+      quantity: 5
+    }]
   },
   {
     code: 'goldmine',

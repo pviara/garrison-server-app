@@ -23,31 +23,13 @@ export interface IResearch extends IStaticEntity {
   /** Instantiation requirements and characteristics. */
   instantiation: {
     cost: IStaticEntityCost,
+    minWorkforce: number;
     duration: number;
     requiredEntities?: {
       buildings: IRequiredBuilding[];
     }
   };
 
-  target: {
-    /** Type of the affected target (e.g. unit or building). */
-    entity: string;
-  
-    /** Code, type or subtype of the affected unit or building */
-    identifier: string | {
-      fightType: string;
-    };
-  };
-
-  /** How does this research affect its target ? */
-  actions: {
-    /** Path to the impacted statistics (e.g. 'attack.points.max'). */
-    statistics: string;
-
-    /** Operation sign. */
-    operation: string;
-
-    /** Value to operate with. */
-    value: number;
-  }[];
+  /** Number to add to any base variable in harvest buildings, units attack, defense... */
+  bonus: number;
 }

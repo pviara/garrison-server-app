@@ -15,14 +15,6 @@ const researchSchema = new Schema({
     type: String,
     required: false
   },
-  pictures: {
-    icon: String,
-    image: {
-      type: String,
-      required: false
-    },
-    required: false
-  },
   instantiation: {
     type: {
       cost: {
@@ -37,19 +29,8 @@ const researchSchema = new Schema({
     },
     required: true
   },
-  target: {
-    type: {
-      entity: String,
-      identifier: Schema.Types.Mixed
-    },
-    required: true
-  },
-  actions: {
-    type: {
-      statistics: String,
-      operation: String,
-      value: Number
-    },
+  bonus: {
+    type: Number,
     required: true
   }
 });

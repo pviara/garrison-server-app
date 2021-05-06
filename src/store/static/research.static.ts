@@ -1,62 +1,47 @@
 import { IResearch } from '../../config/models/data/static/research/research.types';
 
 export const researchList: IResearch[] = [{
-    code: 'melee-attack-global',
-    word: 'sharp swords',
+    code: 'improved-construction',
+    word: 'better construction',
+    description: 'Increase your workers productivity when constructing buildings. Any additional enroled worker above minimum workforce will reduce construction time by extra 1%.',
     instantiation: {
       cost: {
-        gold: 100,
-        wood: 50
+        gold: 10,
+        wood: 10
       },
-      duration: 60,
+      minWorkforce: 1,
+      duration: 200,
       requiredEntities: {
         buildings: [{
-          code: 'barracks'
+          code: 'town-hall'
         }]
       }
     },
-    target: {
-      entity: 'UNITS',
-      identifier: {
-        fightType: 'melee'
-      }
-    },
-    actions: [{
-      statistics: 'points.attack.min',
-      operation: '+',
-      value: 1
-    },
-    {
-      statistics: 'points.attack.max',
-      operation: '+',
-      value: 2
-    }]
+    bonus: 1
   },
   {
-    code: 'melee-defense-global',
-    word: 'sharp swords',
+    code: 'improved-harvest',
+    word: 'better harvest',
+    description: 'Increase your workers productivity when harvesting resources. Any enroled worker will harvest 1 extra resource per minute.',
     instantiation: {
       cost: {
-        gold: 100,
-        wood: 50
+        gold: 10,
+        wood: 10
       },
-      duration: 60,
+      minWorkforce: 1,
+      duration: 200,
       requiredEntities: {
         buildings: [{
-          code: 'barracks'
+          code: 'town-hall'
+        },
+        {
+          code: 'goldmine'
+        },
+        {
+          code: 'sawmill'
         }]
       }
     },
-    target: {
-      entity: 'UNITS',
-      identifier: {
-        fightType: 'melee'
-      }
-    },
-    actions: [{
-      statistics: 'points.attack.max',
-      operation: '+',
-      value: 2
-    }]
+    bonus: 1
   }
 ];

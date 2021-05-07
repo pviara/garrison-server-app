@@ -24,9 +24,15 @@ import {
   IGarrisonDocument,
   IGarrisonModel,
   IOperatedConstruction,
+  IOperatedProject,
   IUnitAssignment
 } from '../../../config/models/data/dynamic/garrison/garrison.types';
 import IGarrisonCreate from '../../../config/models/data/dynamic/garrison/payloads/IGarrisonCreate';
+
+import {
+  IResearch
+} from '../../../config/models/data/static/research/research.types';
+import IResearchCreate from '../../../config/models/data/dynamic/garrison/payloads/IResearchCreate';
 
 import {
   IUnit
@@ -40,6 +46,7 @@ import {
 
 import BuildingRepository from '../../static/building.repo';
 import CharacterRepository from '../character/character.repo';
+import ResearchRepository from '../../static/research.repo';
 import UnitRepository from '../../static/unit.repo';
 import UserRepository from '../user/user.repo';
 import ZoneRepository from '../../static/zone.repo';
@@ -59,6 +66,7 @@ export default class GarrisonRepository implements IMonitored {
     private _model: IGarrisonModel,
     private _buildingRepo: BuildingRepository,
     private _characterRepo: CharacterRepository,
+    private _researchRepo: ResearchRepository,
     private _unitRepo: UnitRepository,
     private _userRepo: UserRepository,
     private _zoneRepo: ZoneRepository
@@ -183,7 +191,7 @@ export default class GarrisonRepository implements IMonitored {
     const {
       unit: peasants
     } = _gH.findUnit(garrison, 'peasant');
-    _gH.checkWorkforceCoherence(
+    _gH.checkBuildingWorkforceCoherence(
       now,
       payload.workforce,
       peasants,
@@ -478,7 +486,7 @@ export default class GarrisonRepository implements IMonitored {
     const {
       unit: peasants
     } = _gH.findUnit(garrison, 'peasant');
-    _gH.checkWorkforceCoherence(
+    _gH.checkBuildingWorkforceCoherence(
       now,
       payload.workforce,
       peasants,
@@ -607,7 +615,7 @@ export default class GarrisonRepository implements IMonitored {
     const {
       unit: peasants
     } = _gH.findUnit(garrison, 'peasant');
-    _gH.checkWorkforceCoherence(
+    _gH.checkBuildingWorkforceCoherence(
       now,
       payload.workforce,
       peasants,
@@ -707,7 +715,6 @@ export default class GarrisonRepository implements IMonitored {
       );
     }
     
-    // TODO check whether training limit has been reached for this type of unit
     _gH.checkTrainingLimit(
       now,
       staticUnit.code,
@@ -1025,6 +1032,105 @@ export default class GarrisonRepository implements IMonitored {
   }
 
   /**
+   * Add and save a new research.
+   * @param payload @see IResearchCreate
+   */
+  async launchResearch(payload: IResearchCreate) {
+    // ⌚ init the moment
+    const now = new Date();
+
+    //////////////////////////////////////////////
+
+    // ❔ make the checks
+    const garrison = await this.findById(payload.garrisonId);
+    const staticResearch = await this._researchRepo.findByCode(payload.code) as IResearch;
+
+    const {
+      unit: researchers
+    } = _gH.findUnit(garrison, 'researcher');
+    
+    _gH.checkResearchWorkforceCoherence(
+      now,
+      payload.workforce,
+      researchers,
+      staticResearch
+    );
+
+    const {
+      requiredEntities
+    } = staticResearch.instantiation;
+    if (requiredEntities) {
+      _gH.checkStandardRequirements(
+        now,
+        requiredEntities.buildings,
+        garrison.instances.buildings
+      );
+    }
+
+    //////////////////////////////////////////////
+
+    // 💰 update the resources
+    garrison.resources = (await this._updateResources(garrison)).resources;
+    garrison.resources = _gH
+      .checkResearchPaymentCapacity(
+        now,
+        garrison.resources,
+        staticResearch.instantiation.cost
+      );
+
+    //////////////////////////////////////////////
+  
+    // 🔨 prepare to launch!
+    const {
+      duration
+    } = _gH
+      .computeResearchDurationAndWorkforce(
+        payload.workforce,
+        staticResearch
+      );
+    
+    const project: IOperatedProject = {
+      _id: new ObjectId(),
+      beginDate: now,
+      endDate: _h.addTime(now, duration * 1000),
+      workforce: payload.workforce
+    };
+
+    const researchId = new ObjectId();
+    garrison.instances.researches = [
+      ...garrison.instances.researches,
+      {
+        _id: researchId,
+        code: payload.code,
+        projects: [project]
+      }
+    ];
+
+    //////////////////////////////////////////////
+
+    // 👨‍💼 assign researchers to building-site
+    researchers.state.assignments = [
+      ...researchers.state.assignments,
+      {
+        _id: new ObjectId(),
+        researchId,
+        quantity: payload.workforce,
+        type: 'research',
+        endDate: _h.addTime(now, duration * 1000)
+      }
+    ];
+
+    //////////////////////////////////////////////
+
+    // 💾 save in database
+    garrison.markModified('instances.researches');
+    garrison.markModified('instances.units');
+    await garrison.save();
+
+    return await this.findById(garrison._id);
+  }
+
+  /**
    * Dynamically update garrison resources.
    * @param garrison Given garrison.
    */
@@ -1068,7 +1174,7 @@ export default class GarrisonRepository implements IMonitored {
     for (const building of garrison.instances.buildings) {
       const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
-      const harvest = _gH.checkBuildingAllowsHarvest(staticBuilding);
+      const harvest = _gH.checkBuildingAllowsHarvest(staticBuilding, false);
       if (!harvest || !harvest.maxWorkforce) continue;
 
       const available = _gH.checkBuildingAvailability(now, building, false);

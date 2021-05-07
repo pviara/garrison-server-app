@@ -8,9 +8,11 @@ import {
   IBuildingImprovementType,
   IGarrisonBuilding,
   IGarrisonDocument,
+  IGarrisonResearch,
   IGarrisonResources,
   IGarrisonUnit,
   IOperatedConstruction,
+  IOperatedProject,
   IUnitAssignment
 } from '../../../../config/models/data/dynamic/garrison/garrison.types';
 
@@ -21,8 +23,20 @@ import {
   IRequiredBuildingForExtensionLevel
 } from '../../../../config/models/data/static/building/building.types';
 
+import {
+  IResearch
+} from '../../../../config/models/data/static/research/research.types';
+
+import {
+  IStaticEntityCost
+} from '../../../../config/models/data/static/static.types';
+
+import {
+  IUnit,
+  IUnitCost
+} from '../../../../config/models/data/static/unit/unit.types';
+
 import _h from '../../../../utils/helper.utils';
-import { IUnit, IUnitCost } from '../../../../config/models/data/static/unit/unit.types';
 
 /**
  * Garrison helper class. Contains static methods garrison repository only can use.
@@ -72,7 +86,7 @@ class Helper {
     unit: IGarrisonUnit,
     buildingId: ObjectId,
     type: IUnitAssignment['type'],
-    strict?: boolean
+    strict: boolean = true
   ) {
     const { assignments } = unit.state;
     const returnedObj = {} as { assignment: IUnitAssignment; index: number };
@@ -115,7 +129,7 @@ class Helper {
   static findUnitAssignment(
     unit: IGarrisonUnit,
     assignmentId: ObjectId,
-    strict?: boolean
+    strict: boolean = true
   ) {
     const { assignments } = unit.state;
     const returnedObj = {} as { assignment: IUnitAssignment; index: number };
@@ -143,7 +157,7 @@ class Helper {
    */
   static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict?: true): { building: IGarrisonBuilding; index: number };
   static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict: false): { building: IGarrisonBuilding; index: number } | { index: -1 };
-  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict?: boolean) {
+  static findBuilding(garrison: IGarrisonDocument, id: ObjectId, strict: boolean = true) {
     const { buildings } = garrison.instances;
     const returnedObj = {} as { building: IGarrisonBuilding; index: number };
 
@@ -161,15 +175,41 @@ class Helper {
   }
 
   /**
-   * Find a specific unit by its id inside a garrison.
+   * Find a specific research by its code inside a garrison.
    * @param garrison Given garrison document.
    * @param id Given ObjectId.
    * @param strict Sets whether an error is thrown when no unit is found.
    * @returns Either an IGarrisonUnit or (maybe) null if strict mode is set to false.
    */
+  static findResearch(garrison: IGarrisonDocument, code: string, strict?: true): { research: IGarrisonResearch; index: number };
+  static findResearch(garrison: IGarrisonDocument, code: string, strict: false): { research: IGarrisonResearch; index: number } | { index: -1 };
+  static findResearch(garrison: IGarrisonDocument, code: string, strict: boolean = true) {
+    const { researches } = garrison.instances;
+    const returnedObj = {} as { research: IGarrisonResearch; index: number };
+
+    for (let index = 0; index < researches.length; index++) {
+      if (!(researches[index].code === code)) continue;
+      returnedObj.research = researches[index];
+      returnedObj.index = index;
+      break;
+    }
+    
+    if (_h.isObjectEmpty(returnedObj) && strict)
+      throw new ErrorHandler(404, `Research with code '${code}' couldn't be found in garrison '${garrison._id}'.`);
+
+    return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
+  }
+
+  /**
+   * Find a specific unit by its code inside a garrison.
+   * @param garrison Given garrison document.
+   * @param code Given code.
+   * @param strict Sets whether an error is thrown when no unit is found.
+   * @returns Either an IGarrisonUnit or (maybe) null if strict mode is set to false.
+   */
   static findUnit(garrison: IGarrisonDocument, code: string, strict?: true): { unit: IGarrisonUnit; index: number };
   static findUnit(garrison: IGarrisonDocument, code: string, strict: false): { unit: IGarrisonUnit; index: number } | { index: - 1 };
-  static findUnit(garrison: IGarrisonDocument, code: string, strict?: boolean) {
+  static findUnit(garrison: IGarrisonDocument, code: string, strict: boolean = true) {
     const { units } = garrison.instances;
     const returnedObj = {} as { unit: IGarrisonUnit; index: number };
 
@@ -194,7 +234,7 @@ class Helper {
    */
   static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict?: true): { construction: IOperatedConstruction; index: number };
   static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict: false): { construction: IOperatedConstruction; index: number } | { index: - 1 };
-  static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict?: boolean) {
+  static findBuildingConstruction(building: IGarrisonBuilding, id: ObjectId, strict: boolean = true) {
     const { constructions } = building;
     const returnedObj = {} as { construction: IOperatedConstruction; index: number };
 
@@ -438,6 +478,64 @@ class Helper {
   }
 
   /**
+   * Compute the cost of launching a research project.
+   * @param instantiationCost Research basic instantiation cost.
+   * @param projectLevel The level on which to launch the research.
+   */
+  static computeResearchCost(
+    instantiationCost: IStaticEntityCost,
+    projectLevel = 0
+  ) {
+    const getPowerFactor = (factor = this.getFactor('default')) => {
+      return Math.pow(factor, projectLevel);
+    };
+    return {
+      gold: Math.floor(instantiationCost.gold * getPowerFactor()),
+      wood: Math.floor(instantiationCost.wood * getPowerFactor())
+    } as IStaticEntityCost;
+  }
+
+  /**
+   * Compute the current level of a garrison research.
+   * @param moment The current moment.
+   * @param projects Research projects.
+   */
+  static computeResearchCurrentLevel(
+    moment: Date,
+    projects: IOperatedProject[]
+  ) {
+    const finished = projects
+      .filter(p => moment.getTime() > p.endDate.getTime());
+    if (finished.length === 0) return -1;
+
+    return finished
+      .map(p => <number>p.level)
+      .reduce((prev, next) => next > prev ? next : prev, 0);
+  }
+
+  /**
+   * Compute both the duration and the minimum required workforce to launch a research project.
+   * @param workforce Given workforce.
+   * @param research Static research to be instantiated.
+   * @param projectLevel The level on which to improve the research.
+   */
+  static computeResearchDurationAndWorkforce(
+    workforce: number,
+    research: IResearch,
+    projectLevel = 0
+  ) {
+    let { duration, minWorkforce } = research.instantiation;
+    duration = duration * Math.pow(this.getFactor('decreased'), projectLevel);
+    minWorkforce = minWorkforce * Math.pow(2, projectLevel);
+    
+    // apply bonus: each additionnal researcher reduces duration by 3%
+    return {
+      duration: duration * Math.pow(0.97, workforce - minWorkforce),
+      minWorkforce
+    };
+  }
+
+  /**
    * Compute the cost of training one or more units.
    * @param instantiationCost Unit basic instantiation cost.
    * @param quantity The quantity of units to instantiate.
@@ -463,7 +561,7 @@ class Helper {
    */
   static checkBuildingAllowsHarvest(staticBuilding: IBuilding, strict?: true): NonNullable<IBuilding['harvest']>;
   static checkBuildingAllowsHarvest(staticBuilding: IBuilding, strict: false): NonNullable<IBuilding['harvest']> | null;
-  static checkBuildingAllowsHarvest(staticBuilding: IBuilding, strict?: boolean) {
+  static checkBuildingAllowsHarvest(staticBuilding: IBuilding, strict: boolean = true) {
     if (!staticBuilding.harvest && strict)
       throw new ErrorHandler(400, `No peasant can be assigned at building '${staticBuilding.code}'.`);
     
@@ -479,7 +577,7 @@ class Helper {
    */
   static checkBuildingAvailability(moment: Date, building: IGarrisonBuilding, strict?: true): boolean;
   static checkBuildingAvailability(moment: Date, building: IGarrisonBuilding, strict: false): boolean;
-  static checkBuildingAvailability(moment: Date, building: IGarrisonBuilding, strict?: boolean) {
+  static checkBuildingAvailability(moment: Date, building: IGarrisonBuilding, strict: boolean = true) {
     const available = building
       .constructions
       .every(c => moment.getTime() > c.endDate.getTime());
@@ -710,6 +808,37 @@ class Helper {
   }
 
   /**
+   * Check whether a garrison is eligible to launch a specific research.
+   * @param moment 
+   * @param resources 
+   * @param instantiationCost 
+   * @param projects 
+   */
+  static checkResearchPaymentCapacity(
+    moment: Date,
+    resources: IGarrisonResources,
+    instantiationCost: IStaticEntityCost,
+    projects?: IOperatedProject[]
+  ) {
+    const nextLevel = this
+      .computeResearchCurrentLevel(
+        moment,
+        projects || []
+      ) + 1;
+    
+    const cost = this.computeResearchCost(instantiationCost, nextLevel);
+    if (resources.gold - cost.gold < 0 ||
+      cost.wood - cost.wood < 0)
+      throw new ErrorHandler(412, 'Not enough resources.');
+      
+    return {
+      ...resources,
+      gold: resources.gold - cost.gold,
+      wood: resources.wood - cost.wood
+    } as IGarrisonResources;
+  }
+
+  /**
    * Check whether a garrison is eligible to train one or more units.
    * @param moment The current moment.
    * @param resources Garrison current resources.
@@ -904,13 +1033,13 @@ class Helper {
    * @param building Static building to be instantiate or improved.
    * @param improvementType Building improvement type.
    */
-  static checkWorkforceCoherence(
+  static checkBuildingWorkforceCoherence(
     moment: Date,
     workforce: number,
     peasants: IGarrisonUnit,
     building: IBuilding
   ): void
-  static checkWorkforceCoherence(
+  static checkBuildingWorkforceCoherence(
     moment: Date,
     workforce: number,
     peasants: IGarrisonUnit,
@@ -918,13 +1047,13 @@ class Helper {
     improvementType: IBuildingImprovementType,
     constructions: IOperatedConstruction[],
   ): void
-  static checkWorkforceCoherence(
+  static checkBuildingWorkforceCoherence(
     moment: Date,
     workforce: number,
     peasants: IGarrisonUnit,
     building: IBuilding,
-    improvementType ? : IBuildingImprovementType,
-    constructions ? : IOperatedConstruction[],
+    improvementType?: IBuildingImprovementType,
+    constructions?: IOperatedConstruction[],
   ) {
     // first checks are made in relation to given garrison peasants
     if (workforce > peasants.quantity)
@@ -947,6 +1076,49 @@ class Helper {
     if (workforce < minWorkforce)
       throw new ErrorHandler(400, `Given workforce (${workforce}) cannot be less than minimum required workforce (${minWorkforce}).`);
 
+    if (workforce > minWorkforce * 2)
+      throw new ErrorHandler(
+        400,
+        `Given workforce (${workforce}) cannot be greater than the double of minimum required workforce (${minWorkforce}*2 = ${minWorkforce * 2}).`
+      );
+  }
+
+  /**
+   * Check whether a given workforce is coherent with both a research launch pre-requesites and the garrison available workforce.
+   * @param moment The current moment.
+   * @param workforce The given workforce.
+   * @param researchers Garrison researchers.
+   * @param research Static research to be instantiate or improved.
+   * @param projects Current research operated projects.
+   */
+  static checkResearchWorkforceCoherence(
+    moment: Date,
+    workforce: number,
+    researchers: IGarrisonUnit,
+    research: IResearch,
+    projects?: IOperatedProject[]
+  ) {
+    // first checks are made in relation to given garrison researchers
+    if (workforce > researchers.quantity)
+      throw new ErrorHandler(400, `Given workforce (${workforce}) cannot be greater than current researchers quantity (${researchers.quantity}).`);
+    
+    const availableResearchers = this.computeAvailableUnits(moment, researchers);
+    if (workforce > availableResearchers)
+      throw new ErrorHandler(412, `Given workforce (${workforce}) cannot be greater than current available researchers quantity (${availableResearchers}).`);
+
+    // second checks are made in relation to research next project workforce requirements
+    let {
+      minWorkforce
+    } = research.instantiation;
+      
+    if (projects) {
+      const currentLevel = this.computeResearchCurrentLevel(moment, projects);
+      minWorkforce = minWorkforce * Math.pow(2, currentLevel + 1);
+    }
+
+    if (workforce < minWorkforce)
+      throw new ErrorHandler(400, `Given workforce (${workforce}) cannot be less than minimum required workforce (${minWorkforce}).`);
+    
     if (workforce > minWorkforce * 2)
       throw new ErrorHandler(
         400,

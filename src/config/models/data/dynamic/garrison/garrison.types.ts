@@ -68,11 +68,14 @@ export interface IGarrison {
           /** Assignment building. */
           buildingId?: ObjectId;
 
+          /** Assignment research. */
+          researchId?: ObjectId;
+
           /** Number of assigned units. */
           quantity: number;
 
           /** Assignement type. */
-          type: 'instantiation' | 'construction' | 'harvest';
+          type: 'instantiation' | 'construction' | 'harvest' | 'research';
 
           /** End of assignment. */
           endDate: Date;
@@ -82,11 +85,14 @@ export interface IGarrison {
 
     /** Researched upgrades. */
     researches: {
+      /** Research unique id. */
+      _id: ObjectId;
+      
       /** Research unique identifier. */
       code: string;
 
-      /** Research current level. */
-      level?: number;
+      /** Research operated projects. */
+      projects: IOperatedProject[];
     }[];
   };
 }
@@ -118,6 +124,26 @@ export interface IOperatedConstruction {
 }
 
 /**
+ * The representation of an operated-project research history.
+ */
+export interface IOperatedProject {
+  /** Research unique id. */
+  _id: ObjectId;
+  
+  /** When was the research started ? */
+  beginDate: Date;
+
+  /** When did, or when will the research end ? */
+  endDate: Date;
+  
+  /** How many workers worked on this one ? */
+  workforce: number;
+
+  /** What was the research level to be launched ? */
+  level?: number;
+}
+
+/**
  * A unit assignment.
  */
 export type IUnitAssignment = IGarrison['instances']['units'][any]['state']['assignments'][any];
@@ -131,6 +157,11 @@ export type IGarrisonResources = IGarrison['resources'];
  * A building inside a Garrison.
  */
 export type IGarrisonBuilding = IGarrisonDocument['instances']['buildings'][any];
+
+/**
+ * A research inside a Garrison.
+ */
+export type IGarrisonResearch = IGarrisonDocument['instances']['researches'][any];
 
 /**
  * A unit inside a Garrison.

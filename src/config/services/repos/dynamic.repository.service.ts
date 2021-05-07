@@ -25,6 +25,7 @@ import UserRepository from '../../../repos/dynamic/user/user.repo';
 import ZoneRepository from '../../../repos/static/zone.repo';
 
 import StaticRepositoryService from './static.repository.service';
+import ResearchRepository from '../../../repos/static/research.repo';
 
 export default class DynamicRepositoryService implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
@@ -129,6 +130,7 @@ export default class DynamicRepositoryService implements IMonitored {
       <IGarrisonModel>model,
       <BuildingRepository>staticRepositories.find(r => r.name === 'building')?.repo,
       this.characterRepository,
+      <ResearchRepository>staticRepositories.find(r => r.name === 'research')?.repo,
       <UnitRepository>staticRepositories.find(r => r.name === 'unit')?.repo,
       this.userRepository,
       <ZoneRepository>staticRepositories.find(r => r.name === 'zone')?.repo,

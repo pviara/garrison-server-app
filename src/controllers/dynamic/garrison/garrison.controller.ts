@@ -15,6 +15,7 @@ import helper from '../../../utils/helper.utils';
 import ErrorHandler from '../../../config/models/error/error-handler.model';
 import IUnitAssign from '../../../config/models/data/dynamic/garrison/payloads/IUnitAssign';
 import IUnitTrainingCancel from '../../../config/models/data/dynamic/garrison/payloads/IUnitTrainingCancel';
+import IResearchCreate from '../../../config/models/data/dynamic/garrison/payloads/IResearchCreate';
 
 export default class GarrisonController {
   constructor(private _repo: GarrisonRepository) {}
@@ -284,6 +285,33 @@ export default class GarrisonController {
         ...req.body,
         garrisonId: new ObjectId(req.body.garrisonId),
         instantiationId: new ObjectId(req.body.instantiationId)
+      }
+    );
+  }
+
+  /**
+   * Launch a research.
+   * @param req Recevied client request.
+   * @param res Response to send.
+   * @param next Next express function (lifecycle).
+   */
+  async launchResearch(req: Request, res: Response, next: NextFunction) {
+    if (!req.body
+      || helper.isObjectEmpty(req.body)
+      || !req.body.garrisonId
+      || !req.body.code
+      || !req.body.workforce)
+        throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
+
+    // check on both garrisonId and assignmentId cast possibility
+    const isValidGarrisonId = isValidObjectId(req.body.garrisonId);
+    if (!isValidGarrisonId)
+      throw new ErrorHandler(400, `Unable to cast '${req.body.garrisonId}' to ObjectId.`);
+
+    return await this._repo.launchResearch(
+      <IResearchCreate>{
+        ...req.body,
+        garrisonId: new ObjectId(req.body.garrisonId)
       }
     );
   }

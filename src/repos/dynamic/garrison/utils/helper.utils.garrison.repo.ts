@@ -181,21 +181,21 @@ class Helper {
    * @param strict Sets whether an error is thrown when no unit is found.
    * @returns Either an IGarrisonUnit or (maybe) null if strict mode is set to false.
    */
-  static findResearch(garrison: IGarrisonDocument, code: string, strict?: true): { research: IGarrisonResearch; index: number };
-  static findResearch(garrison: IGarrisonDocument, code: string, strict: false): { research: IGarrisonResearch; index: number } | { index: -1 };
-  static findResearch(garrison: IGarrisonDocument, code: string, strict: boolean = true) {
+  static findResearch(garrison: IGarrisonDocument, id: ObjectId, strict?: true): { research: IGarrisonResearch; index: number };
+  static findResearch(garrison: IGarrisonDocument, id: ObjectId, strict: false): { research: IGarrisonResearch; index: number } | { index: -1 };
+  static findResearch(garrison: IGarrisonDocument, id: ObjectId, strict: boolean = true) {
     const { researches } = garrison.instances;
     const returnedObj = {} as { research: IGarrisonResearch; index: number };
 
     for (let index = 0; index < researches.length; index++) {
-      if (!(researches[index].code === code)) continue;
+      if (!(researches[index]._id.equals(id))) continue;
       returnedObj.research = researches[index];
       returnedObj.index = index;
       break;
     }
     
     if (_h.isObjectEmpty(returnedObj) && strict)
-      throw new ErrorHandler(404, `Research with code '${code}' couldn't be found in garrison '${garrison._id}'.`);
+      throw new ErrorHandler(404, `Research with id '${id}' couldn't be found in garrison '${garrison._id}'.`);
 
     return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
   }
@@ -247,6 +247,31 @@ class Helper {
     
     if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Construction with id '${id}' couldn't be found in building '${building._id}'.`);
+
+    return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
+  }
+
+  /**
+   * Find a specific project by its id among a garrison research projects array.
+   * @param research Given garrison research.
+   * @param id Given project id.
+   * @param strict Sets whether an error is thrown when no project index is found.
+   */
+  static findResearchProject(research: IGarrisonResearch, id: ObjectId, strict?: true): { project: IOperatedProject; index: number };
+  static findResearchProject(research: IGarrisonResearch, id: ObjectId, strict: false): { project: IOperatedProject; index: number } | { index: - 1 };
+  static findResearchProject(research: IGarrisonResearch, id: ObjectId, strict: boolean = true) {
+    const { projects } = research;
+    const returnedObj = {} as { project: IOperatedProject; index: number };
+
+    for (let index = 0; index < projects.length; index++) {
+      if (!projects[index]?._id.equals(id)) continue;
+      returnedObj.project = projects[index];
+      returnedObj.index = index;
+      break;
+    }
+    
+    if (_h.isObjectEmpty(returnedObj) && strict)
+      throw new ErrorHandler(404, `Project with id '${id}' couldn't be found in research '${research._id}'.`);
 
     return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
   }

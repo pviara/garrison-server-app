@@ -16,7 +16,6 @@ import {
 import IBuildingConstructionCancel from '../../../config/models/data/dynamic/garrison/payloads/IBuildingConstructionCancel';
 import IBuildingCreate from '../../../config/models/data/dynamic/garrison/payloads/IBuildingCreate';
 import IBuildingUpgradeOrExtend from '../../../config/models/data/dynamic/garrison/payloads/IBuildingUpgradeOrExtend';
-import IUnitTrainingCancel from '../../../config/models/data/dynamic/garrison/payloads/IUnitTrainingCancel';
 
 import {
   IGarrison,
@@ -32,6 +31,7 @@ import IGarrisonCreate from '../../../config/models/data/dynamic/garrison/payloa
 import {
   IResearch
 } from '../../../config/models/data/static/research/research.types';
+import IResearchCancel from '../../../config/models/data/dynamic/garrison/payloads/IResearchCancel';
 import IResearchCreate from '../../../config/models/data/dynamic/garrison/payloads/IResearchCreate';
 
 import {
@@ -39,6 +39,7 @@ import {
 } from '../../../config/models/data/static/unit/unit.types';
 import IUnitAssign from '../../../config/models/data/dynamic/garrison/payloads/IUnitAssign';
 import IUnitCreate from '../../../config/models/data/dynamic/garrison/payloads/IUnitCreate';
+import IUnitTrainingCancel from '../../../config/models/data/dynamic/garrison/payloads/IUnitTrainingCancel';
 
 import {
   IZone
@@ -272,6 +273,80 @@ export default class GarrisonRepository implements IMonitored {
 
     // 💾 save in database
     garrison.markModified('instances.buildings');
+    garrison.markModified('instances.units');
+    await garrison.save();
+
+    return await this.findById(garrison._id);
+  }
+
+  async cancelResearch(payload: IResearchCancel) {
+    // ❔ make the checks
+    const garrison = await this.findById(payload.garrisonId);
+    const {
+      research,
+      index: rIndex
+    } = _gH.findResearch(garrison, payload.researchId);
+    const staticResearch = await this._researchRepo.findByCode(research.code) as IResearch;
+
+    const {
+      index: pIndex
+    } = _gH
+      .findResearchProject(
+        research,
+        payload.projectId
+      );
+    
+    //////////////////////////////////////////////
+
+    // 💰 prepare to refund!
+    let {
+      gold,
+      wood
+    } = staticResearch.instantiation.cost;
+
+    const {
+      level
+    } = research.projects[pIndex];
+    if (level) {
+      gold = Math.floor(gold * Math.pow(1.6, level));
+      wood = Math.floor(wood * Math.pow(1.6, level));
+
+      research
+        .projects
+        .splice(pIndex, 1);
+    } else {
+      garrison
+        .instances
+        .researches
+        .splice(rIndex, 1);
+    }
+
+    garrison.resources = {
+      ...garrison.resources,
+      gold: garrison.resources.gold + gold,
+      wood: garrison.resources.wood + wood
+    };
+
+    //////////////////////////////////////////////
+
+    // 👨‍💼 unassign researchers from building-site
+    const {
+      unit: researchers
+    } = _gH.findUnit(garrison, 'researcher');
+    const aIndex = researchers
+      .state
+      .assignments
+      .findIndex(a => a.endDate.getTime() === research.projects[pIndex]?.endDate.getTime());
+
+    researchers
+      .state
+      .assignments
+      .splice(aIndex, 1);
+
+    //////////////////////////////////////////////
+
+    // 💾 save in database
+    garrison.markModified('instances.researches');
     garrison.markModified('instances.units');
     await garrison.save();
 

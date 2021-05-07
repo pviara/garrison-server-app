@@ -1,11 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 
 import GarrisonRepository from '../../../repos/dynamic/garrison/garrison.repo';
+
 import IBuildingConstructionCancel from '../../../config/models/data/dynamic/garrison/payloads/IBuildingConstructionCancel';
-import IGarrisonCreate from '../../../config/models/data/dynamic/garrison/payloads/IGarrisonCreate';
 import IBuildingCreate from '../../../config/models/data/dynamic/garrison/payloads/IBuildingCreate';
 import IBuildingUpgradeOrExtend from '../../../config/models/data/dynamic/garrison/payloads/IBuildingUpgradeOrExtend';
+
+import IGarrisonCreate from '../../../config/models/data/dynamic/garrison/payloads/IGarrisonCreate';
+
+import IResearchCancel from '../../../config/models/data/dynamic/garrison/payloads/IResearchCancel';
+import IResearchCreate from '../../../config/models/data/dynamic/garrison/payloads/IResearchCreate';
+
+import IUnitAssign from '../../../config/models/data/dynamic/garrison/payloads/IUnitAssign';
 import IUnitCreate from '../../../config/models/data/dynamic/garrison/payloads/IUnitCreate';
+import IUnitTrainingCancel from '../../../config/models/data/dynamic/garrison/payloads/IUnitTrainingCancel';
 
 import { ObjectId } from 'mongodb';
 import { isValidObjectId } from 'mongoose';
@@ -13,9 +21,6 @@ import { isValidObjectId } from 'mongoose';
 import helper from '../../../utils/helper.utils';
 
 import ErrorHandler from '../../../config/models/error/error-handler.model';
-import IUnitAssign from '../../../config/models/data/dynamic/garrison/payloads/IUnitAssign';
-import IUnitTrainingCancel from '../../../config/models/data/dynamic/garrison/payloads/IUnitTrainingCancel';
-import IResearchCreate from '../../../config/models/data/dynamic/garrison/payloads/IResearchCreate';
 
 export default class GarrisonController {
   constructor(private _repo: GarrisonRepository) {}
@@ -312,6 +317,39 @@ export default class GarrisonController {
       <IResearchCreate>{
         ...req.body,
         garrisonId: new ObjectId(req.body.garrisonId)
+      }
+    );
+  }
+
+  /**
+   * Cancel a research.
+   * @param req Recevied client request.
+   * @param res Response to send.
+   * @param next Next express function (lifecycle).
+   */
+  async cancelResearch(req: Request, res: Response, next: NextFunction) {
+    if (!req.body
+      || helper.isObjectEmpty(req.body)
+      || !req.body.garrisonId
+      || !req.body.projectId
+      || !req.body.researchId)
+      throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
+
+    const isValidGarrisonId = isValidObjectId(req.body.garrisonId);
+    const isValidResearchId = isValidObjectId(req.body.researchId);
+    const isValidProjectId = isValidObjectId(req.body.projectId);
+    if (!isValidResearchId || !isValidGarrisonId || !isValidProjectId)
+      throw new ErrorHandler(
+        400,
+        `Unable to cast either '${req.body.garrisonId}', '${req.body.researchId}' or '${req.body.projectId}' to ObjectId.`
+    );
+
+    return await this._repo.cancelResearch(
+      <IResearchCancel>{
+        ...req.body,
+        garrisonId: new ObjectId(req.body.garrisonId),
+        researchId: new ObjectId(req.body.researchId),
+        projectId: new ObjectId(req.body.projectId)
       }
     );
   }

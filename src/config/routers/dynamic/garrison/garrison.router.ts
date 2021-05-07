@@ -120,6 +120,14 @@ export default class GarrisonRouter implements IMonitored {
         })
         .catch(error => next(error));
     });
+    
+    this._router.put('/research/cancel', (req: Request, res: Response, next: NextFunction) => {
+      this._controller.cancelResearch(req, res, next)
+        .then(result => {
+          res.status(200).json(result)
+        })
+        .catch(error => next(error));
+    });
 
     this._router
       .stack

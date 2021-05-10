@@ -81,9 +81,9 @@ export default class GarrisonRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no garrison is found.
    * @returns Either an IGarrisonDocument or (maybe) null if strict mode is set to false.
    */
-  async findById(id: ObjectId, strict ? : true): Promise < IGarrisonDocument > ;
-  async findById(id: ObjectId, strict: false): Promise < IGarrisonDocument | null > ;
-  async findById(id: ObjectId, strict ? : boolean) {
+  async findById(id: ObjectId, strict?: true): Promise<IGarrisonDocument>;
+  async findById(id: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
+  async findById(id: ObjectId, strict?: boolean) {
     const result = await this._model.findById(id);
     if (!result && strict) throw new ErrorHandler(404, `Garrison with garrisonId '${id}' couldn't be found.`);
 
@@ -96,9 +96,9 @@ export default class GarrisonRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no garrison is found.
    * @returns Either an IGarrisonDocument or (maybe) null if strict mode is set to false.
    */
-  async getFromUser(userId: ObjectId, strict ? : true): Promise < IGarrisonDocument > ;
-  async getFromUser(userId: ObjectId, strict: false): Promise < IGarrisonDocument | null > ;
-  async getFromUser(userId: ObjectId, strict ? : boolean) {
+  async getFromUser(userId: ObjectId, strict?: true): Promise<IGarrisonDocument>;
+  async getFromUser(userId: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
+  async getFromUser(userId: ObjectId, strict?: boolean) {
     const user = await this._userRepo.findById(userId);
     const character = await this._characterRepo.getFromUser(user?._id);
 
@@ -114,9 +114,9 @@ export default class GarrisonRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no garrison is found.
    * @returns Either an IGarrisonDocument or (maybe) null if strict mode is set to false.
    */
-  async getFromCharacter(characterId: ObjectId, strict ? : true): Promise < IGarrisonDocument > ;
-  async getFromCharacter(characterId: ObjectId, strict: false): Promise < IGarrisonDocument | null > ;
-  async getFromCharacter(characterId: ObjectId, strict ? : boolean) {
+  async getFromCharacter(characterId: ObjectId, strict?: true): Promise<IGarrisonDocument>;
+  async getFromCharacter(characterId: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
+  async getFromCharacter(characterId: ObjectId, strict?: boolean) {
     const result = await this._model.findOne({
       characterId
     });
@@ -188,7 +188,7 @@ export default class GarrisonRepository implements IMonitored {
       staticBuilding,
       garrison.instances.buildings
     );
-    
+
     const {
       unit: peasants
     } = _gH.findUnit(garrison, 'peasant');
@@ -352,7 +352,7 @@ export default class GarrisonRepository implements IMonitored {
           const factor = improvement?.level
             ? Math.pow(_gH.getFactor('decreased'), improvement.level)
             : 1;
-          
+
           const owed = Math.floor(harvest.amount * factor);
           const rest = garrison.resources[harvest.resource] - owed;
 
@@ -395,11 +395,11 @@ export default class GarrisonRepository implements IMonitored {
       unit
     } = _gH.findUnit(garrison, payload.code);
     const staticUnit = await this._unitRepo.findByCode(unit.code);
-    
+
     const {
       index
     } = _gH.findUnitAssignment(unit, payload.instantiationId);
-    
+
     //////////////////////////////////////////////
 
     // 💰 prepare to refund!
@@ -413,7 +413,7 @@ export default class GarrisonRepository implements IMonitored {
       gold: garrison.resources.gold + gold,
       wood: garrison.resources.wood + wood
     };
-    
+
     //////////////////////////////////////////////
 
     // 👨‍💼 unassign peasant from its own instantiation
@@ -543,7 +543,7 @@ export default class GarrisonRepository implements IMonitored {
       ...peasants.state.assignments,
       {
         _id: new ObjectId(),
-        buildingId: < ObjectId > building._id,
+        buildingId: <ObjectId>building._id,
         quantity: payload.workforce,
         type: 'construction',
         endDate: _h.addTime(now, duration * 1000)
@@ -672,7 +672,7 @@ export default class GarrisonRepository implements IMonitored {
       ...peasants.state.assignments,
       {
         _id: new ObjectId(),
-        buildingId: < ObjectId > building._id,
+        buildingId: <ObjectId>building._id,
         quantity: payload.workforce,
         type: 'construction',
         endDate: _h.addTime(now, duration * 1000)
@@ -715,7 +715,7 @@ export default class GarrisonRepository implements IMonitored {
         garrison.instances.buildings
       );
     }
-    
+
     _gH.checkTrainingLimit(
       now,
       staticUnit.code,
@@ -744,7 +744,7 @@ export default class GarrisonRepository implements IMonitored {
       );
 
     //////////////////////////////////////////////
-  
+
     // 👨‍💼 prepare to train!
     const assignments: IUnitAssignment[] = [];
     for (let i = 0; i < (payload.quantity || 1); i++) {
@@ -771,7 +771,7 @@ export default class GarrisonRepository implements IMonitored {
     const {
       index
     } = unit;
-    
+
     if (index < 0) {
       garrison.instances.units = [
         ...garrison.instances.units,
@@ -819,13 +819,13 @@ export default class GarrisonRepository implements IMonitored {
       .filter(building => {
         const available = _gH
           .checkBuildingAvailability(
-            now, 
+            now,
             building,
             false
           );
 
         if (building.code === payload.harvestCode && available)
-          return building; 
+          return building;
       });
     if (harvestBuildings.length === 0)
       throw new ErrorHandler(404, `Couldn't find any available '${payload.harvestCode}'.`);
@@ -841,12 +841,12 @@ export default class GarrisonRepository implements IMonitored {
       );
 
     //////////////////////////////////////////////
-    
+
     // 👨‍💼 prepare to assign!
     let assigned = 0;
     for (const harvestBuilding of harvestBuildings) {
       if (assigned === payload.quantity) break;
-      
+
       // ❔ make the checks
       _gH.checkUnitAssignmentCoherence(
         now,
@@ -859,7 +859,7 @@ export default class GarrisonRepository implements IMonitored {
 
       // 💰 update the resources
       garrison.resources = (await this._updateResources(garrison)).resources;
-  
+
       switch (harvestBuilding.code) {
         case 'goldmine': {
           if (!garrison.resources.goldLastUpdate)
@@ -880,7 +880,7 @@ export default class GarrisonRepository implements IMonitored {
       }
 
       //////////////////////////////////////////////
-      
+
       // 👨‍💼 make assignments!
       const currentLevel = _gH
         .computeBuildingCurrentLevel(
@@ -894,17 +894,17 @@ export default class GarrisonRepository implements IMonitored {
 
       while (assigned < payload.quantity) {
         const { index: aIndex } = _gH
-        .findBuildingAssignment(
-          unit,
-          harvestBuilding._id,
-          'harvest',
-          false
-        );
+          .findBuildingAssignment(
+            unit,
+            harvestBuilding._id,
+            'harvest',
+            false
+          );
         if (
           unit
-          .state
-          .assignments[aIndex]
-          ?.quantity === maxWorkforce
+            .state
+            .assignments[aIndex]
+            ?.quantity === maxWorkforce
         ) break;
 
         const assignment: IUnitAssignment = {
@@ -914,7 +914,7 @@ export default class GarrisonRepository implements IMonitored {
           type: 'harvest',
           quantity: 1
         };
-        
+
         if (aIndex < 0) {
           unit
             .state
@@ -924,12 +924,12 @@ export default class GarrisonRepository implements IMonitored {
           unit
             .state
             .assignments[aIndex] = {
-              ...unit.state.assignments[aIndex],
-              quantity: unit
-                .state
-                .assignments[aIndex]
-                .quantity + 1
-            }
+            ...unit.state.assignments[aIndex],
+            quantity: unit
+              .state
+              .assignments[aIndex]
+              .quantity + 1
+          }
         }
         assigned++;
       }
@@ -972,14 +972,14 @@ export default class GarrisonRepository implements IMonitored {
         500,
         `Missing property 'maxWorkforce' in harvest building of type '${payload.harvestCode}'.`
       );
-    
+
     //////////////////////////////////////////////
 
     // 💰 update the resources (first checkpoint)
     garrison.resources = (await this._updateResources(garrison)).resources;
-    
+
     //////////////////////////////////////////////
-    
+
     // 👨‍💼 prepare the unassignment!
     let unassigned = 0;
     for (const harvestBuilding of harvestBuildings) {
@@ -996,15 +996,15 @@ export default class GarrisonRepository implements IMonitored {
         if (aIndex < 0) break;
 
         const assignment = {
-            ...unit.state.assignments[aIndex],
-            quantity: unit
-              .state
-              .assignments[aIndex]
-              .quantity - 1
-          };
+          ...unit.state.assignments[aIndex],
+          quantity: unit
+            .state
+            .assignments[aIndex]
+            .quantity - 1
+        };
         unit.state.assignments[aIndex] = assignment;
         unassigned++;
-        
+
         if (assignment.quantity === 0) {
           unit.state.assignments.splice(aIndex, 1);
           break;
@@ -1016,7 +1016,7 @@ export default class GarrisonRepository implements IMonitored {
         412,
         `Couldn't unassign as much peasants as requested (only ${unassigned} out of ${payload.quantity}).`
       );
-    
+
     //////////////////////////////////////////////
 
     // 💰 update the resources (second checkpoint)
@@ -1049,7 +1049,7 @@ export default class GarrisonRepository implements IMonitored {
     const {
       unit: researchers
     } = _gH.findUnit(garrison, 'researcher');
-    
+
     _gH.checkResearchWorkforceCoherence(
       now,
       payload.workforce,
@@ -1080,7 +1080,7 @@ export default class GarrisonRepository implements IMonitored {
       );
 
     //////////////////////////////////////////////
-  
+
     // 🔨 prepare to launch!
     const {
       duration
@@ -1089,12 +1089,13 @@ export default class GarrisonRepository implements IMonitored {
         payload.workforce,
         staticResearch
       );
-    
+
     const project: IOperatedProject = {
       _id: new ObjectId(),
       beginDate: now,
       endDate: _h.addTime(now, duration * 1000),
-      workforce: payload.workforce
+      workforce: payload.workforce,
+      level: 1
     };
 
     const researchId = new ObjectId();
@@ -1152,7 +1153,7 @@ export default class GarrisonRepository implements IMonitored {
         research,
         payload.projectId
       );
-    
+
     //////////////////////////////////////////////
 
     // 💰 prepare to refund!
@@ -1171,11 +1172,6 @@ export default class GarrisonRepository implements IMonitored {
       research
         .projects
         .splice(pIndex, 1);
-    } else {
-      garrison
-        .instances
-        .researches
-        .splice(rIndex, 1);
     }
 
     garrison.resources = {
@@ -1183,6 +1179,13 @@ export default class GarrisonRepository implements IMonitored {
       gold: garrison.resources.gold + gold,
       wood: garrison.resources.wood + wood
     };
+
+    if (research.projects.length === 0) {
+      garrison
+        .instances
+        .researches
+        .splice(rIndex, 1);
+    }
 
     //////////////////////////////////////////////
 
@@ -1233,7 +1236,7 @@ export default class GarrisonRepository implements IMonitored {
     const unit = garrison.instances.units[uIndex];
 
     //////////////////////////////////////////////
-    
+
     // 🛑 get the profit limits
     const goldLimit = _gH
       .computeGlobalProfitLimit(
@@ -1247,7 +1250,7 @@ export default class GarrisonRepository implements IMonitored {
         'sawmill',
         garrison.instances.buildings
       );
-    
+
     //////////////////////////////////////////////
 
     // 💰 update resource for each harvest

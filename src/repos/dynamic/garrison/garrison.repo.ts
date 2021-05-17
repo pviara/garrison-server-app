@@ -229,13 +229,16 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
-    // 🔨 prepare to build! 
+    // 🔨 prepare to build!
     const {
       duration
     } = _gH
       .computeConstructionDurationAndWorkforce(
+        now,
         payload.workforce,
-        staticBuilding
+        staticBuilding,
+        0,
+        garrison.instances.researches
       );
 
     const construction: IOperatedConstruction = {
@@ -388,6 +391,10 @@ export default class GarrisonRepository implements IMonitored {
     return await this.findById(garrison._id);
   }
 
+  /**
+   * Cancel an ongoing unit training.
+   * @param payload @see IUnitTrainingCancel
+   */
   async cancelUnitTraining(payload: IUnitTrainingCancel) {
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
@@ -479,9 +486,11 @@ export default class GarrisonRepository implements IMonitored {
       duration
     } = _gH
       .computeConstructionDurationAndWorkforce(
+        now,
         payload.workforce,
         staticBuilding,
-        nextUpgrade.level
+        nextUpgrade.level,
+        garrison.instances.researches
       );
 
     const {
@@ -608,9 +617,11 @@ export default class GarrisonRepository implements IMonitored {
       duration
     } = _gH
       .computeConstructionDurationAndWorkforce(
+        now,
         payload.workforce,
         staticBuilding,
-        nextExtension
+        nextExtension,
+        garrison.instances.researches
       );
 
     const {
@@ -839,6 +850,20 @@ export default class GarrisonRepository implements IMonitored {
         500,
         `Missing property 'maxWorkforce' in harvest building of type '${payload.harvestCode}'.`
       );
+
+    const profitLimit = _gH
+      .computeGlobalProfitLimit(
+        now,
+        payload.harvestCode,
+        garrison.instances.buildings
+      );
+
+    const matchingRes = payload.harvestCode === 'goldmine'
+      ? 'gold'
+      : 'wood';
+      
+    if (garrison.resources[matchingRes] === profitLimit)
+      throw new ErrorHandler(412, `The profit limit of resource '${payload.harvestCode}' has already been reached.`);
 
     //////////////////////////////////////////////
 
@@ -1070,43 +1095,78 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
-    // 💰 update the resources
-    garrison.resources = (await this._updateResources(garrison)).resources;
-    garrison.resources = _gH
-      .checkResearchPaymentCapacity(
-        now,
-        garrison.resources,
-        staticResearch.instantiation.cost
-      );
-
-    //////////////////////////////////////////////
-
     // 🔨 prepare to launch!
+    let researchId = null;
+    const {
+      index: rIndex
+    } = _gH.findResearchByCode(
+      garrison,
+      staticResearch.code,
+      false
+    );
+
+    let currentLevel = 0;
+    if (rIndex > -1) {
+      currentLevel = _gH
+        .computeResearchCurrentLevel(
+          now,
+          garrison.instances.researches[rIndex].projects
+        );
+    }
+    
     const {
       duration
     } = _gH
       .computeResearchDurationAndWorkforce(
         payload.workforce,
-        staticResearch
+        staticResearch,
+        currentLevel
       );
-
     const project: IOperatedProject = {
       _id: new ObjectId(),
       beginDate: now,
       endDate: _h.addTime(now, duration * 1000),
       workforce: payload.workforce,
-      level: 1
+      level: currentLevel + 1
     };
 
-    const researchId = new ObjectId();
-    garrison.instances.researches = [
-      ...garrison.instances.researches,
-      {
-        _id: researchId,
-        code: payload.code,
-        projects: [project]
-      }
-    ];
+    if (rIndex > -1) {
+      researchId = garrison.instances.researches[rIndex]._id;
+
+      garrison
+        .instances
+        .researches[rIndex]
+        .projects
+        .push(project);
+        
+    } else {
+      researchId = new ObjectId();
+      garrison.instances.researches = [
+        ...garrison.instances.researches,
+        {
+          _id: researchId,
+          code: payload.code,
+          projects: [project]
+        }
+      ];
+    }
+
+    //////////////////////////////////////////////
+
+    // 💰 update the resources
+    garrison.resources = (await this._updateResources(garrison)).resources;
+
+    const {
+      research
+    } = _gH
+      .findResearch(garrison, researchId);
+    garrison.resources = _gH
+      .checkResearchPaymentCapacity(
+        now,
+        garrison.resources,
+        staticResearch.instantiation.cost,
+        research.projects
+      );
 
     //////////////////////////////////////////////
 
@@ -1165,14 +1225,14 @@ export default class GarrisonRepository implements IMonitored {
     const {
       level
     } = research.projects[pIndex];
-    if (level) {
+    if (level && level > 1) {
       gold = Math.floor(gold * Math.pow(1.6, level));
       wood = Math.floor(wood * Math.pow(1.6, level));
-
-      research
-        .projects
-        .splice(pIndex, 1);
     }
+
+    research
+      .projects
+      .splice(pIndex, 1);
 
     garrison.resources = {
       ...garrison.resources,
@@ -1187,6 +1247,11 @@ export default class GarrisonRepository implements IMonitored {
         .splice(rIndex, 1);
     }
 
+    //////////////////////////////////////////////
+
+    // 💰 update the resources
+    garrison.resources = (await this._updateResources(garrison)).resources;
+    
     //////////////////////////////////////////////
 
     // 👨‍💼 unassign researchers from building-site
@@ -1253,6 +1318,22 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
+    // compute the bonus applied by the right research
+    let bonus = 0;
+    const matchingResearch = garrison
+      .instances
+      .researches
+      .find(research => research.code === 'improved-harvest');
+    if (matchingResearch) {
+      bonus = _gH
+        .computeResearchCurrentLevel(
+          now,
+          matchingResearch.projects
+        );
+    }
+
+    //////////////////////////////////////////////
+    
     // 💰 update resource for each harvest
     for (const building of garrison.instances.buildings) {
       const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
@@ -1323,31 +1404,22 @@ export default class GarrisonRepository implements IMonitored {
 
       // compute total current resource 
       const owned = garrison.resources[harvest.resource];
-      const earned = Math.floor(harvest.amount * elapsedMinutes) * assignment.quantity;
+      const earned = Math.floor((harvest.amount + bonus) * elapsedMinutes) * assignment.quantity;
       let total = owned + earned;
-
-      // make sure total isn't greater than limit
-      switch (staticBuilding.code) {
-        case 'goldmine': {
-          if (total > goldLimit) total = goldLimit;
-          break;
-        }
-
-        case 'sawmill': {
-          if (total > woodLimit) total = woodLimit;
-          break;
-        }
-
-        default: {
-          continue;
-        }
-      }
 
       garrison.resources = {
         ...garrison.resources,
         [harvest.resource]: total
       };
     }
+
+    // make sure total earned resources aren't greater than limit
+    if (garrison.resources.gold > goldLimit)
+      garrison.resources.gold = goldLimit;
+
+    if (garrison.resources.wood > woodLimit)
+      garrison.resources.wood = woodLimit;
+    
     return garrison;
   }
 }

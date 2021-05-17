@@ -175,11 +175,11 @@ class Helper {
   }
 
   /**
-   * Find a specific research by its code inside a garrison.
+   * Find a specific research by its id inside a garrison.
    * @param garrison Given garrison document.
    * @param id Given ObjectId.
-   * @param strict Sets whether an error is thrown when no unit is found.
-   * @returns Either an IGarrisonUnit or (maybe) null if strict mode is set to false.
+   * @param strict Sets whether an error is thrown when no research is found.
+   * @returns Either an IGarrisonResearch or (maybe) null if strict mode is set to false.
    */
   static findResearch(garrison: IGarrisonDocument, id: ObjectId, strict?: true): { research: IGarrisonResearch; index: number };
   static findResearch(garrison: IGarrisonDocument, id: ObjectId, strict: false): { research: IGarrisonResearch; index: number } | { index: -1 };
@@ -196,6 +196,32 @@ class Helper {
     
     if (_h.isObjectEmpty(returnedObj) && strict)
       throw new ErrorHandler(404, `Research with id '${id}' couldn't be found in garrison '${garrison._id}'.`);
+
+    return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
+  }
+
+  /**
+   * Find a specific research by its code inside a garrison.
+   * @param garrison Given garrison document.
+   * @param id Given research code.
+   * @param strict Sets whether an error is thrown when no research is found.
+   * @returns Either an IGarrisonResearch or (maybe) null if strict mode is set to false.
+   */
+  static findResearchByCode(garrison: IGarrisonDocument, code: string, strict?: true): { research: IGarrisonResearch; index: number };
+  static findResearchByCode(garrison: IGarrisonDocument, code: string, strict: false): { research: IGarrisonResearch; index: number } | { index: -1 };
+  static findResearchByCode(garrison: IGarrisonDocument, code: string, strict: boolean = true) {
+    const { researches } = garrison.instances;
+    const returnedObj = {} as { research: IGarrisonResearch; index: number };
+
+    for (let index = 0; index < researches.length; index++) {
+      if (!(researches[index].code === code)) continue;
+      returnedObj.research = researches[index];
+      returnedObj.index = index;
+      break;
+    }
+    
+    if (_h.isObjectEmpty(returnedObj) && strict)
+      throw new ErrorHandler(404, `Research with code '${code}' couldn't be found in garrison '${garrison._id}'.`);
 
     return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
   }
@@ -341,7 +367,7 @@ class Helper {
     buildings: IGarrisonBuilding[],
     staticBuildings: IBuilding[]
   ) {
-    let totalPlots = 32;
+    let totalPlots = 60;
     
     for (const building of buildings) {
       const staticBuilding = staticBuildings.find(sB => sB.code === building.code);
@@ -445,22 +471,39 @@ class Helper {
 
   /**
    * Compute both the duration and the minimum required workforce to construct a building or to improve one.
+   * @param moment The current moment.
    * @param workforce Given workforce.
    * @param building Static building to be instantiate or improved.
    * @param improvementLevel The level on which to improve the building.
+   * @param researches Garrison researches (in case one want to apply bonuses).
    */
   static computeConstructionDurationAndWorkforce(
+    moment: Date,
     workforce: number,
     building: IBuilding,
-    improvementLevel = 0
+    improvementLevel: number,
+    researches: IGarrisonResearch[]
   ) {
     let { duration, minWorkforce } = building.instantiation;
     duration = duration * Math.pow(this.getFactor('decreased'), improvementLevel);
     minWorkforce = minWorkforce * Math.pow(2, improvementLevel);
     
+    // compute bonus according to applied researches
+    let bonus = 0.97;
+    const matchingResearch = researches
+      .find(research => research.code === 'improved-construction');
+
+    if (matchingResearch) {
+      bonus -= this
+        .computeResearchCurrentLevel(
+          moment,
+          matchingResearch.projects
+        ) / 100;
+    }
+    
     // apply bonus: each additionnal worker reduces duration by 3%
     return {
-      duration: duration * Math.pow(0.97, workforce - minWorkforce),
+      duration: duration * Math.pow(bonus, workforce - minWorkforce),
       minWorkforce
     };
   }
@@ -531,7 +574,6 @@ class Helper {
   ) {
     const finished = projects
       .filter(p => moment.getTime() > p.endDate.getTime());
-    if (finished.length === 0) return -1;
 
     return finished
       .map(p => <number>p.level)
@@ -948,14 +990,12 @@ class Helper {
     buildings: IGarrisonBuilding[],
     staticBuildings: IBuilding[],
   ) {
-    // TODO #1. get unit's main types from staticUnits
     const staticUnit = staticUnits
       .find(sU => sU.code === code) as IUnit;
     const { main: mainTypes } = staticUnit
       .statistics
       .types;
 
-    // TODO #2. filter static buildings that enables to train these types of unit
     const concernedStaticBuildings = [] as {
       building: IBuilding;
       trainLimit: {
@@ -978,7 +1018,6 @@ class Helper {
     }
     if (concernedStaticBuildings.length === 0) return;
 
-    // TODO #3. compute the current training limit inside garrison
     let trainLimit = 0;
     for (const staticBuilding of concernedStaticBuildings) {
       const dynamicBuildings = buildings.filter(dB => dB.code === staticBuilding.building.code);
@@ -1008,7 +1047,6 @@ class Helper {
       }
     }
 
-    // TODO #4. proceed to check
     const unit = units.find(unit => unit.code === code);
     if ((unit?.quantity || 0) + desiredQuantity > trainLimit)
       throw new ErrorHandler(412, `Reached limit of trainable '${code}'.`);

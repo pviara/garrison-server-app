@@ -22,7 +22,7 @@ export interface IResearchModel extends Model<IResearchDocument>, IStaticEntityS
 export interface IResearch extends IStaticEntity {
   /** Instantiation requirements and characteristics. */
   instantiation: {
-    cost: IStaticEntityCost,
+    cost: IStaticEntityCost;
     minWorkforce: number;
     duration: number;
     requiredEntities?: {

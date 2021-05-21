@@ -1414,12 +1414,16 @@ export default class GarrisonRepository implements IMonitored {
     }
 
     // make sure total earned resources aren't greater than limit
-    // (only if the current garrison has already been setup with a TH)
-    const hasBeenSetup = garrison
+    // (only if the current garrison has already been setup)
+    const setupBuildings = garrison
       .instances
       .buildings
-      .some(building => building.code === 'town-hall');
-    if (hasBeenSetup) {
+      .filter(building => {
+        return building.code === 'town-hall'
+          || building.code === 'goldmine'
+          || building.code === 'sawmill'
+      });
+    if (setupBuildings.length >= 3) {
       if (garrison.resources.gold > goldLimit)
         garrison.resources.gold = goldLimit;
   

@@ -151,7 +151,7 @@ export default class GarrisonRepository implements IMonitored {
         gold: 625,
         wood: 320,
         food: 3,
-        plot: 32
+        plot: 60
       },
       instances: {
         buildings: [],
@@ -863,7 +863,7 @@ export default class GarrisonRepository implements IMonitored {
       : 'wood';
       
     if (garrison.resources[matchingRes] === profitLimit)
-      throw new ErrorHandler(412, `The profit limit of resource '${payload.harvestCode}' has already been reached.`);
+      throw new ErrorHandler(412, `The profit limit of resource '${harvest.resource}' has already been reached.`);
 
     //////////////////////////////////////////////
 

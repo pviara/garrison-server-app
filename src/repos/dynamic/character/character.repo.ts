@@ -62,13 +62,13 @@ export default class CharacterRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no character is found.
    * @returns Either an ICharacterDocument or (maybe) null if strict mode is set to false.
    */
-  async getFromUser(userId: ObjectId, strict ? : true): Promise < ICharacterDocument > ;
-  async getFromUser(userId: ObjectId, strict: false): Promise < ICharacterDocument | null > ;
+  async getFromUser(userId: ObjectId, strict ? : true): Promise<ICharacterDocument[]> ;
+  async getFromUser(userId: ObjectId, strict: false): Promise<ICharacterDocument[] | null> ;
   async getFromUser(userId: ObjectId, strict = true) {
-    const result = await this._model.findOne({
+    const result = await this._model.find({
       userId
     });
-    if (!result && strict) throw new ErrorHandler(404, `Character from userId ${userId} couldn't be found.`);
+    if (result.length === 0 && strict) throw new ErrorHandler(404, `No character from userId ${userId} could be found.`);
 
     return result;
   }
@@ -78,8 +78,11 @@ export default class CharacterRepository implements IMonitored {
    * @param payload @see ICharacterCreate
    */
   async create(payload: ICharacterCreate) {
-    const userCharacter = await this.getFromUser(payload.userId, false);
-    if (userCharacter && helper.areSameString(userCharacter.name, payload.name)) {
+    const userCharacters = await this.getFromUser(payload.userId, false);
+    const sameCharName = userCharacters
+      ?.some(character => helper.areSameString(character.name, payload.name));
+    
+    if (sameCharName) {
       throw new ErrorHandler(409, `Already existing character with name '${payload.name}'.`);
     }
 

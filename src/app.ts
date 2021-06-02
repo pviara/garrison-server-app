@@ -9,6 +9,9 @@ import ErrorHandler from './config/models/error/error-handler.model';
 
 import MasterRouter from './config/routers/master.router';
 
+import MonitoringService from './config/services/monitoring/monitoring.service';
+import { ELogType } from './config/models/log/log.model';
+
 (async () => {
   // load the environment variables from the .env file
   dotenv.config({
@@ -22,6 +25,12 @@ import MasterRouter from './config/routers/master.router';
   class Server {
     public app = express();
     public master = <MasterRouter>{};
+
+    private _monitor = new MonitoringService(this.constructor.name);
+
+    get monitor() {
+      return this._monitor;
+    }
 
     async configureRouter() {
       await initService.start();
@@ -55,8 +64,10 @@ import MasterRouter from './config/routers/master.router';
   // make server app handle any error
   server.app.use((err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.statusCode || 500;
-    if (statusCode === 500) console.error(err.stack);
-    else console.error(`↱ Error: "${err.message}"`);
+    if (statusCode === 500) {
+      server.monitor.log(ELogType.fail, `↱ [NOT HANDLED] : ${err.stack as string}`);
+    }
+    else server.monitor.log(ELogType.fail, `↱ ${err.message}`);
 
     res.status(statusCode).json({
       status: 'error',
@@ -69,21 +80,7 @@ import MasterRouter from './config/routers/master.router';
   (async (port = process.env.APP_PORT || 5000) => {
     server.app.listen(
       port,
-      async () => {
-        // console.log('  _____.__        _____   .___                 ');
-        // console.log('_/ ____\\__| _____/ ____\\__| _/____   _____     ');
-        // console.log('\\   __\\|  |/ __ \\   __\\/ __ |/  _ \\ /     \'   ');
-        // console.log(' |  |  |  \\  ___/|  | / /_/ (  <_> )  Y Y  \\   ');
-        // console.log(' |__|  |__|\\___  >__| \\____ |\\____/|__|_|  /   ');
-        // console.log('               \\/          \\/            \\/    ');
-        // console.log('                        .__  .__               ');
-        // console.log('            ____   ____ |  | |__| ____   ____  ');
-        // console.log('  ______   /  _ \\ /    \\|  | |  |/    \\_/ __ \\ ');
-        // console.log(' /_____/  (  <_> )   |  \\  |_|  |   |  \\  ___/ ');
-        // console.log('           \\____/|___|  /____/__|___|  /\\___  >');
-        // console.log('                      \\/             \\/     \\/');
-
-        // here we go baby, let them now!!
+      async () => {// here we go baby, let them now!!
         console.log(' ▄▄ •  ▄▄▄· ▄▄▄  ▄▄▄  ▪  .▄▄ ·        ▐ ▄ ');
         console.log('▐█ ▀ ▪▐█ ▀█ ▀▄ █·▀▄ █·██ ▐█ ▀. ▪     •█▌▐█');
         console.log('▄█ ▀█▄▄█▀▀█ ▐▀▀▄ ▐▀▀▄ ▐█·▄▀▀▀█▄ ▄█▀▄ ▐█▐▐▌');

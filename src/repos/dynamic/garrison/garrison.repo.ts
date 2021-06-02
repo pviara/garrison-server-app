@@ -100,9 +100,9 @@ export default class GarrisonRepository implements IMonitored {
   async getFromUser(userId: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
   async getFromUser(userId: ObjectId, strict?: boolean) {
     const user = await this._userRepo.findById(userId);
-    const character = await this._characterRepo.getFromUser(user?._id);
+    const characters = await this._characterRepo.getFromUser(user?._id);
 
-    const result = await this.getFromCharacter(character?._id);
+    const result = await this.getFromCharacter(characters[0]?._id);
     if (!result && strict) throw new ErrorHandler(404, `Garrison from userId '${userId}' couldn't be found.`);
 
     return result;

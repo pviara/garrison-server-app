@@ -6,6 +6,7 @@ import { Router } from 'express';
 
 import DynamicControllerService from '../../services/controller/dynamic.controller.service';
 
+import CharacterRouter from './character/character.router';
 import GarrisonRouter from './garrison/garrison.router';
 
 /**
@@ -15,6 +16,7 @@ export default class DynamicRouter implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
 
   private _router = Router();
+  private _characterRouter = <CharacterRouter>{};
   private _garrisonRouter = <GarrisonRouter>{};
   
   /** Retrieve class monitoring service. */
@@ -35,6 +37,9 @@ export default class DynamicRouter implements IMonitored {
    */
   private _setupRoutes() {
     this._monitor.log(logType.pending, 'Setting up dynamic routes...');
+
+    this._characterRouter = new CharacterRouter(this._dynamicControllerService.characterController);
+    this._router.use('/character', this._characterRouter.router);
 
     this._garrisonRouter = new GarrisonRouter(this._dynamicControllerService.garrisonController);
     this._router.use('/garrison', this._garrisonRouter.router);

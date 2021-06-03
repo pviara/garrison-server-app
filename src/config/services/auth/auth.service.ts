@@ -6,8 +6,6 @@ import {
 } from '../../../config/models/log/log.model';
 import IMonitored from '../../../config/models/IMonitored';
 
-import { Model, Document } from 'mongoose';
-
 import UserRepository from '../../../repos/dynamic/user/user.repo';
 
 import bcrypt from 'bcrypt';
@@ -17,8 +15,6 @@ import bcrypt from 'bcrypt';
  */
 export default class AuthService implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
-
-  private _userModel = <Model<Document> | undefined>{};
 
   /** Retrieve class monitoring service. */
   get monitor() {

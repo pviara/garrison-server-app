@@ -59,10 +59,9 @@ class InitService {
 
     // init auth service
     this._atService = new AuthService(
-      this.databaseService
-        .dynamicDatabaseService
-        .dynamicModelService
-        .models
+      this.repositoryService
+        .dynamicRepositoryService
+        .userRepository
     );
 
     // init controller service

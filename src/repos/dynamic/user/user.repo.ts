@@ -100,7 +100,11 @@ export default class UserRepository implements IMonitored {
     // init user object to create
     const user: IUser = {
       username: payload.username,
-      email: payload.email
+      email: payload.email,
+      password: {
+        hash: '',
+        salt: ''
+      }
     };
 
     // generate the random password
@@ -128,7 +132,12 @@ export default class UserRepository implements IMonitored {
 
     // send the foresaid e-mail
     await initService.emailingService.send(user.email, 'Your credentials', emailContent);
+    
+    const {
+      password: hidden,
+      ...returned
+    } = created.toJSON();
 
-    return created;
+    return returned;
   }
 }

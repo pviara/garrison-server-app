@@ -6,6 +6,8 @@ import { findByEmail, findByName } from './user.statics';
 
 import bcrypt from 'bcrypt';
 
+import jwt from 'jsonwebtoken';
+
 const userSchema = new Schema({
   username: {
     type: String,
@@ -38,7 +40,21 @@ userSchema.methods.validPassword = function (password: string) {
     .hashSync(password, this.password.salt);
   
   return this.password.hash === hash;
-}
+};
+
+userSchema.methods.generateJWT = function () {
+  const expires = new Date();
+  expires.setDate(expires.getDate() + 7);
+  
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      expires: expires.getTime() / 1000
+    },
+    process.env.JWT as string
+  );
+};
 
 /**
  * Normalize user's e-mail using global helper method(s).

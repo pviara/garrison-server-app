@@ -10,6 +10,11 @@ export interface IUserDocument extends IUser, Document {
    * @param password Given password.
    */
   validPassword(password: string): boolean;
+
+  /**
+   * Generate a signed JSON Web Token.
+   */
+  generateJWT(): string;
 }
 
 /**
@@ -43,7 +48,7 @@ export interface IUser {
   email: string;
 
   /** User's password details. */
-  password?: {
+  password: {
     hash: string;
     salt: string;
   };

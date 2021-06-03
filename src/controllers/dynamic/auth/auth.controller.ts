@@ -16,6 +16,6 @@ export default class AuthController {
     || !req.body.password)
       throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
 
-    return await this._service.authenticate(req, res);
+    return await this._service.authenticate(req.body.email, req.body.password);
   }
 }

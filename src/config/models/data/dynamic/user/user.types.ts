@@ -4,7 +4,13 @@ import { Document, Model } from 'mongoose';
  * Represents a standard User Document from database.
  * Includes both IUser and Document own fields.
  */
-export interface IUserDocument extends IUser, Document {}
+export interface IUserDocument extends IUser, Document {
+  /**
+   * Check whether the given password matches the user's password.
+   * @param password Given password.
+   */
+  validPassword(password: string): boolean;
+}
 
 /**
  * Represents a standard User mongoose model.

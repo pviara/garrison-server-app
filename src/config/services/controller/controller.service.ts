@@ -2,6 +2,8 @@ import { ELogType as logType } from '../../models/log/log.model';
 import IMonitored from '../../models/IMonitored';
 import MonitoringService from '../monitoring/monitoring.service';
 
+import AuthService from '../auth/auth.service';
+
 import DynamicRepositoryService from '../repos/dynamic.repository.service';
 import StaticRepositoryService from '../repos/static.repository.service';
 
@@ -33,6 +35,7 @@ export default class ControllerService implements IMonitored {
   }
 
   constructor(
+    private _authService: AuthService,
     private _dynamicRepositories: DynamicRepositoryService['allRepositories'],
     private _staticRepositories: StaticRepositoryService['allRepositories']
   ) {
@@ -43,15 +46,20 @@ export default class ControllerService implements IMonitored {
    * Setup both dynamic and static controller services.
    * @param dynamicRepos Dynamic repositories.
    * @param staticRepos Static repositories.
+   * @param authService Authentication service.
    */
   private _setupControllers(
     dynamicRepos = this._dynamicRepositories,
-    staticRepos = this._staticRepositories
+    staticRepos = this._staticRepositories,
+    authService = this._authService
   ) {
     this._monitor.log(logType.pending, 'Setting up controller services...');
 
     this._staticControllerService = new StaticControllerService(staticRepos);
-    this._dynamicControllerService = new DynamicControllerService(dynamicRepos);
+    this._dynamicControllerService = new DynamicControllerService(
+      authService,
+      dynamicRepos
+    );
     
     this._monitor.log(logType.pass, 'Set up controller services');
   }

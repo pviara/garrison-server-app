@@ -1,3 +1,4 @@
+import AuthService from './auth/auth.service';
 import DatabaseService from './database/database.service';
 import MailingService from './mailing/mailing.service';
 import ControllerService from './controller/controller.service';
@@ -7,10 +8,15 @@ import RepositoryService from './repos/repository.service';
  * Application global initialization service.
  */
 class InitService {
+  private _atService = <AuthService>{};
   private _dbService = <DatabaseService>{};
   private _emService = <MailingService>{};
   private _ctService = <ControllerService>{};
   private _rpService = <RepositoryService>{};
+
+  get authService() {
+    return this._atService;
+  }
 
   get databaseService() {
     return this._dbService;
@@ -51,8 +57,17 @@ class InitService {
         .models
     );
 
+    // init auth service
+    this._atService = new AuthService(
+      this.databaseService
+        .dynamicDatabaseService
+        .dynamicModelService
+        .models
+    );
+
     // init controller service
     this._ctService = new ControllerService(
+      this.authService,
       this.repositoryService
         .dynamicRepositoryService
         .allRepositories,

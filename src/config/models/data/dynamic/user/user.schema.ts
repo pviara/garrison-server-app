@@ -4,6 +4,8 @@ import helper from '../../../../../utils/helper.utils';
 
 import { findByEmail, findByName } from './user.statics';
 
+import bcrypt from 'bcrypt';
+
 const userSchema = new Schema({
   username: {
     type: String,
@@ -30,6 +32,13 @@ const userSchema = new Schema({
 
 userSchema.statics.findByName = findByName;
 userSchema.statics.findByEmail = findByEmail;
+
+userSchema.methods.validPassword = function (password: string) {
+  const hash = bcrypt
+    .hashSync(password, this.password.salt);
+  
+  return this.password.hash === hash;
+}
 
 /**
  * Normalize user's e-mail using global helper method(s).

@@ -6,6 +6,7 @@ import { Router } from 'express';
 
 import DynamicControllerService from '../../services/controller/dynamic.controller.service';
 
+import AuthRouter from './auth/auth.router';
 import CharacterRouter from './character/character.router';
 import GarrisonRouter from './garrison/garrison.router';
 
@@ -16,6 +17,7 @@ export default class DynamicRouter implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
 
   private _router = Router();
+  private _authRouter = <AuthRouter>{};
   private _characterRouter = <CharacterRouter>{};
   private _garrisonRouter = <GarrisonRouter>{};
   
@@ -43,6 +45,9 @@ export default class DynamicRouter implements IMonitored {
 
     this._garrisonRouter = new GarrisonRouter(this._dynamicControllerService.garrisonController);
     this._router.use('/garrison', this._garrisonRouter.router);
+
+    this._authRouter = new AuthRouter(this._dynamicControllerService.authController);
+    this._router.use('/authentication', this._authRouter.router);
 
     this._router
       .stack

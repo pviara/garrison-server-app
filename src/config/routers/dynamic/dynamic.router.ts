@@ -1,14 +1,18 @@
+
+import ErrorHandler from '../../models/error/error-handler.model';
+
 import { ELogType as logType } from '../../models/log/log.model';
 import IMonitored from '../../models/IMonitored';
 import MonitoringService from '../../services/monitoring/monitoring.service';
 
-import { Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 
 import DynamicControllerService from '../../services/controller/dynamic.controller.service';
 
-import AuthRouter from './auth/auth.router';
 import CharacterRouter from './character/character.router';
 import GarrisonRouter from './garrison/garrison.router';
+
+import jwt from 'jsonwebtoken';
 
 /**
  * Father of dynamic routes.
@@ -17,7 +21,6 @@ export default class DynamicRouter implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
 
   private _router = Router();
-  private _authRouter = <AuthRouter>{};
   private _characterRouter = <CharacterRouter>{};
   private _garrisonRouter = <GarrisonRouter>{};
   
@@ -40,14 +43,31 @@ export default class DynamicRouter implements IMonitored {
   private _setupRoutes() {
     this._monitor.log(logType.pending, 'Setting up dynamic routes...');
 
+    this._router.use((req: Request, res: Response, next: NextFunction) => {
+      if (!req.headers.authorization)
+        throw new ErrorHandler(401, 'Missing authorization headers.');
+      
+      // we split it because it looks like 'Bearer tkEOa3941ks...'
+      // and we don't want the word 'Bearer' in final token value
+      const [
+        type,
+        token
+      ] = req.headers.authorization.split(' ');
+      
+      try {
+        jwt.verify(token, process.env.JWT as string);
+      } catch (e) {
+        throw new ErrorHandler(401, 'Invalid token.');
+      }
+
+      next();
+    });
+
     this._characterRouter = new CharacterRouter(this._dynamicControllerService.characterController);
     this._router.use('/character', this._characterRouter.router);
 
     this._garrisonRouter = new GarrisonRouter(this._dynamicControllerService.garrisonController);
     this._router.use('/garrison', this._garrisonRouter.router);
-
-    this._authRouter = new AuthRouter(this._dynamicControllerService.authController);
-    this._router.use('/authentication', this._authRouter.router);
 
     this._router
       .stack

@@ -6,6 +6,7 @@ import { Router } from 'express';
 
 import ControllerService from '../services/controller/controller.service';
 
+import AuthRouter from './auth/auth.router';
 import DynamicRouter from './dynamic/dynamic.router';
 import StaticRouter from './static/static.router';
 
@@ -16,6 +17,7 @@ export default class MasterRouter implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
 
   private _router = Router();
+  private _authRouter = <AuthRouter>{};
   private _dynamicRouter = <DynamicRouter>{};
   private _staticRouter = <StaticRouter>{};
   
@@ -37,6 +39,14 @@ export default class MasterRouter implements IMonitored {
    */
   private _setupRoutes() {
     this._monitor.log(logType.pending, 'Setting up application routes...');
+
+    this._authRouter = new AuthRouter(
+      this.
+        _controllerService
+        .dynamicControllerService
+        .authController
+    );
+    this._router.use('/auth', this._authRouter.router);
 
     this._dynamicRouter = new DynamicRouter(this._controllerService.dynamicControllerService);
     this._router.use('/dynamic', this._dynamicRouter.router);

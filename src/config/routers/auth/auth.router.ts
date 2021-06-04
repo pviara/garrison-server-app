@@ -1,10 +1,10 @@
-import { ELogType as logType } from '../../../../config/models/log/log.model';
-import IMonitored from '../../../models/IMonitored';
-import MonitoringService from '../../../services/monitoring/monitoring.service'
+import { ELogType as logType } from '../../models/log/log.model';
+import IMonitored from '../../models/IMonitored';
+import MonitoringService from '../../services/monitoring/monitoring.service'
 
 import { Router, Request, Response, NextFunction } from 'express';
 
-import AuthController from '../../../../controllers/dynamic/auth/auth.controller';
+import AuthController from '../../../controllers/dynamic/auth/auth.controller';
 
 /**
  * Father of authentication routes.

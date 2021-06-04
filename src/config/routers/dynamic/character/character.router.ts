@@ -3,6 +3,7 @@ import IMonitored from '../../../models/IMonitored';
 import MonitoringService from '../../../services/monitoring/monitoring.service'
 
 import { Router, Request, Response, NextFunction } from 'express';
+import SignedRequest from '../../../models/data/express/SignedRequest';
 
 import CharacterController from '../../../../controllers/dynamic/character/character.controller';
 
@@ -34,7 +35,7 @@ export default class CharacterRouter implements IMonitored {
     this._monitor.log(logType.pending, 'Setting up character routes...');
 
     this._router.get('/:userId', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.getFromUser(req, res, next)
+      this._controller.getFromUser(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -42,7 +43,7 @@ export default class CharacterRouter implements IMonitored {
     });
 
     this._router.post('/', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.create(req, res, next)
+      this._controller.create(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })

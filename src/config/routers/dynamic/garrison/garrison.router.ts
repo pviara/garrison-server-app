@@ -3,6 +3,7 @@ import IMonitored from '../../../models/IMonitored';
 import MonitoringService from '../../../services/monitoring/monitoring.service'
 
 import { Router, Request, Response, NextFunction } from 'express';
+import SignedRequest from '../../../models/data/express/SignedRequest';
 
 import GarrisonController from '../../../../controllers/dynamic/garrison/garrison.controller';
 
@@ -34,7 +35,7 @@ export default class GarrisonRouter implements IMonitored {
     this._monitor.log(logType.pending, 'Setting up garrison routes...');
 
     this._router.get('/:userId', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.get(req, res, next)
+      this._controller.get(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -42,7 +43,7 @@ export default class GarrisonRouter implements IMonitored {
     });
     
     this._router.post('/', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.create(req, res, next)
+      this._controller.create(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -50,7 +51,7 @@ export default class GarrisonRouter implements IMonitored {
     });
     
     this._router.post('/building', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.addBuilding(req, res, next)
+      this._controller.addBuilding(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -58,7 +59,7 @@ export default class GarrisonRouter implements IMonitored {
     });
     
     this._router.put('/building/upgrade', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.upgradeBuilding(req, res, next)
+      this._controller.upgradeBuilding(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -66,7 +67,7 @@ export default class GarrisonRouter implements IMonitored {
     });
     
     this._router.put('/building/extend', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.extendBuilding(req, res, next)
+      this._controller.extendBuilding(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -74,7 +75,7 @@ export default class GarrisonRouter implements IMonitored {
     });
     
     this._router.put('/building/cancel', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.cancelConstruction(req, res, next)
+      this._controller.cancelConstruction(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -82,7 +83,7 @@ export default class GarrisonRouter implements IMonitored {
     });
     
     this._router.post('/unit', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.addUnit(req, res, next)
+      this._controller.addUnit(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -90,7 +91,7 @@ export default class GarrisonRouter implements IMonitored {
     });
 
     this._router.put('/unit/assign', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.assignUnitRandomly(req, res, next)
+      this._controller.assignUnitRandomly(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -98,7 +99,7 @@ export default class GarrisonRouter implements IMonitored {
     });
 
     this._router.put('/unit/unassign', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.unassignUnit(req, res, next)
+      this._controller.unassignUnit(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -106,7 +107,7 @@ export default class GarrisonRouter implements IMonitored {
     });
     
     this._router.put('/unit/cancel', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.cancelUnitTraining(req, res, next)
+      this._controller.cancelUnitTraining(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -114,7 +115,7 @@ export default class GarrisonRouter implements IMonitored {
     });
     
     this._router.post('/research', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.launchResearch(req, res, next)
+      this._controller.launchResearch(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })
@@ -122,7 +123,7 @@ export default class GarrisonRouter implements IMonitored {
     });
     
     this._router.put('/research/cancel', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.cancelResearch(req, res, next)
+      this._controller.cancelResearch(req as SignedRequest, res, next)
         .then(result => {
           res.status(200).json(result)
         })

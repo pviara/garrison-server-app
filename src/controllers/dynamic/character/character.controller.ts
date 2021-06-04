@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import SignedRequest from '../../../config/models/data/express/SignedRequest';
 
 import { ObjectId } from 'mongodb';
 import { isValidObjectId } from 'mongoose';
@@ -18,7 +19,7 @@ export default class CharacterController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async getFromUser(req: Request, res: Response, next: NextFunction) {
+  async getFromUser(req: SignedRequest, res: Response, next: NextFunction) {
     if (helper.isObjectEmpty(req.params) || !req.params.userId)
       throw new ErrorHandler(400, 'Missing userId in params.');
 
@@ -37,7 +38,7 @@ export default class CharacterController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async create(req: Request, res: Response, next: NextFunction) {
+  async create(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
     || helper.isObjectEmpty(req.body)
     || !req.body.userId

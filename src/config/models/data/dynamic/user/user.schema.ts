@@ -50,7 +50,7 @@ userSchema.methods.generateJWT = function () {
     {
       _id: this._id,
       email: this.email,
-      expires: expires.getTime() / 1000
+      expires: Math.trunc(expires.getTime() / 1000)
     },
     process.env.JWT as string
   );

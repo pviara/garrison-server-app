@@ -13,6 +13,8 @@ import CharacterRouter from './character/character.router';
 import GarrisonRouter from './garrison/garrison.router';
 
 import jwt from 'jsonwebtoken';
+import SignedRequest from '../../models/data/express/SignedRequest';
+import { IUser } from '../../models/data/dynamic/user/user.types';
 
 /**
  * Father of dynamic routes.
@@ -54,12 +56,12 @@ export default class DynamicRouter implements IMonitored {
         token
       ] = req.headers.authorization.split(' ');
       
-      try {
-        jwt.verify(token, process.env.JWT as string);
-      } catch (e) {
-        throw new ErrorHandler(401, 'Invalid token.');
-      }
+      let user;
+      try { user = jwt.verify(token, process.env.JWT as string); }
+      catch (e) { throw new ErrorHandler(401, 'Invalid token.'); }
 
+      (req as SignedRequest).author = user as Partial<IUser>;
+      
       next();
     });
 

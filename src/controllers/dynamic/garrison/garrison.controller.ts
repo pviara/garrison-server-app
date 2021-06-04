@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import SignedRequest from '../../../config/models/data/express/SignedRequest';
 
 import GarrisonRepository from '../../../repos/dynamic/garrison/garrison.repo';
 
@@ -31,7 +32,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async get(req: Request, res: Response, next: NextFunction) {
+  async get(req: SignedRequest, res: Response, next: NextFunction) {
     if (helper.isObjectEmpty(req.params) || !req.params.userId)
       throw new ErrorHandler(400, 'Missing userId in params.');
 
@@ -59,7 +60,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async create(req: Request, res: Response, next: NextFunction) {
+  async create(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
     || helper.isObjectEmpty(req.body)
     || !req.body.characterId
@@ -81,7 +82,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async addBuilding(req: Request, res: Response, next: NextFunction) {
+  async addBuilding(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
@@ -107,7 +108,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async upgradeBuilding(req: Request, res: Response, next: NextFunction) {
+  async upgradeBuilding(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
@@ -136,7 +137,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async extendBuilding(req: Request, res: Response, next: NextFunction) {
+  async extendBuilding(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
@@ -165,7 +166,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async cancelConstruction(req: Request, res: Response, next: NextFunction) {
+  async cancelConstruction(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
@@ -198,7 +199,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async addUnit(req: Request, res: Response, next: NextFunction) {
+  async addUnit(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
@@ -217,7 +218,7 @@ export default class GarrisonController {
     });
   }
 
-  async assignUnitRandomly(req: Request, res: Response, next: NextFunction) {
+  async assignUnitRandomly(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
@@ -239,7 +240,7 @@ export default class GarrisonController {
     });
   }
 
-  async unassignUnit(req: Request, res: Response, next: NextFunction) {
+  async unassignUnit(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
@@ -267,7 +268,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async cancelUnitTraining(req: Request, res: Response, next: NextFunction) {
+  async cancelUnitTraining(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
@@ -300,7 +301,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async launchResearch(req: Request, res: Response, next: NextFunction) {
+  async launchResearch(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
@@ -327,7 +328,7 @@ export default class GarrisonController {
    * @param res Response to send.
    * @param next Next express function (lifecycle).
    */
-  async cancelResearch(req: Request, res: Response, next: NextFunction) {
+  async cancelResearch(req: SignedRequest, res: Response, next: NextFunction) {
     if (!req.body
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId

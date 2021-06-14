@@ -45,25 +45,25 @@ export default class DynamicRouter implements IMonitored {
   private _setupRoutes() {
     this._monitor.log(logType.pending, 'Setting up dynamic routes...');
 
-    this._router.use((req: Request, res: Response, next: NextFunction) => {
-      if (!req.headers.authorization)
-        throw new ErrorHandler(401, 'Missing authorization headers.');
+    // this._router.use((req: Request, res: Response, next: NextFunction) => {
+    //   if (!req.headers.authorization)
+    //     throw new ErrorHandler(401, 'Missing authorization headers.');
       
-      // we split it because it looks like 'Bearer tkEOa3941ks...'
-      // and we don't want the word 'Bearer' in final token value
-      const [
-        type,
-        token
-      ] = req.headers.authorization.split(' ');
+    //   // we split it because it looks like 'Bearer tkEOa3941ks...'
+    //   // and we don't want the word 'Bearer' in final token value
+    //   const [
+    //     type,
+    //     token
+    //   ] = req.headers.authorization.split(' ');
       
-      let user;
-      try { user = jwt.verify(token, process.env.JWT as string); }
-      catch (e) { throw new ErrorHandler(401, 'Invalid token.'); }
+    //   let user;
+    //   try { user = jwt.verify(token, process.env.JWT as string); }
+    //   catch (e) { throw new ErrorHandler(401, 'Invalid token.'); }
 
-      (req as SignedRequest).author = user as Partial<IUser>;
+    //   (req as SignedRequest).author = user as Partial<IUser>;
       
-      next();
-    });
+    //   next();
+    // });
 
     this._characterRouter = new CharacterRouter(this._dynamicControllerService.characterController);
     this._router.use('/character', this._characterRouter.router);

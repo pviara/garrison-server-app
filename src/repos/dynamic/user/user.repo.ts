@@ -50,9 +50,9 @@ export default class UserRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no user is found.
    * @returns Either an IUserDocument or (maybe) null if strict mode is set to false.
    */
-  async findById(id: ObjectId, strict ? : true): Promise < IUserDocument > ;
+  async findById(id: ObjectId, strict?: true): Promise < IUserDocument > ;
   async findById(id: ObjectId, strict: false): Promise < IUserDocument | null > ;
-  async findById(id: ObjectId, strict ? : boolean) {
+  async findById(id: ObjectId, strict: boolean = true) {
     const result = await this._model.findById(id);
     if (!result && strict) throw new ErrorHandler(404, `User with userId '${id}' couldn't be found.`);
 
@@ -65,9 +65,9 @@ export default class UserRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no user is found.
    * @returns Either an IUserDocument or (maybe) null if strict mode is set to false.
    */
-  async findByName(name: string, strict ? : true): Promise < IUserDocument > ;
+  async findByName(name: string, strict?: true): Promise < IUserDocument > ;
   async findByName(name: string, strict: false): Promise < IUserDocument | null > ;
-  async findByName(name: string, strict ? : boolean) {
+  async findByName(name: string, strict: boolean = true) {
     const result = await this._model.findByName(name);
     if (!result && strict) throw new ErrorHandler(404, `User with name '${name}' couldn't be found.`);
 
@@ -80,9 +80,9 @@ export default class UserRepository implements IMonitored {
    * @param strict Sets whether an error is thrown when no user is found.
    * @returns Either an IUserDocument or (maybe) null if strict mode is set to false.
    */
-  async findByEmail(email: string, strict ? : true): Promise < IUserDocument > ;
+  async findByEmail(email: string, strict?: true): Promise < IUserDocument > ;
   async findByEmail(email: string, strict: false): Promise < IUserDocument | null > ;
-  async findByEmail(email: string, strict ? : boolean) {
+  async findByEmail(email: string, strict: boolean = true) {
     const result = await this._model.findByEmail(email);
     if (!result && strict) throw new ErrorHandler(404, `User with email '${email}' couldn't be found.`);
 

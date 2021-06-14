@@ -41,7 +41,7 @@ export interface IUserModel extends Model<IUserDocument> {
  * The representation of a user.
  */
 export interface IUser {
-  /** User's both displayed nickname and login. */
+  /** User's displayed nickname. */
   username: string;
   
   /** User's both e-mail and login. */

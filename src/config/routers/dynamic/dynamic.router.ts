@@ -11,6 +11,7 @@ import DynamicControllerService from '../../services/controller/dynamic.controll
 
 import CharacterRouter from './character/character.router';
 import GarrisonRouter from './garrison/garrison.router';
+import UserRouter from './user/user.router';
 
 import jwt from 'jsonwebtoken';
 import SignedRequest from '../../models/data/express/SignedRequest';
@@ -25,6 +26,7 @@ export default class DynamicRouter implements IMonitored {
   private _router = Router();
   private _characterRouter = <CharacterRouter>{};
   private _garrisonRouter = <GarrisonRouter>{};
+  private _userRouter = <UserRouter>{};
   
   /** Retrieve class monitoring service. */
   get monitor() {
@@ -70,6 +72,9 @@ export default class DynamicRouter implements IMonitored {
 
     this._garrisonRouter = new GarrisonRouter(this._dynamicControllerService.garrisonController);
     this._router.use('/garrison', this._garrisonRouter.router);
+
+    this._userRouter = new UserRouter(this._dynamicControllerService.userController);
+    this._router.use('/user', this._userRouter.router);
 
     this._router
       .stack

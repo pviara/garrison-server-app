@@ -8,10 +8,12 @@ import DynamicRepositoryService from '../repos/dynamic.repository.service';
 
 import CharacterRepository from '../../../repos/dynamic/character/character.repo';
 import GarrisonRepository from '../../../repos/dynamic/garrison/garrison.repo';
+import UserRepository from '../../../repos/dynamic/user/user.repo';
 
 import AuthController from '../../../controllers/dynamic/auth/auth.controller';
 import CharacterController from '../../../controllers/dynamic/character/character.controller';
 import GarrisonController from '../../../controllers/dynamic/garrison/garrison.controller';
+import UserController from '../../../controllers/dynamic/user/user.controller';
 
 export default class DynamicControllerService implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
@@ -19,6 +21,7 @@ export default class DynamicControllerService implements IMonitored {
   private _authController = <AuthController>{};
   private _characterController = <CharacterController>{};
   private _garrisonController = <GarrisonController>{};
+  private _userController = <UserController>{};
 
   /** Retrieve dynamic auth controller. */
   get authController() {
@@ -33,6 +36,11 @@ export default class DynamicControllerService implements IMonitored {
   /** Retrieve dynamic garrison controller. */
   get garrisonController() {
     return this._garrisonController;
+  }
+
+  /** Retrieve dynamic user controller. */
+  get userController() {
+    return this._userController;
   }
   
   /** Retrieve class monitoring service. */
@@ -56,6 +64,8 @@ export default class DynamicControllerService implements IMonitored {
   ) {
     this._monitor.log(logType.pending, 'Setting up dynamic controllers...');
 
+    this._authController = new AuthController(this._authService);
+
     this._characterController = new CharacterController(
       <CharacterRepository>dynamicRepositories.find(r => r.name === 'character')?.repo
     );
@@ -63,8 +73,10 @@ export default class DynamicControllerService implements IMonitored {
     this._garrisonController = new GarrisonController(
       <GarrisonRepository>dynamicRepositories.find(r => r.name === 'garrison')?.repo
     );
-
-    this._authController = new AuthController(this._authService);
+    
+    this._userController = new UserController(
+      <UserRepository>dynamicRepositories.find(r => r.name === 'user')?.repo
+    );
 
     this._monitor.log(logType.pass, 'Set up dynamic controllers');
   }

@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 /**
  * Garrison creation payload.
  */
-export default interface ICharacterCreate {
+export default interface IGarrisonCreate {
   characterId: ObjectId;
   zone: string;
   name: string;

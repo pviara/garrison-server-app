@@ -68,7 +68,7 @@ export default class UserRepository implements IMonitored {
   async findByName(name: string, strict?: true): Promise < IUserDocument > ;
   async findByName(name: string, strict: false): Promise < IUserDocument | null > ;
   async findByName(name: string, strict: boolean = true) {
-    const result = await this._model.findByName(name);
+    const result = await this._model.findByName(name.toLowerCase());
     if (!result && strict) throw new ErrorHandler(404, `User with name '${name}' couldn't be found.`);
 
     return result;
@@ -83,7 +83,7 @@ export default class UserRepository implements IMonitored {
   async findByEmail(email: string, strict?: true): Promise < IUserDocument > ;
   async findByEmail(email: string, strict: false): Promise < IUserDocument | null > ;
   async findByEmail(email: string, strict: boolean = true) {
-    const result = await this._model.findByEmail(email);
+    const result = await this._model.findByEmail(email.toLowerCase());
     if (!result && strict) throw new ErrorHandler(404, `User with email '${email}' couldn't be found.`);
 
     return result;

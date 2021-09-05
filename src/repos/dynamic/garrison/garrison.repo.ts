@@ -83,7 +83,7 @@ export default class GarrisonRepository implements IMonitored {
    */
   async findById(id: ObjectId, strict?: true): Promise<IGarrisonDocument>;
   async findById(id: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
-  async findById(id: ObjectId, strict?: boolean) {
+  async findById(id: ObjectId, strict = true) {
     const result = await this._model.findById(id);
     if (!result && strict) throw new ErrorHandler(404, `Garrison with garrisonId '${id}' couldn't be found.`);
 
@@ -98,7 +98,7 @@ export default class GarrisonRepository implements IMonitored {
    */
   async getFromUser(userId: ObjectId, strict?: true): Promise<IGarrisonDocument>;
   async getFromUser(userId: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
-  async getFromUser(userId: ObjectId, strict?: boolean) {
+  async getFromUser(userId: ObjectId, strict = true) {
     const user = await this._userRepo.findById(userId);
     const characters = await this._characterRepo.getFromUser(user?._id);
 
@@ -116,7 +116,7 @@ export default class GarrisonRepository implements IMonitored {
    */
   async getFromCharacter(characterId: ObjectId, strict?: true): Promise<IGarrisonDocument>;
   async getFromCharacter(characterId: ObjectId, strict: false): Promise<IGarrisonDocument | null>;
-  async getFromCharacter(characterId: ObjectId, strict?: boolean) {
+  async getFromCharacter(characterId: ObjectId, strict = true) {
     const result = await this._model.findOne({
       characterId
     });

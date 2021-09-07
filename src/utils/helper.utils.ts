@@ -54,6 +54,21 @@ class Helper {
     // build the new capitalized string
     return string.replace(/(^.|-.| .)/g, (char) => char.toUpperCase());
   }
+  
+  /**
+   * Check whether given date has past.
+   * @param date Given date.
+   * @param now Now's date.
+   */
+  static hasPast(date: Date | string, now?: Date) {
+    if (!now) now = new Date();
+    
+    if (typeof date === 'string') {
+      date = new Date(date);
+    }
+
+    return date.getTime() <= now.getTime();
+  }
 
   /**
    * Check whether the given object is empty or not.

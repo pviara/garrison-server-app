@@ -438,7 +438,9 @@ class Helper {
       );
     if (improvements.length === 0) {
       // no improvement was found, but is the building at least been instantiated ?
-      if (constructions.length > 1) return -1;
+      if (!_h.hasPast(constructions[0].endDate)) {
+        return -1;
+      }
     }
 
     return improvements
@@ -1196,11 +1198,11 @@ class Helper {
     building: IGarrisonBuilding
   ) {
     if (quantity > units.quantity)
-      throw new ErrorHandler(400, `Given quantity (${quantity}) cannot be greather than current unit quantity (${units.quantity}).`);
+      throw new ErrorHandler(400, `Given quantity (${quantity}) cannot be greater than current unit quantity (${units.quantity}).`);
 
     const availableUnits = this.computeAvailableUnits(moment, units);
     if (quantity > availableUnits)
-      throw new ErrorHandler(400, `Given quantity (${quantity}) cannot be greather than current available unit quantity (${units.quantity}).`);
+      throw new ErrorHandler(400, `Given quantity (${quantity}) cannot be greater than current available unit quantity (${units.quantity}).`);
 
     this.checkBuildingAvailability(moment, building);
   }

@@ -81,9 +81,8 @@ garrisonSchema.pre('save', function (next) {
   for (const building of garrison.instances.buildings) {
     building.constructions = building
       .constructions
-      .filter(
-        c => c.endDate.getTime() > now.getTime()
-        || building.constructions.length === 1
+      .sort(
+        (prev, next) => prev.endDate.getTime() - next.endDate.getTime()
       );
   }
 

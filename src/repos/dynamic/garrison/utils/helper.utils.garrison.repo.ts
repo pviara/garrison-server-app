@@ -436,12 +436,6 @@ class Helper {
         c => moment.getTime() > c.endDate.getTime() &&
         c.improvement?.type === improvementType
       );
-    if (improvements.length === 0) {
-      // no improvement was found, but is the building at least been instantiated ?
-      if (!_h.hasPast(constructions[0].endDate)) {
-        return -1;
-      }
-    }
 
     return improvements
       .map(c => <number>c.improvement?.level)

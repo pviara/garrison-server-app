@@ -367,7 +367,7 @@ class Helper {
     buildings: IGarrisonBuilding[],
     staticBuildings: IBuilding[]
   ) {
-    let totalPlots = 60;
+    let totalPlots = 150;
     
     for (const building of buildings) {
       const staticBuilding = staticBuildings.find(sB => sB.code === building.code);
@@ -534,7 +534,7 @@ class Helper {
           'extension',
           harvestBuilding.constructions
         );
-      const factor = currentLevel > 0 ? currentLevel : 1;
+      const factor = currentLevel + 1;
       profitLimit += 180 * factor;
     }
 

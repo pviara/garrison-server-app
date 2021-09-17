@@ -151,7 +151,7 @@ export default class GarrisonRepository implements IMonitored {
         gold: 625,
         wood: 320,
         food: 3,
-        plot: 60
+        plot: 150
       },
       instances: {
         buildings: [],
@@ -1335,6 +1335,8 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
     
     // 💰 update resource for each harvest
+    let updateGoldLastUpdate = false;
+    let updateWoodLastUpdate = false;
     for (const building of garrison.instances.buildings) {
       const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
 
@@ -1379,7 +1381,7 @@ export default class GarrisonRepository implements IMonitored {
             );
           if (elapsedMinutes === 0) continue;
 
-          garrison.resources.goldLastUpdate = now;
+          updateGoldLastUpdate = true;
           break;
         }
 
@@ -1393,7 +1395,7 @@ export default class GarrisonRepository implements IMonitored {
             );
           if (elapsedMinutes === 0) continue;
 
-          garrison.resources.woodLastUpdate = now;
+          updateWoodLastUpdate = true;
           break;
         }
 
@@ -1411,6 +1413,15 @@ export default class GarrisonRepository implements IMonitored {
         ...garrison.resources,
         [harvest.resource]: total
       };
+    }
+
+    // make sure to update lastUpdate props once every earned resource has been computed
+    if (updateGoldLastUpdate) {
+      garrison.resources.goldLastUpdate = now;
+    }
+
+    if (updateWoodLastUpdate) {
+      garrison.resources.woodLastUpdate = now;
     }
 
     // make sure total earned resources aren't greater than limit

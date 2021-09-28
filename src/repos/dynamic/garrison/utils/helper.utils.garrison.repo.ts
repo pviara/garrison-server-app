@@ -110,42 +110,48 @@ class Helper {
   }
 
   /**
-   * Find a specific assignment inside a garrison unit.
+   * Find all the assignments that belong to a specific series id.
    * @param unit Given garrison unit.
-   * @param assignmentId Given assignment id.
-   * @param strict Sets whether an error is thrown when no building is found.
-   * @returns Either an IUnitAssignment or (maybe) null if strict mode is set to false.
+   * @param seriesId Given series id.
+   * @param strict Sets whether an error is thrown when no assignment is found.
+   * @returns Either an array of IUnitAssignment and their indexes or (maybe) null if strict mode is set to false.
    */
-  static findUnitAssignment(
+  static findUnitSeriesAssignments(
     unit: IGarrisonUnit,
-    assignmentId: ObjectId,
+    seriesId: ObjectId,
     strict?: true
-  ): { assignment: IUnitAssignment; index: number }
-  static findUnitAssignment(
+  ): { assignment: IUnitAssignment; index: number }[]
+  static findUnitSeriesAssignments(
     unit: IGarrisonUnit,
-    assignmentId: ObjectId,
+    seriesId: ObjectId,
     strict: false
-  ): { assignment: IUnitAssignment; index: number } | { index: -1 }
-  static findUnitAssignment(
+  ): { assignment: IUnitAssignment; index: number }[] | null
+  static findUnitSeriesAssignments(
     unit: IGarrisonUnit,
-    assignmentId: ObjectId,
+    seriesId: ObjectId,
     strict: boolean = true
   ) {
     const { assignments } = unit.state;
-    const returnedObj = {} as { assignment: IUnitAssignment; index: number };
+    const returned = [] as { assignment: IUnitAssignment; index: number }[];
 
     for (let index = 0; index < assignments.length; index++) {
       const assignment = assignments[index];
-      if (!assignment._id?.equals(assignmentId)) continue;
+      if (!assignment.seriesId || !assignment.seriesId.equals(seriesId)) {
+        continue;
+      }
 
-      returnedObj.assignment = assignment;
-      returnedObj.index = index;
+      returned.push({
+        assignment,
+        index
+      });
     }
-    
-    if (_h.isObjectEmpty(returnedObj) && strict)
-      throw new ErrorHandler(404, `Assignment with id '${assignmentId}' couldn't be found in '${unit.code}' assignments.`);
 
-    return _h.isObjectEmpty(returnedObj) ? { index: -1 } : returnedObj;
+    if (_h.isArrayEmpty(returned) && strict)
+      throw new ErrorHandler(404, `No assignment with seriesId '${seriesId}' could be found in '${unit.code}' assignments.'`);
+      
+    return _h.isArrayEmpty(returned)
+      ? null
+      : returned;
   }
   
   /**

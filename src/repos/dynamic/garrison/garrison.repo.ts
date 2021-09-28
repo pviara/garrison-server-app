@@ -403,33 +403,44 @@ export default class GarrisonRepository implements IMonitored {
     } = _gH.findUnit(garrison, payload.code);
     const staticUnit = await this._unitRepo.findByCode(unit.code);
 
-    const {
-      index
-    } = _gH.findUnitAssignment(unit, payload.instantiationId);
+    const assignments = _gH
+      .findUnitSeriesAssignments(
+        unit,
+        payload.seriesId
+      )
+      .sort(
+        (a, b) => b.index - a.index
+      );
 
     //////////////////////////////////////////////
 
     // 💰 prepare to refund!
-    let {
+    const {
       gold,
       wood
     } = staticUnit.instantiation.cost;
 
-    garrison.resources = {
-      ...garrison.resources,
-      gold: garrison.resources.gold + gold,
-      wood: garrison.resources.wood + wood
-    };
-
     //////////////////////////////////////////////
 
-    // 👨‍💼 unassign peasant from its own instantiation
-    unit
-      .state
-      .assignments
-      .splice(index, 1);
+    // 🤼‍♂️ proceed to training cancelation
+    for (const { assignment, index } of assignments) {
+      if (_h.hasPast(assignment.endDate)) {
+        continue;
+      }
 
-    unit.quantity -= 1;
+      unit
+        .state
+        .assignments
+        .splice(index, 1);
+      
+      unit.quantity -= 1;
+      
+      garrison.resources = {
+        ...garrison.resources,
+        gold: garrison.resources.gold + gold,
+        wood: garrison.resources.wood + wood
+      };
+    }
 
     //////////////////////////////////////////////
 
@@ -757,11 +768,13 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 👨‍💼 prepare to train!
+    const seriesId = new ObjectId();
     const assignments: IUnitAssignment[] = [];
     for (let i = 0; i < (payload.quantity || 1); i++) {
       assignments.push({
         _id: new ObjectId(),
         quantity: 1,
+        seriesId,
         type: 'instantiation',
         endDate: _h.addTime(
           assignments[i - 1]?.endDate || now,

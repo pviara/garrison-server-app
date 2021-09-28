@@ -64,6 +64,9 @@ export interface IGarrison {
         assignments: {
           /** Assignment unique id. */
           _id?: ObjectId;
+
+          /** Instantiation series unique id. */
+          seriesId?: ObjectId;
           
           /** Assignment building. */
           buildingId?: ObjectId;

@@ -6,5 +6,5 @@ import { ObjectId } from 'mongodb';
 export default interface IUnitTrainingCancel {
   garrisonId: ObjectId;
   code: string;
-  instantiationId: ObjectId;
+  seriesId: ObjectId;
 }

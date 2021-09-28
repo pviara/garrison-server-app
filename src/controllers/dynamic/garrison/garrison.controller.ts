@@ -273,16 +273,16 @@ export default class GarrisonController {
       || helper.isObjectEmpty(req.body)
       || !req.body.garrisonId
       || !req.body.code
-      || !req.body.instantiationId)
+      || !req.body.seriesId)
         throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
 
     // check on both garrisonId and assignmentId cast possibility
     const isValidGarrisonId = isValidObjectId(req.body.garrisonId);
-    const isValidAssignmentId = isValidObjectId(req.body.instantiationId);
+    const isValidAssignmentId = isValidObjectId(req.body.seriesId);
     if (!isValidGarrisonId || !isValidAssignmentId)
       throw new ErrorHandler(
         400,
-        `Unable to cast either '${req.body.garrisonId}' or '${req.body.instantiationId}' to ObjectId.`
+        `Unable to cast either '${req.body.garrisonId}' or '${req.body.seriesId}' to ObjectId.`
       );
 
     // launch extension process
@@ -290,7 +290,7 @@ export default class GarrisonController {
       <IUnitTrainingCancel>{
         ...req.body,
         garrisonId: new ObjectId(req.body.garrisonId),
-        instantiationId: new ObjectId(req.body.instantiationId)
+        seriesId: new ObjectId(req.body.seriesId)
       }
     );
   }

@@ -93,7 +93,7 @@ class Helper {
    * @param toLowerCase Must the given string be returned as lowercase ?
    */
   static normalize(string: string, toLowerCase: boolean = false) {
-    const normalized = string.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const normalized = string.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
     return toLowerCase ? normalized.toLowerCase() : normalized;
   }
 }

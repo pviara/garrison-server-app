@@ -41,6 +41,11 @@ import { ELogType } from './config/models/log/log.model';
   // initialize server app
   const server = new Server();
 
+  if (process.env.APP_ENV === 'production') {
+    // make server use static front-end files
+    server.app.use(express.static('public'));
+  }
+  
   // configurate server app body parser
   server.app.use(express.json());
   server.app.use(express.urlencoded({

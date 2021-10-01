@@ -73,7 +73,7 @@ export default class StaticDatabaseService implements IMonitored, ISpecificDatab
           connectionType,
           connection: await mongoose.createConnection(assembledURI, options)
         };
-      } catch (e) {
+      } catch (e: any) {
         this._monitor.log(logType.fail, `Failed to create connection with ${connectionType} database ${this._dbType}`);
         this._monitor.log(logType.fail, `  Error: ${e.message}`);
 

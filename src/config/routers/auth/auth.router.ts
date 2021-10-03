@@ -6,6 +6,9 @@ import { Router, Request, Response, NextFunction } from 'express';
 
 import AuthController from '../../../controllers/dynamic/auth/auth.controller';
 
+import UserController from '../../../controllers/dynamic/user/user.controller';
+import UserRouter from '../dynamic/user/user.router';
+
 /**
  * Father of authentication routes.
  */
@@ -13,6 +16,7 @@ export default class AuthRouter implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
   
   private _router = Router();
+  private _userRouter = <UserRouter>{};
   
   /** Retrieve class monitoring service. */
   get monitor() {
@@ -23,7 +27,10 @@ export default class AuthRouter implements IMonitored {
     return this._router;
   }
 
-  constructor(private _controller: AuthController) {
+  constructor(
+    private _authController: AuthController,
+    private _userController: UserController
+  ) {
     this._setupRoutes();
   }
 
@@ -34,12 +41,15 @@ export default class AuthRouter implements IMonitored {
     this._monitor.log(logType.pending, 'Setting up auth routes...');
 
     this._router.post('/', (req: Request, res: Response, next: NextFunction) => {
-      this._controller.authenticate(req, res, next)
+      this._authController.authenticate(req, res, next)
         .then(result => {
           res.status(200).json(result)
         })
         .catch(error => next(error));
     });
+
+    this._userRouter = new UserRouter(this._userController);
+    this._router.use('/user', this._userRouter.router);
 
     this._router
       .stack

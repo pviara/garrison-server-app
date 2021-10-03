@@ -26,7 +26,7 @@ export default class AuthService implements IMonitored {
   }
 
   /**
-   * Authenticate an user using both his email and password.
+   * Authenticate an user using both his username and password.
    * @param username Given username.
    * @param password Given password.
    */

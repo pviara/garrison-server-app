@@ -2,7 +2,7 @@ import { Schema } from 'mongoose';
 
 import helper from '../../../../../utils/helper.utils';
 
-import { findByEmail, findByName } from './user.statics';
+import { findByName } from './user.statics';
 
 import bcrypt from 'bcrypt';
 
@@ -13,11 +13,6 @@ const userSchema = new Schema({
     type: String,
     unique: true,
     required: true
-  },
-  email: {
-    type: String,
-    set: _normalize,
-    unique: true
   },
   password: {
     type: {
@@ -32,7 +27,6 @@ const userSchema = new Schema({
 });
 
 userSchema.statics.findByName = findByName;
-userSchema.statics.findByEmail = findByEmail;
 
 userSchema.methods.validPassword = function (password: string) {
   const hash = bcrypt
@@ -48,19 +42,10 @@ userSchema.methods.generateJWT = function () {
   return jwt.sign(
     {
       _id: this._id,
-      email: this.email,
       expires: Math.trunc(expires.getTime() / 1000)
     },
     process.env.JWT as string
   );
 };
-
-/**
- * Normalize user's e-mail using global helper method(s).
- * @param email User's e-mail.
- */
-function _normalize(email: string) {
-  return helper.normalize(email, true);
-}
 
 export default userSchema;

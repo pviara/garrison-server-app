@@ -111,6 +111,9 @@ export default class UserRepository implements IMonitored {
       ...returned
     } = created.toJSON();
 
-    return returned;
+    return {
+      token: created.generateJWT(),
+      ...returned
+    };
   }
 }

@@ -44,7 +44,11 @@ export default class MasterRouter implements IMonitored {
       this.
         _controllerService
         .dynamicControllerService
-        .authController
+        .authController,
+      this.
+        _controllerService
+        .dynamicControllerService
+        .userController
     );
     this._router.use('/auth', this._authRouter.router);
 

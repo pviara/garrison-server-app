@@ -12,10 +12,10 @@ export default class AuthController {
   async authenticate(req: Request, res: Response, next: NextFunction) {
     if (!req.body
     || helper.isObjectEmpty(req.body)
-    || !req.body.email
+    || !req.body.username
     || !req.body.password)
       throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
 
-    return await this._service.authenticate(req.body.email, req.body.password);
+    return await this._service.authenticate(req.body.username, req.body.password);
   }
 }

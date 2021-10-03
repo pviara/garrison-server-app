@@ -18,8 +18,8 @@ export default class UserController {
   async create(req: Request, res: Response, next: NextFunction) {
     if (!req.body
     || helper.isObjectEmpty(req.body)
-    || !req.body.email
-    || !req.body.username)
+    || !req.body.username
+    || !req.body.password)
       throw new ErrorHandler(400, 'Missing entire body or one or a few mandatory fields.');
 
     // launch creation process

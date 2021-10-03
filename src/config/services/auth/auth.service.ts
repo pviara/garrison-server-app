@@ -27,11 +27,11 @@ export default class AuthService implements IMonitored {
 
   /**
    * Authenticate an user using both his email and password.
-   * @param email Given email.
+   * @param username Given username.
    * @param password Given password.
    */
-  async authenticate(email: string, password: string) {
-    const user = await this._userRepository.findByEmail(email);
+  async authenticate(username: string, password: string) {
+    const user = await this._userRepository.findByName(username);
     
     const hash = await bcrypt
       .hash(

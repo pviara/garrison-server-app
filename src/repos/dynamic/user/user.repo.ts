@@ -68,23 +68,9 @@ export default class UserRepository implements IMonitored {
   async findByName(name: string, strict?: true): Promise < IUserDocument > ;
   async findByName(name: string, strict: false): Promise < IUserDocument | null > ;
   async findByName(name: string, strict: boolean = true) {
-    const result = await this._model.findByName(name.toLowerCase());
+    const result = await this._model.findByName(name.toLowerCase())
+     || await this._model.findByName(name);
     if (!result && strict) throw new ErrorHandler(404, `User with name '${name}' couldn't be found.`);
-
-    return result;
-  }
-
-  /**
-   * Find a user by its e-mail.
-   * @param email Given e-mail.
-   * @param strict Sets whether an error is thrown when no user is found.
-   * @returns Either an IUserDocument or (maybe) null if strict mode is set to false.
-   */
-  async findByEmail(email: string, strict?: true): Promise < IUserDocument > ;
-  async findByEmail(email: string, strict: false): Promise < IUserDocument | null > ;
-  async findByEmail(email: string, strict: boolean = true) {
-    const result = await this._model.findByEmail(email.toLowerCase());
-    if (!result && strict) throw new ErrorHandler(404, `User with email '${email}' couldn't be found.`);
 
     return result;
   }
@@ -94,28 +80,22 @@ export default class UserRepository implements IMonitored {
    * @param payload @see IUserCreate
    */
   async create(payload: IUserCreate) {
-    if (await this.findByName(payload.username, false) || await this.findByEmail(payload.email, false))
+    if (await this.findByName(payload.username, false)) {
       throw new ErrorHandler(409, 'User already exists.');
+    }
 
     // init user object to create
     const user: IUser = {
       username: payload.username,
-      email: payload.email,
       password: {
         hash: '',
         salt: ''
       }
     };
 
-    // generate the random password
-    const genPassword = pswGen.generate({
-      length: 8,
-      numbers: true
-    });
-
     // generate both salt and hash
     const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(genPassword, salt);
+    const hash = await bcrypt.hash(payload.password, salt);
 
     // assign his password to user
     user.password = {
@@ -125,13 +105,6 @@ export default class UserRepository implements IMonitored {
 
     // start creation process
     const created = await this._model.create(user);
-
-    // prepare the e-mail to send
-    let emailContent = newUserEmail.generateHTML(user.username, user.email, genPassword);
-    emailContent = mjml2html(emailContent).html;
-
-    // send the foresaid e-mail
-    await initService.emailingService.send(user.email, 'Your credentials', emailContent);
     
     const {
       password: hidden,

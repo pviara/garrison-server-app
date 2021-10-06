@@ -767,53 +767,101 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
-    // 👨‍💼 prepare to train!
-    const seriesId = new ObjectId();
-    const assignments: IUnitAssignment[] = [];
-    for (let i = 0; i < (payload.quantity || 1); i++) {
-      assignments.push({
-        _id: new ObjectId(),
-        quantity: 1,
-        seriesId,
-        type: 'instantiation',
-        endDate: _h.addTime(
-          assignments[i - 1]?.endDate || now,
-          staticUnit.instantiation.duration * 1000
-        )
-      });
-    }
-
-    const newUnit = {
-      code: staticUnit.code,
-      quantity: payload.quantity || 1,
-      state: {
-        assignments
+    // 👨‍💼 prepare the training
+    const fillInstantiations = (
+      seriesId: ObjectId,
+      quantity: number,
+      staticUnit: IUnit,
+      startingTime?: Date
+    ) => {
+      const assignments: IUnitAssignment[] = [];
+      for (let i = 0; i < quantity; i++) {
+        if (i === 0) {
+          startingTime = startingTime
+            ? startingTime
+            : assignments[i - 1]?.endDate || now;
+        } else {
+          startingTime = assignments[i - 1]?.endDate || now;
+        }
+        
+        assignments.push({
+          _id: new ObjectId(),
+          quantity: 1,
+          seriesId,
+          type: 'instantiation',
+          endDate: _h.addTime(
+            startingTime,
+            staticUnit.instantiation.duration * 1000
+          )
+        });
       }
+      return assignments;
     };
-
-    const unit = _gH.findUnit(garrison, newUnit.code, false);
-    const {
-      index
-    } = unit;
+    
+    // check whether the unit exists in garrison
+    const unit = _gH.findUnit(garrison, staticUnit.code, false);
+    let { index } = unit;
 
     if (index < 0) {
+      const seriesId = new ObjectId();
+      const assignments = fillInstantiations(
+        seriesId,
+        payload.quantity || 1,
+        staticUnit
+      );
+
+      const newUnit = {
+        code: staticUnit.code,
+        quantity: payload.quantity || 1,
+        state: {
+          assignments
+        }
+      };
+
       garrison.instances.units = [
         ...garrison.instances.units,
         newUnit
       ];
     } else {
+      // check whether a series in already ongoing
+      const onGoing = garrison
+        .instances
+        .units[index]
+        .state
+        .assignments
+        .find(
+          assignment => assignment.type === 'instantiation'
+          && assignment.seriesId
+          && !_h.hasPast(assignment.endDate)
+        );
+
+      const seriesId = onGoing
+        ? onGoing.seriesId as ObjectId
+        : new ObjectId();
+      
+      const startingTime = onGoing
+        ? onGoing.endDate
+        : undefined; 
+        
+      const assignments = fillInstantiations(
+        seriesId,
+        payload.quantity || 1,
+        staticUnit,
+        startingTime
+      );
+      
       garrison.instances.units[index] = {
         code: garrison.instances.units[index].code,
-        quantity: garrison.instances.units[index].quantity + newUnit.quantity,
+        quantity: garrison.instances.units[index].quantity + (payload.quantity || 1),
         state: {
           assignments: garrison
             .instances
             .units[index]
             .state
             .assignments
-            .concat(newUnit.state.assignments)
+            .concat(assignments)
         }
-      };
+      }
     }
 
     //////////////////////////////////////////////

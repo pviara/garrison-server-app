@@ -112,6 +112,9 @@ export const buildingList: IBuilding[] = [{
       requiredEntities: {
         buildings: [{
           code: 'town-hall'
+        },
+        {
+          code: 'goldmine'
         }]
       }
     },

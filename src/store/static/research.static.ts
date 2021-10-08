@@ -15,7 +15,8 @@ export const researchList: IResearch[] = [{
         buildings: [{
           code: 'town-hall'
         }]
-      }
+      },
+      givenExperience: 1
     },
     bonus: 1
   },
@@ -40,7 +41,8 @@ export const researchList: IResearch[] = [{
         {
           code: 'sawmill'
         }]
-      }
+      },
+      givenExperience: 1
     },
     bonus: 1
   }

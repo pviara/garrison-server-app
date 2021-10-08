@@ -27,7 +27,8 @@ export interface IResearch extends IStaticEntity {
     duration: number;
     requiredEntities?: {
       buildings: IRequiredBuilding[];
-    }
+    };
+    givenExperience: number;
   };
 
   /** Number to add to any base variable in harvest buildings, units attack, defense... */

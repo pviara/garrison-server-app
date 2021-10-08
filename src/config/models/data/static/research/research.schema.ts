@@ -25,7 +25,8 @@ const researchSchema = new Schema({
       requiredEntities: {
         type: Schema.Types.Mixed,
         required: false
-      }
+      },
+      givenExperience: Number
     },
     required: true
   },

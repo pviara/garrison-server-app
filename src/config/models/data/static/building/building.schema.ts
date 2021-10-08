@@ -28,7 +28,8 @@ const buildingSchema = new Schema({
       requiredEntities: {
         type: Schema.Types.Mixed,
         required: false
-      }
+      },
+      givneExperience: Number
     },
     required: true
   },

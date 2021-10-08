@@ -403,8 +403,8 @@ export default class GarrisonRepository implements IMonitored {
 
     // 👑 add experience to character
     let character = await this
-    ._characterRepo
-    .findById(garrison.characterId);
+      ._characterRepo
+      .findById(garrison.characterId);
     character = await this
       ._characterRepo
       .editExperience(
@@ -481,8 +481,8 @@ export default class GarrisonRepository implements IMonitored {
 
     // 👑 add experience to character
     let character = await this
-    ._characterRepo
-    .findById(garrison.characterId);
+      ._characterRepo
+      .findById(garrison.characterId);
     character = await this
       ._characterRepo
       .editExperience(
@@ -627,8 +627,8 @@ export default class GarrisonRepository implements IMonitored {
     let { givenExperience } = staticBuilding.instantiation;
     givenExperience = givenExperience * Math.pow(2, nextUpgrade.level);
     let character = await this
-    ._characterRepo
-    .findById(garrison.characterId);
+      ._characterRepo
+      .findById(garrison.characterId);
     character = await this
       ._characterRepo
       .editExperience(
@@ -774,8 +774,8 @@ export default class GarrisonRepository implements IMonitored {
     let { givenExperience } = staticBuilding.instantiation;
     givenExperience = givenExperience * Math.pow(2, nextExtension);
     let character = await this
-    ._characterRepo
-    .findById(garrison.characterId);
+      ._characterRepo
+      .findById(garrison.characterId);
     character = await this
       ._characterRepo
       .editExperience(
@@ -951,8 +951,8 @@ export default class GarrisonRepository implements IMonitored {
 
     // 👑 add experience to character
     let character = await this
-    ._characterRepo
-    .findById(garrison.characterId);
+      ._characterRepo
+      .findById(garrison.characterId);
     character = await this
       ._characterRepo
       .editExperience(
@@ -1348,8 +1348,8 @@ export default class GarrisonRepository implements IMonitored {
     let { givenExperience } = staticResearch.instantiation;
     givenExperience = Math.floor(givenExperience * Math.pow(2, currentLevel + 1));
     let character = await this
-    ._characterRepo
-    .findById(garrison.characterId);
+      ._characterRepo
+      .findById(garrison.characterId);
     character = await this
       ._characterRepo
       .editExperience(

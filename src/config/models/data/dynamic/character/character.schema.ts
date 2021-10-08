@@ -18,6 +18,10 @@ const characterSchema = new Schema({
       banner: String
     },
     required: true
+  },
+  experience: {
+    type: Number,
+    default: 0
   }
 });
 

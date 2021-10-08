@@ -25,7 +25,8 @@ export interface IBuilding extends IStaticEntity {
     duration: number;
     requiredEntities?: {
       buildings: IRequiredBuilding[];
-    }
+    };
+    givenExperience: number;
   };
   
   /** Upgrades list. */

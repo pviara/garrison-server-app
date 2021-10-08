@@ -96,6 +96,16 @@ class Helper {
     const normalized = string.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
     return toLowerCase ? normalized.toLowerCase() : normalized;
   }
+
+  /**
+   * Get the logarithm of number on base x.
+   * @param x Given base.
+   * @param y Given number.
+   * @returns 
+   */
+  static mathLog(x: number, y: number) {
+    return Math.log(y) / Math.log(x);
+  }
 }
 
 export default Helper;

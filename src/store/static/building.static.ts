@@ -21,7 +21,8 @@ export const buildingList: IBuilding[] = [{
         plot: 10
       },
       minWorkforce: 3,
-      duration: 200
+      duration: 200,
+      givenExperience: 4
     },
     upgrades: [{
         level: 1,
@@ -73,7 +74,8 @@ export const buildingList: IBuilding[] = [{
         buildings: [{
           code: 'town-hall'
         }]
-      }
+      },
+      givenExperience: 1
     },
     extension: {
       requiredEntities: {
@@ -116,7 +118,8 @@ export const buildingList: IBuilding[] = [{
         {
           code: 'goldmine'
         }]
-      }
+      },
+      givenExperience: 1
     },
     extension: {
       requiredEntities: {
@@ -162,7 +165,8 @@ export const buildingList: IBuilding[] = [{
         {
           code: 'sawmill'
         }]
-      }
+      },
+      givenExperience: 1
     },
     extension: {
       requiredEntities: {
@@ -215,7 +219,8 @@ export const buildingList: IBuilding[] = [{
         {
           code: 'sawmill'
         }]
-      }
+      },
+      givenExperience: 1
     },
     upgrades: [{
         level: 1,
@@ -259,7 +264,8 @@ export const buildingList: IBuilding[] = [{
         {
           code: 'sawmill'
         }]
-      }
+      },
+      givenExperience: 2
     }
   },
   {
@@ -293,7 +299,8 @@ export const buildingList: IBuilding[] = [{
             code: 'sawmill'
           }
         ]
-      }
+      },
+      givenExperience: 2
     }
   },
   {
@@ -332,6 +339,7 @@ export const buildingList: IBuilding[] = [{
           }
         ]
       },
+      givenExperience: 2
     }
   }
 ];

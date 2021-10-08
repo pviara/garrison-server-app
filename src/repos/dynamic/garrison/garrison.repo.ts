@@ -274,12 +274,28 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
+    // 👑 add experience to character
+    let character = await this
+      ._characterRepo
+      .findById(garrison.characterId);
+    character = await this
+      ._characterRepo
+      .editExperience(
+        character,
+        staticBuilding
+          .instantiation
+          .givenExperience
+      );
+    
     // 💾 save in database
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();
 
-    return await this.findById(garrison._id);
+    return {
+      garrison: await this.findById(garrison._id),
+      character
+    };
   }
 
   /**
@@ -305,7 +321,8 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
-    // 💰 prepare to refund!
+    // 💰 prepare to refund (and to remove experience later)
+    let { givenExperience } = staticBuilding.instantiation;
     let {
       gold,
       wood
@@ -317,6 +334,7 @@ export default class GarrisonRepository implements IMonitored {
     if (improvement) {
       gold = Math.floor(gold * Math.pow(1.6, improvement.level));
       wood = Math.floor(wood * Math.pow(1.6, improvement.level));
+      givenExperience = Math.floor(givenExperience * Math.pow(2, improvement.level));
 
       building
         .constructions
@@ -383,12 +401,26 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
+    // 👑 add experience to character
+    let character = await this
+    ._characterRepo
+    .findById(garrison.characterId);
+    character = await this
+      ._characterRepo
+      .editExperience(
+        character,
+        -givenExperience
+      );
+
     // 💾 save in database
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();
 
-    return await this.findById(garrison._id);
+    return {
+      garrison: await this.findById(garrison._id),
+      character
+    };
   }
 
   /**
@@ -572,12 +604,28 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
+    // 👑 add experience to character
+    let { givenExperience } = staticBuilding.instantiation;
+    givenExperience = givenExperience * Math.pow(2, nextUpgrade.level);
+    let character = await this
+    ._characterRepo
+    .findById(garrison.characterId);
+    character = await this
+      ._characterRepo
+      .editExperience(
+        character,
+        givenExperience
+      );
+
     // 💾 save in database
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();
 
-    return await this.findById(garrison._id);
+    return {
+      garrison: await this.findById(garrison._id),
+      character
+    };
   }
 
   /**
@@ -703,12 +751,28 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
+    // 👑 add experience to character
+    let { givenExperience } = staticBuilding.instantiation;
+    givenExperience = givenExperience * Math.pow(2, nextExtension);
+    let character = await this
+    ._characterRepo
+    .findById(garrison.characterId);
+    character = await this
+      ._characterRepo
+      .editExperience(
+        character,
+        givenExperience
+      );
+
     // 💾 save in database
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();
 
-    return await this.findById(garrison._id);
+    return {
+      garrison: await this.findById(garrison._id),
+      character
+    };
   }
 
   /**

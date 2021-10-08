@@ -74,6 +74,25 @@ export default class CharacterRepository implements IMonitored {
   }
 
   /**
+   * Add or remove experience to/from a specific character.
+   * @param character Given character.
+   * @param amount Experience to add/remove.
+   */
+  async editExperience(character: ICharacterDocument, amount: number) {
+    character.experience += amount;
+    await character.save();
+
+    // TODO 🛠 move to front-end project
+    // // const computeExpLevel = (experience = 0) => {
+    // //   const expLog = Math.log(experience / 10);
+    // //   const baseLog = Math.log(1.2);
+    // //   return Math.ceil(expLog / baseLog);
+    // // };
+    
+    return await this.findById(character._id);
+  }
+
+  /**
    * Create and save a new character in database.
    * @param payload @see ICharacterCreate
    */
@@ -99,7 +118,8 @@ export default class CharacterRepository implements IMonitored {
     return this._model.create({
       userId: payload.userId,
       name: payload.name,
-      side: payload.side
+      side: payload.side,
+      experience: 0
     });
   }
 }

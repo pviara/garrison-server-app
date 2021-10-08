@@ -31,4 +31,7 @@ export interface ICharacter {
     /** The banner whose player belongs to. */
     banner: string;
   };
+
+  /** Character's current experience. */
+  experience: number;
 }

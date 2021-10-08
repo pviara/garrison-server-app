@@ -26,7 +26,8 @@ export interface IUnit extends IStaticEntity {
     duration: number;
     requiredEntities?: {
       buildings: IRequiredBuilding[];
-    }
+    };
+    givenExperience: number;
   };
 
   /** Global statistics. */

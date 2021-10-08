@@ -22,7 +22,8 @@ export const unitList: IUnit[] = [{
         buildings: [{
           code: 'town-hall'
         }]
-      }
+      },
+      givenExperience: 1
     },
     statistics: {
       types: {
@@ -59,7 +60,8 @@ export const unitList: IUnit[] = [{
         {
           code: 'sawmill'
         }]
-      }
+      },
+      givenExperience: 1
     },
     statistics: {
       types: {
@@ -90,7 +92,8 @@ export const unitList: IUnit[] = [{
         buildings: [{
           code: 'town-hall'
         }]
-      }
+      },
+      givenExperience: 1
     },
     statistics: {
       types: {
@@ -138,7 +141,8 @@ export const unitList: IUnit[] = [{
         buildings: [{
           code: 'barracks'
         }]
-      }
+      },
+      givenExperience: 2
     },
     statistics: {
       types: {
@@ -189,7 +193,8 @@ export const unitList: IUnit[] = [{
           {
             code: 'forge'
           }]
-      }
+      },
+      givenExperience: 2
     },
     statistics: {
       types: {
@@ -241,7 +246,8 @@ export const unitList: IUnit[] = [{
           code: 'town-hall',
           upgradeLevel: 2
         }]
-      }
+      },
+      givenExperience: 3
     },
     statistics: {
       types: {

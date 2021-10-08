@@ -455,6 +455,7 @@ export default class GarrisonRepository implements IMonitored {
     //////////////////////////////////////////////
 
     // 🤼‍♂️ proceed to training cancelation
+    let canceledCount = 0;
     for (const { assignment, index } of assignments) {
       if (_h.hasPast(assignment.endDate)) {
         continue;
@@ -472,15 +473,33 @@ export default class GarrisonRepository implements IMonitored {
         gold: garrison.resources.gold + gold,
         wood: garrison.resources.wood + wood
       };
+
+      canceledCount++;
     }
 
     //////////////////////////////////////////////
+
+    // 👑 add experience to character
+    let character = await this
+    ._characterRepo
+    .findById(garrison.characterId);
+    character = await this
+      ._characterRepo
+      .editExperience(
+        character,
+        -staticUnit
+          .instantiation
+          .givenExperience * canceledCount
+      );
 
     // 💾 save in database
     garrison.markModified('instances.units');
     await garrison.save();
 
-    return await this.findById(garrison._id);
+    return {
+      garrison: await this.findById(garrison._id),
+      character
+    };
   }
 
   /**
@@ -930,11 +949,27 @@ export default class GarrisonRepository implements IMonitored {
 
     //////////////////////////////////////////////
 
+    // 👑 add experience to character
+    let character = await this
+    ._characterRepo
+    .findById(garrison.characterId);
+    character = await this
+      ._characterRepo
+      .editExperience(
+        character,
+        staticUnit
+          .instantiation
+          .givenExperience * (payload.quantity || 1)
+      );
+
     // 💾 save in database
     garrison.markModified('instances.units');
     await garrison.save();
 
-    return await this.findById(garrison._id);
+    return {
+      garrison: await this.findById(garrison._id),
+      character
+    };
   }
 
   /**

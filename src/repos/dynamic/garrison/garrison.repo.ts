@@ -1401,7 +1401,7 @@ export default class GarrisonRepository implements IMonitored {
     const {
       level
     } = research.projects[pIndex];
-    if (level && level > 1) {
+    if (level && level >= 1) {
       gold = Math.floor(gold * Math.pow(1.6, level));
       wood = Math.floor(wood * Math.pow(1.6, level));
     }

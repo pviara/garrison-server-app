@@ -54,6 +54,7 @@ import ZoneRepository from '../../static/zone.repo';
 
 import _h from '../../../utils/helper.utils';
 import _gH from './utils/helper.utils.garrison.repo';
+import RegisterRepository from '../register/register.repo';
 
 export default class GarrisonRepository implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
@@ -67,6 +68,7 @@ export default class GarrisonRepository implements IMonitored {
     private _model: IGarrisonModel,
     private _buildingRepo: BuildingRepository,
     private _characterRepo: CharacterRepository,
+    private _registerRepo: RegisterRepository,
     private _researchRepo: ResearchRepository,
     private _unitRepo: UnitRepository,
     private _userRepo: UserRepository,

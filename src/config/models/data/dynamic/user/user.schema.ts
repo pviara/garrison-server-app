@@ -1,7 +1,5 @@
 import { Schema } from 'mongoose';
 
-import helper from '../../../../../utils/helper.utils';
-
 import { findByName } from './user.statics';
 
 import bcrypt from 'bcrypt';

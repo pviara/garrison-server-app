@@ -26,12 +26,15 @@ import ZoneRepository from '../../../repos/static/zone.repo';
 
 import StaticRepositoryService from './static.repository.service';
 import ResearchRepository from '../../../repos/static/research.repo';
+import RegisterRepository from '../../../repos/dynamic/register/register.repo';
+import { IRecordModel } from '../../models/data/dynamic/record/record.types';
 
 export default class DynamicRepositoryService implements IMonitored {
   private _monitor = new MonitoringService(this.constructor.name);
   
   private _characterRepository = <CharacterRepository>{};
   private _garrisonRepository = <GarrisonRepository>{};
+  private _registerRepository = <RegisterRepository>{};
   private _userRepository = <UserRepository>{};
   
   /** Retrieve all dynamic repositories. */
@@ -65,6 +68,11 @@ export default class DynamicRepositoryService implements IMonitored {
   /** Retrieve class monitoring service. */
   get monitor() {
     return this._monitor;
+  }
+  
+  /** Retrieve dynamic record repository. */
+  get registerRepository() {
+    return this._registerRepository;
   }
   
   /** Retrieve dynamic user repository. */
@@ -119,6 +127,16 @@ export default class DynamicRepositoryService implements IMonitored {
     );
 
     // --------------------------------------------------------------------------
+    // retrieve character model and init character repository
+    model = findModelByName('record', dynamicModels);
+    if (!model) {
+      const message = 'Couldn\'t find record model inside given models';
+      this._monitor.log(logType.fail, message);
+      throw new ErrorHandler(500, message);
+    }
+    this._registerRepository = new RegisterRepository(<IRecordModel>model);
+
+    // --------------------------------------------------------------------------
     // retrieve garrison model and init garrison repository
     model = findModelByName('garrison', dynamicModels);
     if (!model) {
@@ -130,6 +148,7 @@ export default class DynamicRepositoryService implements IMonitored {
       <IGarrisonModel>model,
       <BuildingRepository>staticRepositories.find(r => r.name === 'building')?.repo,
       this.characterRepository,
+      this.registerRepository,
       <ResearchRepository>staticRepositories.find(r => r.name === 'research')?.repo,
       <UnitRepository>staticRepositories.find(r => r.name === 'unit')?.repo,
       this.userRepository,

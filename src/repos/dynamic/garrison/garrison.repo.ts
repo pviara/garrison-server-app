@@ -298,6 +298,7 @@ export default class GarrisonRepository implements IMonitored {
       .create({
         garrisonId: garrison._id,
         entity: 'building',
+        code: staticBuilding.code,
         action: 'instantiation',
         moment: now,
         resources: {
@@ -330,7 +331,6 @@ export default class GarrisonRepository implements IMonitored {
       index: bIndex
     } = _gH.findBuilding(garrison, payload.buildingId);
     const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
-    const staticBuildings = await this._buildingRepo.getAll();
 
     const {
       index: cIndex
@@ -444,6 +444,7 @@ export default class GarrisonRepository implements IMonitored {
       .create({
         garrisonId: garrison._id,
         entity: 'building',
+        code: staticBuilding.code,
         action: 'cancelation',
         moment: now,
         resources: {
@@ -464,6 +465,11 @@ export default class GarrisonRepository implements IMonitored {
    * @param payload @see IUnitTrainingCancel
    */
   async cancelUnitTraining(payload: IUnitTrainingCancel) {
+    // ⌚ init the moment
+    const now = new Date();
+
+    //////////////////////////////////////////////
+    
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
     const {
@@ -493,7 +499,7 @@ export default class GarrisonRepository implements IMonitored {
     // 🤼‍♂️ proceed to training cancelation
     let canceledCount = 0;
     for (const { assignment, index } of assignments) {
-      if (_h.hasPast(assignment.endDate)) {
+      if (_h.hasPast(assignment.endDate, now)) {
         continue;
       }
 
@@ -531,6 +537,25 @@ export default class GarrisonRepository implements IMonitored {
     // 💾 save in database
     garrison.markModified('instances.units');
     await garrison.save();
+
+    const cost = _gH.computeTrainingCost(
+      staticUnit.instantiation.cost,
+      canceledCount
+    );
+    await this._registerRepo
+      .create({
+        garrisonId: garrison._id,
+        entity: 'unit',
+        code: staticUnit.code,
+        action: 'cancelation',
+        moment: now,
+        quantity: canceledCount,
+        resources: {
+          gold: cost.gold,
+          wood: cost.wood,
+          food: cost.food
+        }
+      });
 
     return {
       garrison: await this.findById(garrison._id),
@@ -685,6 +710,7 @@ export default class GarrisonRepository implements IMonitored {
       .create({
         garrisonId: garrison._id,
         entity: 'building',
+        code: staticBuilding.code,
         action: 'improvement',
         moment: now,
         resources: {
@@ -849,6 +875,7 @@ export default class GarrisonRepository implements IMonitored {
       .create({
         garrisonId: garrison._id,
         entity: 'building',
+        code: staticBuilding.code,
         action: 'improvement',
         moment: now,
         resources: {
@@ -1035,6 +1062,25 @@ export default class GarrisonRepository implements IMonitored {
     // 💾 save in database
     garrison.markModified('instances.units');
     await garrison.save();
+
+    const cost = _gH.computeTrainingCost(
+      staticUnit.instantiation.cost,
+      payload.quantity || 1
+    );
+    await this._registerRepo
+      .create({
+        garrisonId: garrison._id,
+        entity: 'unit',
+        code: staticUnit.code,
+        action: 'instantiation',
+        moment: now,
+        quantity: payload.quantity || 1,
+        resources: {
+          gold: -cost.gold,
+          wood: -cost.wood,
+          food: -cost.food
+        }
+      });
 
     return {
       garrison: await this.findById(garrison._id),

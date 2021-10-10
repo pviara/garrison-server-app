@@ -20,6 +20,7 @@ export interface IRecord {
   garrisonId: ObjectId;
   moment: Date;
   entity: 'building' | 'research' | 'unit';
+  code: string;
   quantity?: number;
   action: 'assignment' | 'cancelation' | 'improvement' | 'instantiation' | 'unassignment';
   resources?: {

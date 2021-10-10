@@ -10,6 +10,7 @@ const recordSchema = new Schema({
     type: String,
     required: true
   },
+  code: String,
   quantity: Number,
   action: {
     type: String,

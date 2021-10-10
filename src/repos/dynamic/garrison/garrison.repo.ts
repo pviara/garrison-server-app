@@ -294,6 +294,19 @@ export default class GarrisonRepository implements IMonitored {
     garrison.markModified('instances.units');
     await garrison.save();
 
+    await this._registerRepo
+      .create({
+        garrisonId: garrison._id,
+        entity: 'building',
+        action: 'instantiation',
+        moment: now,
+        resources: {
+          gold: -staticBuilding.instantiation.cost.gold,
+          wood: -staticBuilding.instantiation.cost.wood,
+          plot: -staticBuilding.instantiation.cost.plot,
+        }
+      });
+
     return {
       garrison: await this.findById(garrison._id),
       character
@@ -305,6 +318,11 @@ export default class GarrisonRepository implements IMonitored {
    * @param payload @see IBuildingConstructionCancel
    */
   async cancelBuildingConstruction(payload: IBuildingConstructionCancel) {
+    // ⌚ init the moment
+    const now = new Date();
+
+    //////////////////////////////////////////////
+    
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
     const {
@@ -312,6 +330,7 @@ export default class GarrisonRepository implements IMonitored {
       index: bIndex
     } = _gH.findBuilding(garrison, payload.buildingId);
     const staticBuilding = await this._buildingRepo.findByCode(building.code) as IBuilding;
+    const staticBuildings = await this._buildingRepo.getAll();
 
     const {
       index: cIndex
@@ -327,7 +346,8 @@ export default class GarrisonRepository implements IMonitored {
     let { givenExperience } = staticBuilding.instantiation;
     let {
       gold,
-      wood
+      wood,
+      plot
     } = staticBuilding.instantiation.cost;
 
     const {
@@ -336,6 +356,7 @@ export default class GarrisonRepository implements IMonitored {
     if (improvement) {
       gold = Math.floor(gold * Math.pow(1.6, improvement.level));
       wood = Math.floor(wood * Math.pow(1.6, improvement.level));
+      plot = Math.floor(plot * Math.pow(1.2, improvement.level));
       givenExperience = Math.floor(givenExperience * Math.pow(2, improvement.level));
 
       building
@@ -418,6 +439,19 @@ export default class GarrisonRepository implements IMonitored {
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();
+
+    await this._registerRepo
+      .create({
+        garrisonId: garrison._id,
+        entity: 'building',
+        action: 'cancelation',
+        moment: now,
+        resources: {
+          gold,
+          wood,
+          plot
+        }
+      });
 
     return {
       garrison: await this.findById(garrison._id),
@@ -643,6 +677,23 @@ export default class GarrisonRepository implements IMonitored {
     garrison.markModified('instances.units');
     await garrison.save();
 
+    const cost = _gH.computeConstructionCost(
+      staticBuilding.instantiation.cost,
+      nextUpgrade.level
+    );
+    await this._registerRepo
+      .create({
+        garrisonId: garrison._id,
+        entity: 'building',
+        action: 'improvement',
+        moment: now,
+        resources: {
+          gold: -cost.gold,
+          wood: -cost.wood,
+          plot: -cost.plot
+        }
+      });
+
     return {
       garrison: await this.findById(garrison._id),
       character
@@ -789,6 +840,23 @@ export default class GarrisonRepository implements IMonitored {
     garrison.markModified('instances.buildings');
     garrison.markModified('instances.units');
     await garrison.save();
+
+    const cost = _gH.computeConstructionCost(
+      staticBuilding.instantiation.cost,
+      nextExtension
+    );
+    await this._registerRepo
+      .create({
+        garrisonId: garrison._id,
+        entity: 'building',
+        action: 'improvement',
+        moment: now,
+        resources: {
+          gold: -cost.gold,
+          wood: -cost.wood,
+          plot: -cost.plot
+        }
+      });
 
     return {
       garrison: await this.findById(garrison._id),

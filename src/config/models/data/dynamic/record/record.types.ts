@@ -21,7 +21,7 @@ export interface IRecord {
   moment: Date;
   entity: 'building' | 'research' | 'unit';
   quantity?: number;
-  action: 'assignment' | 'cancelation' | 'instantiation' | 'unassignment';
+  action: 'assignment' | 'cancelation' | 'improvement' | 'instantiation' | 'unassignment';
   resources?: {
     gold: number;
     wood: number;

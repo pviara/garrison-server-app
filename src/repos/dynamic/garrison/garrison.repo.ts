@@ -1478,6 +1478,23 @@ export default class GarrisonRepository implements IMonitored {
     garrison.markModified('instances.units');
     await garrison.save();
 
+    const cost = _gH.computeResearchCost(
+      staticResearch.instantiation.cost,
+      currentLevel + 1
+    );
+    await this._registerRepo
+      .create({
+        garrisonId: garrison._id,
+        entity: 'research',
+        code: staticResearch.code,
+        action: 'instantiation',
+        moment: now,
+        resources: {
+          gold: -cost.gold,
+          wood: -cost.wood
+        }
+      });
+
     return {
       garrison: await this.findById(garrison._id),
       character
@@ -1490,6 +1507,11 @@ export default class GarrisonRepository implements IMonitored {
    * @returns 
    */
   async cancelResearch(payload: IResearchCancel) {
+    // ⌚ init the moment
+    const now = new Date();
+
+    //////////////////////////////////////////////
+
     // ❔ make the checks
     const garrison = await this.findById(payload.garrisonId);
     const {
@@ -1579,6 +1601,23 @@ export default class GarrisonRepository implements IMonitored {
     garrison.markModified('instances.researches');
     garrison.markModified('instances.units');
     await garrison.save();
+
+    const cost = _gH.computeResearchCost(
+      staticResearch.instantiation.cost,
+      level
+    );
+    await this._registerRepo
+      .create({
+        garrisonId: garrison._id,
+        entity: 'research',
+        code: staticResearch.code,
+        action: 'cancelation',
+        moment: now,
+        resources: {
+          gold: cost.gold,
+          wood: cost.wood
+        }
+      });
 
     return {
       garrison: await this.findById(garrison._id),

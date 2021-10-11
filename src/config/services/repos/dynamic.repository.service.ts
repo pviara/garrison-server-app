@@ -49,6 +49,10 @@ export default class DynamicRepositoryService implements IMonitored {
         repo: this._garrisonRepository
       },
       {
+        name: 'register',
+        repo: this._registerRepository
+      },
+      {
         name: 'user',
         repo: this._userRepository
       }

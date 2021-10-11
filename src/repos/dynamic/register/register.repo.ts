@@ -40,7 +40,10 @@ export default class RegisterRepository implements IMonitored {
       throw new ErrorHandler(404, `No record from garrisonId '${garrisonId}' could be found.`);
     }
 
-    return result;
+    return result
+      .sort(
+        (a, b) => b.moment.getTime() - a.moment.getTime()
+      );
   }
 
   async create(record: IRecord) {

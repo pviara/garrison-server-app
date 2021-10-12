@@ -118,6 +118,7 @@ export default class CharacterRepository implements IMonitored {
     return this._model.create({
       userId: payload.userId,
       name: payload.name,
+      gender: payload.gender,
       side: payload.side,
       experience: 0
     });

@@ -12,6 +12,7 @@ const characterSchema = new Schema({
     set: helper.capitalize,
     required: true
   },
+  gender: String,
   side: {
     type: {
       faction: String,

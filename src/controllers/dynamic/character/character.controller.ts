@@ -43,6 +43,7 @@ export default class CharacterController {
     || helper.isObjectEmpty(req.body)
     || !req.body.userId
     || !req.body.name
+    || !req.body.gender
     || !req.body.side
     || !req.body.side.faction
     || !req.body.side.banner)

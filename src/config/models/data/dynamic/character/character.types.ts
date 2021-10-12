@@ -23,6 +23,9 @@ export interface ICharacter {
   /** Character's name. */
   name: string;
 
+  /** Character's gender. */
+  gender: 'male' | 'female';
+
   /** Character's side details. */
   side: {
     /** The faction whose player belongs to. */

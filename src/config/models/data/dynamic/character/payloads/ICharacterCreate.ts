@@ -6,6 +6,7 @@ import { ObjectId } from 'mongodb';
 export default interface ICharacterCreate {
   userId: ObjectId;
   name: string;
+  gender: 'male' | 'female';
   side: {
     faction: string;
     banner: string;

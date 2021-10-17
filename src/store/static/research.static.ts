@@ -2,7 +2,7 @@ import { IResearch } from '../../config/models/data/static/research/research.typ
 
 export const researchList: IResearch[] = [{
     code: 'improved-construction',
-    word: 'better construction',
+    word: 'Build faster',
     description: 'Increase your workers productivity when constructing buildings. Any additional enroled worker above minimum workforce will reduce construction time by extra 1%.',
     instantiation: {
       cost: {
@@ -22,7 +22,7 @@ export const researchList: IResearch[] = [{
   },
   {
     code: 'improved-harvest',
-    word: 'better harvest',
+    word: 'Harvest faster',
     description: 'Increase your workers productivity when harvesting resources. Any enroled worker will harvest 1 extra resource per minute.',
     instantiation: {
       cost: {

@@ -185,11 +185,12 @@ export default class GarrisonRepository implements IMonitored {
     const staticBuildings = await this._buildingRepo.getAll();
     const staticBuilding = staticBuildings.find(building => building.code === payload.code) as IBuilding;
 
-    _gH.checkConstructionLimit(
-      now,
-      staticBuilding,
-      garrison.instances.buildings
-    );
+    // TODO 🛠 do something with this code idk what
+    // // _gH.checkConstructionLimit(
+    // //   now,
+    // //   staticBuilding,
+    // //   garrison.instances.buildings
+    // // );
 
     const {
       unit: peasants

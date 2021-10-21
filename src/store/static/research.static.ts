@@ -6,8 +6,8 @@ export const researchList: IResearch[] = [{
     description: 'Increase your workers productivity when constructing buildings. Any additional enroled worker above minimum workforce will reduce construction time by extra 1%.',
     instantiation: {
       cost: {
-        gold: 10,
-        wood: 10
+        gold: 250,
+        wood: 250
       },
       minWorkforce: 1,
       duration: 200,
@@ -26,8 +26,8 @@ export const researchList: IResearch[] = [{
     description: 'Increase your workers productivity when harvesting resources. Any enroled worker will harvest 1 extra resource per minute.',
     instantiation: {
       cost: {
-        gold: 10,
-        wood: 10
+        gold: 250,
+        wood: 250
       },
       minWorkforce: 1,
       duration: 200,

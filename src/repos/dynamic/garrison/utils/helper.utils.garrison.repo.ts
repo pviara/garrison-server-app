@@ -371,9 +371,23 @@ class Helper {
   static computeAvailablePlots(
     moment: Date,
     buildings: IGarrisonBuilding[],
-    staticBuildings: IBuilding[]
+    researches: IGarrisonResearch[],
+    staticBuildings: IBuilding[],
+    staticResearches: IResearch[],
   ) {
     let totalPlots = 150;
+
+    const expandedField = researches.find(research => research.code === 'expanded-field');
+    if (expandedField) {
+      const staticResearch = staticResearches.find(research => research.code === 'expanded-field');
+      
+      const currentLevel = this.computeResearchCurrentLevel(
+        moment,
+        expandedField.projects
+      );
+
+      totalPlots += currentLevel * (staticResearch?.bonus || 0);
+    }
     
     for (const building of buildings) {
       const staticBuilding = staticBuildings.find(sB => sB.code === building.code);
@@ -799,7 +813,9 @@ class Helper {
     buildings: IGarrisonBuilding[],
     staticBuildings: IBuilding[],
     resources: IGarrisonResources,
-    instantiationCost: IBuildingCost
+    instantiationCost: IBuildingCost,
+    researches: IGarrisonResearch[],
+    staticResearches: IResearch[],
   ): IGarrisonResources
   static checkConstructionPaymentCapacity(
     moment: Date,
@@ -807,8 +823,10 @@ class Helper {
     staticBuildings: IBuilding[],
     resources: IGarrisonResources,
     instantiationCost: IBuildingCost,
+    researches: IGarrisonResearch[],
+    staticResearches: IResearch[],
     improvementType: IBuildingImprovementType,
-    constructions: IOperatedConstruction[]
+    constructions: IOperatedConstruction[],
   ): IGarrisonResources
   static checkConstructionPaymentCapacity(
     moment: Date,
@@ -816,6 +834,8 @@ class Helper {
     staticBuildings: IBuilding[],
     resources: IGarrisonResources,
     instantiationCost: IBuildingCost,
+    researches: IGarrisonResearch[],
+    staticResearches: IResearch[],
     improvementType?: IBuildingImprovementType,
     constructions?: IOperatedConstruction[]
   ) {
@@ -823,7 +843,9 @@ class Helper {
       .computeAvailablePlots(
         moment,
         buildings,
-        staticBuildings
+        researches,
+        staticBuildings,
+        staticResearches,
       );
     
     let nextLevel;
@@ -1079,6 +1101,8 @@ class Helper {
             .constructions
             .find(construction => <number>construction.improvement?.level >= <number>building.upgradeLevel);
           if (!upgraded) return true;
+
+          upgraded.endDate = new Date(upgraded.endDate);
 
           // is the building still being processed for this specific upgrade ?
           if (upgraded.endDate.getTime() > moment.getTime()) return true;
